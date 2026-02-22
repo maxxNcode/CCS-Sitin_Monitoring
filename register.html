@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html data-theme="fantasy">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Register - CCS Sit-In Monitoring System</title>
+        <link href="src/output.css" rel="stylesheet" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    </head>
+    <body>
+        <!-- Navbar -->
+        <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm flex items-center justify-between fixed z-[100] backdrop-blur-md px-8">
+            <!-- Left: Logo + Name -->
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                    <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                </div>
+                <a class="btn btn-ghost text-xl font-bold">
+                    <span class="text-primary">CCS</span> - Sit-In Monitoring System
+                </a>
+            </div>
+            
+            <!-- Right: Navigation Links -->
+            <div class="flex items-center gap-2">
+                <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
+                <a href="#community" class="btn btn-ghost btn-sm">Community</a>
+                <a href="#about" class="btn btn-ghost btn-sm">About</a>
+                <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+            </div>
+        </div>
+        <!-- Registration Form Section -->
+        <div class="min-h-screen flex items-center justify-center pt-24 pb-12 px-8">
+            <div class="w-full max-w-2xl">
+                <!-- Form Card -->
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body p-8">
+                        <!-- Header -->
+                        <div class="text-center mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Create Your Account</h1>
+                            <p class="text-base-content/70">Join the CCS Sit-In Monitoring System</p>
+                        </div>
+
+                        <!-- Registration Form -->
+                        <form class="space-y-4">
+                            <!-- Name Row: Last, First, Middle -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Last Name</span>
+                                    </label>
+                                    <input type="text" placeholder="Last name" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">First Name</span>
+                                    </label>
+                                    <input type="text" placeholder="First name" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Middle Name</span>
+                                    </label>
+                                    <input type="text" placeholder="Middle name" class="input input-bordered w-full" />
+                                </div>
+                            </div>
+
+                            <!-- Course Level and Course -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Course Level</span>
+                                    </label>
+                                    <select class="select select-bordered w-full">
+                                        <option disabled selected>Select level</option>
+                                        <option>1st Year</option>
+                                        <option>2nd Year</option>
+                                        <option>3rd Year</option>
+                                        <option>4th Year</option>
+                                        <option>5th Year</option>
+                                    </select>
+                                </div>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Course</span>
+                                    </label>
+                                    <select class="select select-bordered w-full">
+                                        <option disabled selected>Select course</option>
+                                        <option>BS Computer Science</option>
+                                        <option>BS Information Technology</option>
+                                        <option>BS Information Systems</option>
+                                        <option>BS Computer Engineering</option>
+                                        <option>Associate in Computer Technology</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text font-medium">Address</span>
+                                </label>
+                                <input type="text" placeholder="Enter your address" class="input input-bordered w-full" />
+                            </div>
+
+                            <!-- ID Number and Email Row -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">ID Number</span>
+                                    </label>
+                                    <input type="text" placeholder="Enter your ID number" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Email</span>
+                                    </label>
+                                    <input type="email" placeholder="Enter your email" class="input input-bordered w-full" />
+                                </div>
+                            </div>
+
+                            <!-- Password Row -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Password</span>
+                                    </label>
+                                    <input type="password" placeholder="Enter password" class="input input-bordered w-full" />
+                                </div>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium">Repeat your password</span>
+                                    </label>
+                                    <input type="password" placeholder="Repeat password" class="input input-bordered w-full" />
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="flex gap-4 pt-6">
+                                <a href="index.html" class="btn btn-outline flex-1">Cancel</a>
+                                <button type="submit" class="btn btn-primary flex-1">Register</button>
+                            </div>
+                        </form>
+
+                        <!-- Login Link -->
+                        <div class="text-center mt-6">
+                            <p class="text-base-content/70">
+                                Already have an account? 
+                                <a href="login.html" class="text-primary font-medium hover:underline">Login here</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html data-theme="fantasy">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CCS - Sit-In Monitoring System</title>
+        <link href="src/output.css" rel="stylesheet" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    </head>
+    <body>
+        <!-- Navbar -->
+        <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm flex items-center justify-between fixed z-[100] backdrop-blur-md px-8">
+            <!-- Left: Logo + Name -->
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                    <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                </div>
+                <a class="btn btn-ghost text-xl font-bold">
+                    <span class="text-primary">CCS</span> - Sit-In Monitoring System
+                </a>
+            </div>
+            
+            <!-- Right: Navigation Links -->
+            <div class="flex items-center gap-2">
+                <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
+                <a href="#community" class="btn btn-ghost btn-sm">Community</a>
+                <a href="#about" class="btn btn-ghost btn-sm">About</a>
+                <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="min-h-screen flex items-center justify-center pt-16 px-8">
+            <div class="max-w-7xl w-full flex flex-col lg:flex-row items-center justify-between gap-12">
+                <!-- Left: Text Content -->
+                <div class="flex-1 flex flex-col items-start gap-6">
+                    <h1 class="text-5xl lg:text-6xl font-bold leading-tight">
+                        Monitor. Manage. Optimize 
+                        <span class="text-primary">Sit-in Sessions.</span>
+                    </h1>
+                    <p class="text-lg text-base-content/70 max-w-xl">
+                        A centralized system for tracking sit-in activities, managing student access, and maintaining real-time records for the College of Computer Studies.
+                    </p>
+                    <div class="flex gap-4 mt-4">
+                        <a href="register.html" class="btn btn-primary btn-lg">Get Started</a>
+                        <a href="#about" class="btn btn-outline btn-lg">About</a>
+                    </div>
+                </div>
+                
+                <!-- Right: Illustration -->
+                <div class="flex-1 flex items-center justify-center">
+                    <div class="relative w-full max-w-lg">
+                        <!-- Background decoration -->
+                        <div class="absolute inset-0 bg-primary/10 rounded-3xl transform rotate-3"></div>
+                        <div class="absolute inset-0 bg-primary/5 rounded-3xl transform -rotate-3"></div>
+                        
+                        <!-- Main illustration card -->
+                        <div class="relative bg-base-100 rounded-3xl shadow-xl p-8 border border-base-300">
+                            <img src="assets/hero-image.svg" alt="Hero Image" class="w-full h-full object-cover rounded-3xl">
+                            <!-- Floating elements -->
+                            <div class="absolute -top-4 -right-4 bg-primary text-primary-content px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                                Real-time Tracking
+                            </div>
+                            <div class="absolute -bottom-4 -left-4 bg-primary text-primary-content px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                                Easy Management
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Section -->
+        <!-- <div id="community" class="min-h-screen flex flex-col items-center justify-center px-8 py-16 bg-base-200/30">
+            <div class="text-4xl font-bold mb-12">Community</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl">
+                <div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="card-body">
+                        <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Student Tracking</h3>
+                        <p class="text-base-content/70">Monitor student sit-in activities and attendance records efficiently.</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="card-body">
+                        <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Analytics & Reports</h3>
+                        <p class="text-base-content/70">Generate comprehensive reports and analytics on sit-in sessions.</p>
+                    </div>
+                </div>
+                <div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="card-body">
+                        <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Lab Management</h3>
+                        <p class="text-base-content/70">Manage computer lab resources and student access seamlessly.</p>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- About Section -->
+        <!-- <div id="about" class="min-h-screen flex flex-col items-center justify-center px-8 py-16">
+            <div class="text-4xl font-bold mb-12">About</div>
+            <div class="max-w-4xl text-center">
+                <p class="text-lg text-base-content/70 mb-8">
+                    The CCS Sit-In Monitoring System is designed to streamline the process of tracking and managing student sit-in sessions at the College of Computer Studies. Our system provides real-time monitoring, comprehensive reporting, and efficient resource management.
+                </p>
+            </div>
+        </div> -->
+    </body>
+</html>
