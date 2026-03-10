@@ -18,29 +18,53 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     </head>
     <body>
-        <!-- Navbar -->
-        <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm flex items-center justify-between fixed z-[100] backdrop-blur-md px-8">
-            <!-- Left: Logo + Name -->
-            <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                    <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+        <!-- Drawer Navigation Component -->
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Mobile navbar header -->
+                <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm md:hidden">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                                <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                            </div>
+                            <span class="text-primary font-bold text-lg">CCS</span>
+                        </div>
+                    </div>
+                    <div class="flex-none">
+                        <label for="my-drawer" class="btn btn-ghost btn-circle drawer-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </label>
+                    </div>
                 </div>
-                <a class="btn btn-ghost text-xl font-bold">
-                    <span class="text-primary">CCS</span> - Sit-In Monitoring System
-                </a>
-            </div>
-            
-            <!-- Right: Navigation Links -->
-            <div class="flex items-center gap-2">
-                <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
-                <a href="#community" class="btn btn-ghost btn-sm">Community</a>
-                <a href="#about" class="btn btn-ghost btn-sm">About</a>
-                <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
-                <a href="register.html" class="btn btn-primary btn-sm">Register</a>
-            </div>
-        </div>
-        <!-- Registration Form Section -->
-        <div class="min-h-screen flex items-center justify-center pt-24 pb-12 px-8">
+
+                <!-- Desktop navbar -->
+                <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm hidden md:flex fixed z-[100] w-full px-8">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                        </div>
+                        <a href="index.html" class="btn btn-ghost text-xl font-bold">
+                            <span class="text-primary">CCS</span> - Sit-In Monitoring System
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-2 ml-auto">
+                        <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="#community" class="btn btn-ghost btn-sm">Community</a>
+                        <a href="#about" class="btn btn-ghost btn-sm">About</a>
+                        <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
+                        <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <div class="md:pt-16">
+                    <!-- Registration Form Section -->
+                    <div class="min-h-screen flex items-center justify-center pt-20 md:pt-0 pb-12 px-4 md:px-8">
             <div class="w-full max-w-2xl">
                 <!-- Form Card -->
                 <div class="card bg-base-100 shadow-xl">
@@ -52,26 +76,26 @@
                         </div>
 
                         <!-- Registration Form -->
-                        <form class="space-y-4">
+                        <form class="space-y-4" id="registerForm">
                             <!-- Name Row: Last, First, Middle -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text font-medium">Last Name</span>
                                     </label>
-                                    <input type="text" placeholder="Last name" class="input input-bordered w-full" />
+                                    <input type="text" id="lastName" placeholder="Last name" class="input input-bordered w-full" required />
                                 </div>
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text font-medium">First Name</span>
                                     </label>
-                                    <input type="text" placeholder="First name" class="input input-bordered w-full" />
+                                    <input type="text" id="firstName" placeholder="First name" class="input input-bordered w-full" required />
                                 </div>
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text font-medium">Middle Name</span>
                                     </label>
-                                    <input type="text" placeholder="Middle name" class="input input-bordered w-full" />
+                                    <input type="text" id="middleName" placeholder="Middle name" class="input input-bordered w-full" />
                                 </div>
                             </div>
 
@@ -81,7 +105,7 @@
                                     <label class="label">
                                         <span class="label-text font-medium">Course Level</span>
                                     </label>
-                                    <select class="select select-bordered w-full">
+                                    <select id="courseLevel" class="select select-bordered w-full">
                                         <option disabled selected>Select level</option>
                                         <option>1st Year</option>
                                         <option>2nd Year</option>
@@ -94,7 +118,7 @@
                                     <label class="label">
                                         <span class="label-text font-medium">Course</span>
                                     </label>
-                                    <select class="select select-bordered w-full">
+                                    <select id="course" class="select select-bordered w-full">
                                         <option disabled selected>Select course</option>
                                         <option>BS Computer Science</option>
                                         <option>BS Information Technology</option>
@@ -110,7 +134,7 @@
                                 <label class="label">
                                     <span class="label-text font-medium">Address</span>
                                 </label>
-                                <input type="text" placeholder="Enter your address" class="input input-bordered w-full" />
+                                <input type="text" id="address" placeholder="Enter your address" class="input input-bordered w-full" />
                             </div>
 
                             <!-- ID Number and Email Row -->
@@ -119,13 +143,13 @@
                                     <label class="label">
                                         <span class="label-text font-medium">ID Number</span>
                                     </label>
-                                    <input type="text" placeholder="Enter your ID number" class="input input-bordered w-full" />
+                                    <input type="text" id="idNumber" placeholder="Enter your ID number" class="input input-bordered w-full" required />
                                 </div>
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text font-medium">Email</span>
                                     </label>
-                                    <input type="email" placeholder="Enter your email" class="input input-bordered w-full" />
+                                    <input type="email" id="email" placeholder="Enter your email" class="input input-bordered w-full" required />
                                 </div>
                             </div>
 
@@ -135,34 +159,116 @@
                                     <label class="label">
                                         <span class="label-text font-medium">Password</span>
                                     </label>
-                                    <input type="password" placeholder="Enter password" class="input input-bordered w-full" />
+                                    <input type="password" id="password" placeholder="Enter password" class="input input-bordered w-full" required />
                                 </div>
                                 <div class="form-control">
                                     <label class="label">
                                         <span class="label-text font-medium">Repeat your password</span>
                                     </label>
-                                    <input type="password" placeholder="Repeat password" class="input input-bordered w-full" />
+                                    <input type="password" id="confirmPassword" placeholder="Repeat password" class="input input-bordered w-full" required />
                                 </div>
                             </div>
 
+                            <!-- Error Message -->
+                            <div id="errorMessage" class="hidden alert alert-error">
+                                <span id="errorText"></span>
+                            </div>
+
                             <!-- Buttons -->
-                            <div class="flex gap-4 pt-6">
-                                <a href="index.html" class="btn btn-outline flex-1">Cancel</a>
-                                <button type="submit" class="btn btn-primary flex-1">Register</button>
+                            <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                                <a href="index.html" class="btn btn-outline">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Register</button>
                             </div>
                         </form>
 
                         <!-- Login Link -->
                         <div class="text-center mt-6">
-                            <p class="text-base-content/70">
-                                Already have an account? 
+                            <p class="text-base-content/70 text-sm md:text-base">
+                                Already have an account?
                                 <a href="login.html" class="text-primary font-medium hover:underline">Login here</a>
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile drawer menu -->
+            <div class="drawer-side">
+                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content space-y-2">
+                    <li class="mb-4">
+                        <span class="text-primary font-bold text-lg">CCS - Sit-In Monitoring</span>
+                    </li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#community">Community</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="login.html" class="text-primary font-bold">Login</a></li>
+                    <li><a href="register.html" class="text-primary font-bold">Register</a></li>
+                </ul>
+            </div>
         </div>
+
+        <script>
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const lastName = document.getElementById('lastName').value;
+                const firstName = document.getElementById('firstName').value;
+                const middleName = document.getElementById('middleName').value;
+                const courseLevel = document.getElementById('courseLevel').value;
+                const course = document.getElementById('course').value;
+                const address = document.getElementById('address').value;
+                const idNumber = document.getElementById('idNumber').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const errorDiv = document.getElementById('errorMessage');
+                const errorText = document.getElementById('errorText');
+
+                // Basic validation
+                if (password !== confirmPassword) {
+                    errorText.textContent = 'Passwords do not match';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            idNumber,
+                            email,
+                            password,
+                            firstName,
+                            lastName,
+                            middleName,
+                            courseLevel,
+                            course,
+                            address
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        errorText.textContent = data.error || 'Registration failed';
+                        errorDiv.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    errorText.textContent = 'An error occurred. Please try again.';
+                    errorDiv.classList.remove('hidden');
+                    console.error('Registration error:', err);
+                }
+            });
+        </script>
 
     </body>
 </html>

@@ -2,3 +2,32 @@
 
 @theme {
 }
+
+/* Responsive table utilities */
+@layer components {
+  /* Table responsive wrapper for mobile scrolling */
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+
+  .table-responsive table {
+    @apply min-w-max;
+  }
+
+  @media (min-width: 768px) {
+    .table-responsive {
+      @apply overflow-x-visible;
+    }
+
+    .table-responsive table {
+      @apply min-w-full;
+    }
+  }
+
+  /* Touch-friendly button sizing for mobile */
+  @media (max-width: 640px) {
+    .btn {
+      @apply min-h-11;
+    }
+  }
+}
