@@ -105,8 +105,8 @@
                                     <label class="label">
                                         <span class="label-text font-medium">Course Level</span>
                                     </label>
-                                    <select id="courseLevel" class="select select-bordered w-full">
-                                        <option disabled selected>Select level</option>
+                                    <select id="courseLevel" class="select select-bordered w-full" required>
+                                        <option value="">Select level</option>
                                         <option>1st Year</option>
                                         <option>2nd Year</option>
                                         <option>3rd Year</option>
@@ -118,8 +118,8 @@
                                     <label class="label">
                                         <span class="label-text font-medium">Course</span>
                                     </label>
-                                    <select id="course" class="select select-bordered w-full">
-                                        <option disabled selected>Select course</option>
+                                    <select id="course" class="select select-bordered w-full" required>
+                                        <option value="">Select course</option>
                                         <option>BS Computer Science</option>
                                         <option>BS Information Technology</option>
                                         <option>BS Information Systems</option>
@@ -231,6 +231,18 @@
                 // Basic validation
                 if (password !== confirmPassword) {
                     errorText.textContent = 'Passwords do not match';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                if (!courseLevel || courseLevel === '') {
+                    errorText.textContent = 'Please select a course level';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                if (!course || course === '') {
+                    errorText.textContent = 'Please select a course';
                     errorDiv.classList.remove('hidden');
                     return;
                 }

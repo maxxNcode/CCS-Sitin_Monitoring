@@ -48,6 +48,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
 
+// Serve Static
+app.use(express.static('public'));
+
 // Session configuration
 app.use(session({
     secret: 'ccs-sitin-monitoring-secret',
@@ -124,6 +127,7 @@ app.post('/register', (req, res) => {
             [idNumber, email, hashedPassword, firstName, lastName, middleName, courseLevel, course, address],
             (err) => {
                 if (err) {
+                    console.error('Registration DB error:', err);
                     if (err.message.includes('UNIQUE constraint failed')) {
                         return res.status(400).json({ error: 'ID Number or Email already exists' });
                     }
@@ -173,3 +177,6 @@ app.get('/register.html', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
+
+
+
