@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html data-theme="silk">
+<!-- themes from daisy UI
+    light
+dark
+cupcake
+bumblebee
+emerald
+corporate
+synthwave
+retro
+cyberpunk
+valentine
+halloween
+garden
+forest
+aqua
+lofi
+pastel
+fantasy
+wireframe
+black
+luxury
+dracula
+cmyk
+autumn
+business
+acid
+lemonade
+night
+coffee
+winter
+dim
+nord
+sunset
+caramellatte
+abyss
+silk
+-->
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCS - Sit-In Monitoring System</title>
+    <link href="src/output.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body>
+    <!-- Responsive Navbar Component -->
+    <!-- This navbar uses DaisyUI drawer for mobile menu -->
+
+    <div class="drawer">
+        <input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex flex-col">
+            <!-- Mobile navbar header (visible only on mobile) -->
+            <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm md:hidden">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                        </div>
+                        <span class="text-primary font-bold text-lg">CCS</span>
+                    </div>
+                </div>
+                <div class="flex-none">
+                    <label for="my-drawer-3" class="btn btn-ghost btn-circle drawer-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            class="inline-block w-6 h-6 stroke-current">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Desktop navbar (visible only on desktop) -->
+            <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm hidden md:flex fixed z-[100] w-full px-8">
+                <!-- Left: Logo + Name -->
+                <div class="flex-1 flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                        <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                    </div>
+                    <a href="index.html" class="btn btn-ghost text-xl font-bold">
+                        <span class="text-primary">CCS</span> - Sit-In Monitoring System
+                    </a>
+                </div>
+
+                <!-- Right: Navigation Links (customize based on page) -->
+                <!-- PUBLIC NAV (for index.html, login.html, register.html) -->
+                <div class="flex items-center gap-2" id="public-nav">
+                    <div class="dropdown">
+                        <div tabindex="0" role="button" class="flex m-1 gap-1 btn btn-ghost btn-sm">Notifications <img
+                                src="/assets/ui/down-arrow.png" width="16px" alt=""></div>
+                        <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                            <li><a>Item 1</a></li>
+                            <li><a>Item 2</a></li>
+                        </ul>
+                    </div>
+
+                    <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
+                    <a href="#community" class="btn btn-ghost btn-sm">Edit Profile</a>
+                    <a href="#about" class="btn btn-ghost btn-sm">History</a>
+                    <a href="reservation.html" class="btn btn-ghost btn-sm">Reservation</a>
+                    <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+                </div>
+
+                <!-- PROTECTED NAV (for main.html) -->
+                <div class="flex items-center gap-2" id="protected-nav" style="display: none;">
+                    <a href="main.html" class="btn btn-ghost btn-sm">Home</a>
+                    <a href="#" class="btn btn-ghost btn-sm">Dashboard</a>
+                    <button onclick="logout()" class="btn btn-primary btn-sm">Logout</button>
+                </div>
+            </div>
+
+            <!-- Page content goes here -->
+            <!-- This section is filled by the main page content -->
+            <div id="page-content" class="md:mt-16">
+                <!-- Page content will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Mobile drawer menu -->
+        <div class="drawer-side">
+            <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
+            <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+                <!-- Mobile menu header -->
+                <li class="mb-4 bold text-xl">
+                    <span class="text-primary font-bold">CCS - Sit-In Monitoring</span>
+                </li>
+
+                <!-- PUBLIC MOBILE NAV -->
+                <div id="public-mobile-nav">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#community">Community</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="login.html" class="text-primary font-bold">Login</a></li>
+                    <li><a href="register.html" class="text-primary font-bold">Register</a></li>
+                </div>
+
+                <!-- PROTECTED MOBILE NAV -->
+                <div id="protected-mobile-nav" style="display: none;">
+                    <li><a href="main.html">Home</a></li>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#" onclick="logout()" class="text-error">Logout</a></li>
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Student Homepage -->
+    <main class="h-[calc(100vh-64px)] flex gap-2 mt-4 mx-4 mb-4 ">
+        <div
+            class="student-info bg-base-100 flex-1 flex justify-start flex-col items-center border border-gray-300 rounded-xl">
+            <div class="header bg-primary h-14 text-lg flex items-center justify-center rounded-xl w-full">
+                <p style="color: azure;" class="font-semibold">Student Information</p>
+            </div>
+
+            <div
+                class="student-profile flex justify-center mt-[32px] h-[200px] w-[200px] rounded-[100%] overflow-hidden">
+                <img src="/assets/student/student-image.png" alt="Student Profile">
+            </div>
+
+            <div class="separator h-[1px] w-full bg-gray-300 mt-[32px]"></div>
+
+            <div id="student-infos" class="student-infos w-full p-4 gap-4 flex flex-col">
+
+            </div>
+        </div>
+
+        <div
+            class="announcement flex-1 bg-base-100 flex-1 flex justify-start flex-col items-start border border-gray-300 rounded-xl">
+            <div class="header bg-primary min-h-14 text-lg flex items-center justify-center rounded-xl w-full">
+                <p style="color: azure;" class="font-semibold">Announcement</p>
+            </div>
+
+
+
+            <div id="announcements" class="announcement-section flex flex-col items-start w-full overflow-y-auto">
+
+            </div>
+        </div>
+
+
+
+
+
+
+
+        <div
+            class="rules flex-1 bg-base-100 flex-1 flex justify-start flex-col items-start border border-gray-300 rounded-xl">
+            <div class="header bg-primary h-14 text-lg flex items-center justify-center rounded-xl w-full">
+                <p style="color: azure;" class="font-semibold">Rules & Regulation</p>
+            </div>
+
+            <div class="contents flex justify-start items-start flex-col p-4 w-full ">
+                <p class="w-full text-center font-bold">University of Cebu</p>
+                <p class="w-full text-center font-bold">COLLEGE OF INFORMATION & COMPUTER STUDIES</p>
+                <br>
+                <p class="font-bold">LABORATORY RULES AND REGULATOIONS</p>
+                <br>
+                <p>1. To avoid embarrassment and maintain camaraderie with your friends and superiors at our
+                    laboratories, please observe the following:</p>
+                <br>
+                <p>2. Maintain silence, proper decorum, and discipline inside the laboratory. Mobile phones, walkmans
+                    and other personal pieces of equipment must be switched off.</p>
+                <br>
+                <p>3. Games are not allowed inside the lab. This includes computer-related games, card games and other
+                    games that may disturb the operation of the lab.</p>
+                <br>
+                <p>4. Surfing the Internet is allowed only with the permission of the instructor. Downloading and
+                    installing of software are strictly</p>
+
+            </div>
+        </div>
+    </main>
+
+
+    <script src="https://example.com/fontawesome/v7.0.1/js/fontawesome.js" data-auto-replace-svg="nest"></script>
+    <script src="https://example.com/fontawesome/v7.0.1/js/solid.js"></script>
+    <script src="https://example.com/fontawesome/v7.0.1/js/brands.js"></script>
+
+
+    <!-- <script>
+        fetch('/api/announcements')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('announcements');
+                data.foreach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'announcement min-h-[128px] w-full flex flex-col gap-4 justify-start p-4';
+                    div.innerHTML = `<div class="title font-bold">CCS Admin | ${new Date(item.created_at).toLocaleDateString()}</div>
+                    <p>${item.description}</p>
+                    <div class="separator h-[1px] w-full bg-gray-300 mt-[32px]"></div>
+                `;
+
+                    container.appendChild(div);
+
+                    // Add line separator
+                    const sep = document.createElement('div');
+                    sep.className = 'separator h-[1px] w-full bg-gray-300 mt-[32px]';
+                    container.appendChild(sep);
+                });
+            });
+    </script> -->
+
+    <script>
+        // Check if user is logged in on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch('/check-session')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.loggedIn) {
+                        window.location.href = '/login.html';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error checking session:', err);
+                    window.location.href = '/login.html';
+                });
+        });
+
+        fetch('/api/announcements')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('announcements');
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'announcement min-h-[128px] w-full flex flex-col gap-4 justify-start p-4';
+                    div.innerHTML = `
+                        <div class="title font-bold">${item.title} | ${new Date(item.created_at).toLocaleDateString()}</div>
+                        <p>${item.description}</p>
+                    `;
+                    container.appendChild(div);
+
+                    // Add line separator
+                    const sep = document.createElement('div');
+                    sep.className = 'separator h-[1px] w-full bg-gray-300 mt-[32px]';
+                    container.appendChild(sep);
+                });
+            });
+
+
+        // fetch('/api/studentinfo')
+        //     .then(res => res.json())
+        //     .then(data => {
+        //         const container = document.getElementById('student-infos');
+        //         container.innerHTML = `
+        //             <div class="name flex items-center">
+        //                 <i class="fa-solid fa-user mr-[4px]"></i>
+        //                 <p class="mr-[6px] font-bold">Name: </p>
+        //                 <p id="studentname"> ${data.name} </p>
+        //             </div>
+
+        //             <div class="name flex items-center">
+        //                 <i class="fa-solid fa-book mr-[4px]"></i>
+        //                 <p class="mr-[6px] font-bold">Course: </p>
+        //                 <p id="studentname">${data.course}</p>
+        //             </div>
+
+        //             <div class="name flex items-center">
+        //                 <i class="fa-solid fa-calendar mr-[4px]"></i>
+        //                 <p class="mr-[6px] font-bold">Year: </p>
+        //                 <p id="studentname">${data.courseLevel}</p>
+        //             </div>
+
+        //             <div class="name flex items-center">
+        //                 <i class="fa-solid fa-at mr-[4px]"></i>
+        //                 <p class="mr-[6px] font-bold">Email: </p>
+        //                 <p id="studentname">${data.email}</p>
+        //             </div>
+
+        //             <div class="name flex items-center">
+        //                 <i class="fa-solid fa-address-book mr-[4px]"></i>
+        //                 <p class="mr-[6px] font-bold">Address: </p>
+        //                 <p id="studentname">${data.address}</p>
+        //             </div>
+
+        //             <div class="name flex items-center">
+        //                 <i class="fa-solid fa-clock mr-[4px]"></i>
+        //                 <p class="mr-[6px] font-bold">Session: </p>
+        //                 <p id="studentname">24</p>
+        //             </div>
+        //         `;
+        // });
+
+
+        fetch('/api/studentinfo')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error fetching student info:', data.error);
+                    return;
+                }
+                const container = document.getElementById('student-infos');
+                container.innerHTML = `
+                <div class="name flex items-center">
+                    <i class="fa-solid fa-user mr-[4px]"></i>
+                    <p class="mr-[6px] font-bold">Name: </p>
+                    <p>${data.name}</p>
+                </div>
+                <div class="name flex items-center">
+                    <i class="fa-solid fa-at mr-[4px]"></i>
+                    <p class="mr-[6px] font-bold">Email: </p>
+                    <p>${data.email}</p>
+                </div>
+                <div class="name flex items-center">
+                    <i class="fa-solid fa-book mr-[4px]"></i>
+                    <p class="mr-[6px] font-bold">Course: </p>
+                    <p>${data.course}</p>
+                </div>
+                <div class="name flex items-center">
+                    <i class="fa-solid fa-calendar mr-[4px]"></i>
+                    <p class="mr-[6px] font-bold">Year: </p>
+                    <p>${data.courseLevel}</p>
+                </div>
+                <div class="name flex items-center">
+                    <i class="fa-solid fa-address-book mr-[4px]"></i>
+                    <p class="mr-[6px] font-bold">Address: </p>
+                    <p>${data.address}</p>
+                </div>
+                <div class="name flex items-center">
+                    <i class="fa-solid fa-clock mr-[4px]"></i>
+                    <p class="mr-[6px] font-bold">Session: </p>
+                    <p>24</p>
+                </div>
+            `;
+            })
+            .catch(err => console.error('Error fetching student info:', err));
+
+        // Logout function
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirectUrl;
+                    }
+                })
+                .catch(err => console.error('Logout error:', err));
+        }
+
+    </script>
+</body>
+
+</html>

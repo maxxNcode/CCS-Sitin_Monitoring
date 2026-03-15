@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const { error } = require('console');
 
 const app = express();
 const PORT = 3000;
@@ -32,6 +33,7 @@ function initializeDatabase() {
             courseLevel TEXT,
             course TEXT,
             address TEXT,
+            sessionLeft INTEGER,
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `, (err) => {
@@ -42,6 +44,26 @@ function initializeDatabase() {
         }
     });
 }
+
+// let createTableAnnouncements = db.run(`
+//         CREATE TABLE IF NOT EXISTS Annoucements (
+//             id INTEGER PRIMARY KEY AUTOINCREMENT,
+//             title TEXT NOT NULL,
+//             description TEXT NULL
+//         )
+//     `);
+
+function createTableAnnouncements() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS Annoucements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )       
+    `)
+}
+
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -64,7 +86,11 @@ function checkAuth(req, res, next) {
     if (req.session.userId) {
         next();
     } else {
-        res.redirect('/login.html');
+        if (req.path.startsWith('/api/')) {
+            res.status(401).json({ error: 'Unauthorized. Please log in.' });
+        } else {
+            res.redirect('/login.html');
+        }
     }
 }
 
@@ -102,10 +128,55 @@ app.post('/login', (req, res) => {
             req.session.firstName = user.firstName;
             req.session.lastName = user.lastName;
 
-            res.json({ success: true, message: 'Logged in successfully', redirectUrl: '/main.html' });
+            res.json({ success: true, message: 'Logged in successfully', redirectUrl: '/homepage.html' });
         });
     });
 });
+
+
+app.get('/api/announcements', (req, res) => {
+    db.all('SELECT title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error' });
+        }
+        res.json(rows);
+    });
+});
+
+
+// STUDENT INFO API ROUTE
+// app.get('/api/studentinfo', (req, res) => {
+//     db.all(`
+//             SELECT firstName || ' ' || lastName as name, course, courseLevel, email, address
+//             FROM users
+//     `, [], (err, rows) => {
+//         if (err) {
+//             return res.status(500).json({ error: 'Error'});
+//         }
+//         res.json(rows);
+//     });
+// });
+
+
+// STUDENT INFO API ROUTE - Fetch current user only
+app.get('/api/studentinfo', checkAuth, (req, res) => {
+    const userId = req.session.userId;
+    db.get(`
+        SELECT firstName || ' ' || lastName AS name, course, courseLevel, email, address
+        FROM users
+        WHERE id = ?
+    `, [userId], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(row);
+    });
+});
+
+
 
 // Register route
 app.post('/register', (req, res) => {
@@ -172,6 +243,41 @@ app.get('/login.html', (req, res) => {
 app.get('/register.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'register.html'));
 });
+
+// app.get('/homepage.html', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'homepage.html'));
+// })
+
+app.get('/homepage.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'homepage.html'));
+});
+
+// Route to fetch announcements in teh database
+// app.get('/api/announcements', (req, res) => {
+//     db.all(`
+//         SELECT id, title, description, created_at
+//         FROM Announcements
+//         ORDER BY created_at DESC
+//     `, [], (err, rows) => {
+//         if (err) {
+//             return res.status(500).json({ error: 'Failed to fetch announcements'});
+//         }
+//     })
+// })
+
+
+
+
+
+createTableAnnouncements();
+
+// Seed dummy announcement if empty
+db.get('SELECT COUNT(*) as count FROM Annoucements', (err, row) => {
+    if (!err && row.count === 0) {
+        db.run('INSERT INTO Annoucements (title, description) VALUES (?, ?)', ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
+    }
+});
+
 
 // Start server
 app.listen(PORT, () => {
