@@ -43,7 +43,8 @@
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex flex-none items-center gap-1">
                     <a href="homepage.html" class="btn btn-ghost btn-sm">Home</a>
-                    <a href="reservation.html" class="btn btn-ghost btn-sm">Reservation</a>
+                    <a href="#" class="btn btn-ghost btn-sm"><i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History</a>
+                    <a href="#" class="btn btn-ghost btn-sm"><i class="fa-solid fa-user-pen mr-2 opacity-50"></i>Edit Profile</a>
 
                     <div class="dropdown dropdown-end ml-4">
                         <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
@@ -57,14 +58,37 @@
                             <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
                             <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
                             <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                            <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                            <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                            <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                            <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                            <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                            <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                            <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                            <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
                             <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
                             <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                            <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                            <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                            <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                            <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                            <li><button class="theme-controller" data-set-theme="black">Black</button></li>
                             <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
                             <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                            <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                            <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
                             <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                            <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                            <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
                             <li><button class="theme-controller" data-set-theme="night">Night</button></li>
                             <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
                             <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                            <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                            <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                            <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                            <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button>
+                            </li>
+                            <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
                             <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
                         </ul>
                     </div>
@@ -166,8 +190,8 @@
                                 <div id="announcements"
                                     class="space-y-6 max-h-[550px] overflow-y-auto pr-4 custom-scrollbar py-2">
                                     <!-- Populated by JS -->
-                                    <div class="flex gap-4 p-4 rounded-3xl bg-base-200/30 animate-pulse">
-                                        <div class="w-12 h-12 rounded-2xl bg-base-300"></div>
+                                    <div class="flex gap-4 p-4 rounded-box bg-base-200/30 animate-pulse">
+                                        <div class="w-12 h-12 rounded-btn bg-base-300"></div>
                                         <div class="flex-1 space-y-2">
                                             <div class="h-4 bg-base-300 rounded w-1/4"></div>
                                             <div class="h-10 bg-base-300 rounded w-full"></div>
@@ -249,7 +273,7 @@
 
                                 <div
                                     class="mt-8 text-center opacity-40 uppercase text-[10px] font-black tracking-[4px]">
-                                    University of Cebu • CICS
+                                    University of Cebu • CCS
                                 </div>
                             </div>
                         </div>
@@ -269,7 +293,6 @@
                     <span class="text-xl font-black">CCS SIT-IN</span>
                 </li>
                 <li><a href="homepage.html" class="active"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
-                <li><a href="reservation.html"><i class="fa-solid fa-calendar-check mr-2"></i>Reservation</a></li>
                 <li><a><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
                 <li><a><i class="fa-solid fa-user-pen mr-2"></i>Edit Profile</a></li>
 
@@ -313,7 +336,7 @@
                     const div = document.createElement('div');
                     div.className = 'relative group';
                     div.innerHTML = `
-                        <div class="p-5 rounded-3xl bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                        <div class="p-5 rounded-box bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
                             <!-- Header Area -->
                             <div class="flex justify-between items-center mb-3">
                                 <span class="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 opacity-70">
@@ -325,15 +348,10 @@
                             
                             <!-- Content Area -->
                             <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
-                            <div class="bg-base-100/50 rounded-2xl p-4 border border-base-content/5 group-hover:border-primary/10 transition-colors">
+                            <div class="bg-base-100/50 rounded-btn p-4 border border-base-content/5 group-hover:border-primary/10 transition-colors">
                                 <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
                             </div>
                             
-                            <div class="flex justify-end mt-4">
-                                <button class="text-[10px] font-black uppercase tracking-widest text-primary/50 group-hover:text-primary transition-colors flex items-center gap-2">
-                                    Read Full Update <i class="fa-solid fa-arrow-right-long text-[9px]"></i>
-                                </button>
-                            </div>
                         </div>
                     `;
                     container.appendChild(div);

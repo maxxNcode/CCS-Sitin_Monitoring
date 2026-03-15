@@ -1,177 +1,262 @@
 <!DOCTYPE html>
-<html data-theme="fantasy">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Login - CCS Sit-In Monitoring System</title>
-        <link href="src/output.css" rel="stylesheet" />
-        <link
-            href="https://cdn.jsdelivr.net/npm/daisyui@5"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    </head>
-    <body>
-        <!-- Drawer Navigation Component -->
-        <div class="drawer">
-            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-            <div class="drawer-content flex flex-col">
-                <!-- Mobile navbar header -->
-                <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm md:hidden">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                                <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
-                            </div>
-                            <span class="text-primary font-bold text-lg">CCS</span>
+<html data-theme="forest">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - CCS Sit-In Monitoring System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Fix browser autofill colors to match theme */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--color-base-content);
+            -webkit-box-shadow: 0 0 0px 1000px oklch(var(--b2)) inset;
+            transition: background-color 5000s ease-in-out 0s;
+            caret-color: var(--color-base-content);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-base-200 flex flex-col selection:bg-primary selection:text-primary-content">
+    <div class="drawer">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex flex-col min-h-screen">
+            <!-- Navbar -->
+            <div class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
+                <div class="flex-none md:hidden">
+                    <label for="my-drawer" class="btn btn-ghost btn-square text-base-content">
+                        <i class="fa-solid fa-bars-staggered text-xl"></i>
+                    </label>
+                </div>
+                
+                <div class="flex-1 gap-3 flex items-center">
+                    <div class="avatar text-base-content">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                         </div>
                     </div>
-                    <div class="flex-none">
-                        <label for="my-drawer" class="btn btn-ghost btn-circle drawer-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                            </svg>
-                        </label>
-                    </div>
+                    <a href="index.html" class="text-xl font-black tracking-tight text-base-content"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
                 </div>
 
-                <!-- Desktop navbar -->
-                <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm hidden md:flex fixed z-[100] w-full px-8">
-                    <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
-                        </div>
-                        <a href="index.html" class="btn btn-ghost text-xl font-bold">
-                            <span class="text-primary">CCS</span> - Sit-In Monitoring System
-                        </a>
-                    </div>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex flex-none items-center gap-2">
+                    <a href="index.html" class="btn btn-ghost btn-sm text-base-content">Home</a>
+                    <a href="register.html" class="btn btn-primary btn-sm px-6">Register</a>
+                    
+                    <div class="divider divider-horizontal mx-1"></div>
 
-                    <div class="flex items-center gap-2 ml-auto">
-                        <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
-                        <a href="#community" class="btn btn-ghost btn-sm">Community</a>
-                        <a href="#about" class="btn btn-ghost btn-sm">About</a>
-                        <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
-                        <a href="register.html" class="btn btn-primary btn-sm">Register</a>
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2 text-base-content">
+                            <i class="fa-solid fa-palette opacity-50"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Theme</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                            <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                            <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                            <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                            <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                            <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                            <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                            <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                            <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                            <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                            <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                            <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                            <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                            <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                            <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                            <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                            <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                            <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                            <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                            <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                            <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                            <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                            <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                            <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                            <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                            <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                            <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                            <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                            <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                            <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                            <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                            <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                            <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                            <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                            <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                        </ul>
                     </div>
                 </div>
+            </div>
 
-                <!-- Page Content -->
-                <div class="md:pt-16">
-                    <!-- Login Form Section -->
-                    <div class="min-h-screen flex items-center justify-center pt-20 md:pt-0 pb-12 px-4 md:px-8">
-            <div class="w-full max-w-md">
-                <!-- Form Card -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body p-8">
-                        <!-- Header -->
-                        <div class="text-center mb-8">
-                            <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
-                            <p class="text-base-content/70">Sign in to your account</p>
+            <!-- Login Content -->
+            <main class="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
+                <!-- Background Accents -->
+                <div class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 blur-[100px] rounded-full"></div>
+                <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/5 blur-[100px] rounded-full"></div>
+
+                <div class="w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-700">
+                    <div class="card bg-base-100 shadow-2xl border border-base-content/5 overflow-hidden rounded-[2.5rem]">
+                        <!-- Hero Header inside Card -->
+                        <div class="h-32 bg-primary relative flex items-center justify-center overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary-focus mix-blend-multiply"></div>
+                            <div class="absolute -right-10 -bottom-10 opacity-10 rotate-12">
+                                <i class="fa-solid fa-shield-halved text-9xl"></i>
+                            </div>
+                            <div class="relative z-10 text-center">
+                                <div class="avatar mb-2">
+                                    <div class="w-16 h-16 rounded-2xl bg-base-100/20 backdrop-blur-md flex items-center justify-center p-2 border border-base-100/30">
+                                        <img src="assets/ccslogo.png" alt="CCS Logo" class="object-contain brightness-0 invert" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Login Form -->
-                        <form class="space-y-4" id="loginForm">
-                            <!-- ID Number -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-medium">ID Number</span>
-                                </label>
-                                <input type="text" id="idNumber" placeholder="Enter your ID Number" class="input input-bordered w-full" required />
+                        <div class="card-body p-8 pt-6">
+                            <div class="text-center mb-8">
+                                <h1 class="text-3xl font-black text-base-content italic uppercase tracking-tighter">Student <span class="text-primary not-italic">Login</span></h1>
+                                <p class="text-sm opacity-50 font-bold uppercase tracking-widest mt-1">Sit-In Monitoring System</p>
                             </div>
 
-                            <!-- Password -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-medium">Password</span>
-                                </label>
-                                <input type="password" id="password" placeholder="Enter your password" class="input input-bordered w-full" required />
-                            </div>
+                            <form id="loginForm" class="space-y-5">
+                                <div class="form-control">
+                                    <label class="label pt-0">
+                                        <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">ID Number</span>
+                                    </label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
+                                            <i class="fa-solid fa-id-card"></i>
+                                        </div>
+                                        <input type="text" id="idNumber" placeholder="Enter your ID #" class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                    </div>
+                                </div>
 
-                            <!-- Error Message -->
-                            <div id="errorMessage" class="hidden alert alert-error">
-                                <span id="errorText"></span>
-                            </div>
+                                <div class="form-control">
+                                    <div class="flex justify-between items-end mb-1">
+                                        <label class="label p-0">
+                                            <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Password</span>
+                                        </label>
+                                        <a href="#" class="text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors">Forgot?</a>
+                                    </div>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </div>
+                                        <input type="password" id="password" placeholder="••••••••" class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                    </div>
+                                </div>
 
-                            <!-- Forgot Password -->
-                            <div class="text-right">
-                                <a href="#" class="text-sm text-primary hover:underline">Forgot Password?</a>
-                            </div>
+                                <!-- Error Message -->
+                                <div id="errorMessage" class="hidden animate-in fade-in slide-in-from-top duration-300">
+                                    <div class="alert alert-error rounded-2xl py-3 border-none bg-error/10 text-error flex items-center gap-3">
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                        <span id="errorText" class="text-xs font-bold leading-tight"></span>
+                                    </div>
+                                </div>
 
-                            <!-- Buttons -->
-                            <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                                <a href="index.html" class="btn btn-outline">Cancel</a>
-                                <button type="submit" class="btn btn-primary">Login</button>
-                            </div>
-                        </form>
+                                <div class="flex flex-col gap-3 pt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase">
+                                        Sign In <i class="fa-solid fa-arrow-right-to-bracket ml-2"></i>
+                                    </button>
+                                    <a href="index.html" class="btn btn-ghost btn-sm rounded-xl font-bold opacity-50 hover:opacity-100">Back to Home</a>
+                                </div>
+                            </form>
 
-                        <!-- Register Link -->
-                        <div class="text-center mt-6">
-                            <p class="text-base-content/70 text-sm md:text-base">
-                                Don't have an account?
-                                <a href="register.html" class="text-primary font-medium hover:underline">Register here</a>
+                            <div class="divider opacity-5 text-[10px] font-black uppercase tracking-[4px] my-8">Or join us</div>
+
+                            <p class="text-center text-xs font-bold opacity-50">
+                                New here? 
+                                <a href="register.html" class="text-primary hover:underline decoration-2 underline-offset-4">Create an account</a>
                             </p>
                         </div>
                     </div>
+                    
+                    <p class="text-center mt-8 text-[10px] font-black uppercase tracking-[4px] opacity-20">University of Cebu • CICS</p>
                 </div>
-            </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mobile drawer menu -->
-            <div class="drawer-side">
-                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-                <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content space-y-2">
-                    <li class="mb-4">
-                        <span class="text-primary font-bold text-lg">CCS - Sit-In Monitoring</span>
-                    </li>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#community">Community</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="login.html" class="text-primary font-bold">Login</a></li>
-                    <li><a href="register.html" class="text-primary font-bold">Register</a></li>
-                </ul>
-            </div>
+            </main>
         </div>
 
-        <script>
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
+        <!-- Sidebar (Drawer) -->
+        <div class="drawer-side z-[200]">
+            <label for="my-drawer" class="drawer-overlay"></label>
+            <ul class="menu p-6 w-80 min-h-full bg-base-100 text-base-content space-y-4">
+                <li class="mb-4">
+                    <div class="flex items-center gap-3 px-0 bg-transparent hover:bg-transparent">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center p-2 border border-primary/20">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="object-contain" />
+                        </div>
+                        <span class="font-black text-xl tracking-tighter italic">CCS SIT-IN</span>
+                    </div>
+                </li>
+                <li><a href="index.html" class="rounded-xl font-bold p-4">Home</a></li>
+                <li><a href="login.html" class="active rounded-xl font-bold p-4 text-primary bg-primary/10">Login</a></li>
+                <li><a href="register.html" class="rounded-xl font-bold p-4">Register</a></li>
+            </ul>
+        </div>
+    </div>
 
-                const idNumber = document.getElementById('idNumber').value;
-                const password = document.getElementById('password').value;
-                const errorDiv = document.getElementById('errorMessage');
-                const errorText = document.getElementById('errorText');
-
-                try {
-                    const response = await fetch('/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ idNumber, password })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        errorText.textContent = data.error || 'Login failed';
-                        errorDiv.classList.remove('hidden');
-                    }
-                } catch (err) {
-                    errorText.textContent = 'An error occurred. Please try again.';
-                    errorDiv.classList.remove('hidden');
-                    console.error('Login error:', err);
-                }
+    <script>
+        // Initial Theme Setup
+        const currentTheme = localStorage.getItem('theme') || 'forest';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        // Theme Switcher Logic
+        document.querySelectorAll('.theme-controller').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.getAttribute('data-set-theme');
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
             });
-        </script>
-    </body>
+        });
+
+        // Login Submission Logic
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Authenticating...';
+
+            const idNumber = document.getElementById('idNumber').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idNumber, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    errorText.textContent = data.error || 'Identity verification failed';
+                    errorDiv.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            } catch (err) {
+                errorText.textContent = 'Connection error. Please check your network.';
+                errorDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        });
+    </script>
+</body>
 </html>

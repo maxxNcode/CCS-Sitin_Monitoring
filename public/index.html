@@ -1,125 +1,218 @@
 <!DOCTYPE html>
-<html data-theme="fantasy">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CCS - Sit-In Monitoring System</title>
-        <link href="src/output.css" rel="stylesheet" />
-        <link
-            href="https://cdn.jsdelivr.net/npm/daisyui@5"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    </head>
-    <body>
-        <!-- Drawer Navigation Component -->
-        <div class="drawer">
-            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-            <div class="drawer-content flex flex-col">
-                <!-- Mobile navbar header -->
-                <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm md:hidden">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                                <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
-                            </div>
-                            <span class="text-primary font-bold text-lg">CCS</span>
-                        </div>
-                    </div>
-                    <div class="flex-none">
-                        <label for="my-drawer" class="btn btn-ghost btn-circle drawer-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                            </svg>
-                        </label>
-                    </div>
+<html data-theme="forest">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCS - Sit-In Monitoring System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: oklch(var(--p) / 0.2);
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-base-200 selection:bg-primary selection:text-primary-content">
+    <div class="drawer">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex flex-col">
+            <!-- Navbar -->
+            <div
+                class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
+                <div class="flex-none md:hidden">
+                    <label for="my-drawer" class="btn btn-ghost btn-square text-base-content">
+                        <i class="fa-solid fa-bars-staggered text-xl"></i>
+                    </label>
                 </div>
 
-                <!-- Desktop navbar -->
-                <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm hidden md:flex fixed z-[100] w-full px-8">
-                    <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                <div class="flex-1 gap-3 flex items-center">
+                    <div class="avatar text-base-content">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                         </div>
-                        <a class="btn btn-ghost text-xl font-bold">
-                            <span class="text-primary">CCS</span> - Sit-In Monitoring System
-                        </a>
                     </div>
-
-                    <div class="flex items-center gap-2 ml-auto">
-                        <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
-                        <a href="#community" class="btn btn-ghost btn-sm">Community</a>
-                        <a href="#about" class="btn btn-ghost btn-sm">About</a>
-                        <a href="login.html" class="btn btn-ghost btn-sm">Login</a>
-                        <a href="register.html" class="btn btn-primary btn-sm">Register</a>
-                    </div>
+                    <a class="text-xl font-black tracking-tight text-base-content"><span class="text-primary">CCS</span>
+                        SIT-IN MONITORING</a>
                 </div>
 
-                <!-- Page Content -->
-                <div class="md:pt-16">
-                    <!-- Hero Section -->
-                    <div class="min-h-screen flex items-center justify-center pt-16 md:pt-0 px-4 md:px-8">
-                        <div class="max-w-7xl w-full flex flex-col lg:flex-row items-center justify-between gap-12">
-                            <!-- Left: Text Content -->
-                            <div class="flex-1 flex flex-col items-start gap-6">
-                                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                                    Monitor. Manage. Optimize
-                                    <span class="text-primary">Sit-in Sessions.</span>
-                                </h1>
-                                <p class="text-base md:text-lg text-base-content/70 max-w-xl">
-                                    A centralized system for tracking sit-in activities, managing student access, and maintaining real-time records for the College of Computer Studies.
-                                </p>
-                                <div class="flex flex-col sm:flex-row gap-4 mt-4 w-full sm:w-auto">
-                                    <a href="register.html" class="btn btn-primary btn-lg">Get Started</a>
-                                    <a href="#about" class="btn btn-outline btn-lg">About</a>
-                                </div>
-                            </div>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex flex-none items-center gap-2">
+                    <a href="login.html" class="btn btn-ghost btn-sm text-base-content">Login</a>
+                    <a href="register.html" class="btn btn-primary btn-sm px-6">Register</a>
 
-                            <!-- Right: Illustration -->
-                            <div class="flex-1 flex items-center justify-center w-full">
-                                <div class="relative w-full max-w-lg">
-                                    <!-- Background decoration -->
-                                    <div class="absolute inset-0 bg-primary/10 rounded-3xl transform rotate-3"></div>
-                                    <div class="absolute inset-0 bg-primary/5 rounded-3xl transform -rotate-3"></div>
+                    <div class="divider divider-horizontal mx-1"></div>
 
-                                    <!-- Main illustration card -->
-                                    <div class="relative bg-base-100 rounded-3xl shadow-xl p-4 md:p-8 border border-base-300">
-                                        <img src="assets/hero-image.svg" alt="Hero Image" class="w-full h-full object-cover rounded-3xl">
-                                        <!-- Floating elements -->
-                                        <div class="absolute -top-4 -right-4 bg-primary text-primary-content px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-semibold shadow-lg">
-                                            Real-time Tracking
-                                        </div>
-                                        <div class="absolute -bottom-4 -left-4 bg-primary text-primary-content px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-semibold shadow-lg">
-                                            Easy Management
-                                        </div>
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2 text-base-content">
+                            <i class="fa-solid fa-palette opacity-50"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Theme</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                        </div>
+                        <ul tabindex="0"
+                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                            <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                            <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                            <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                            <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                            <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                            <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                            <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                            <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                            <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                            <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                            <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                            <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                            <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                            <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                            <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                            <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                            <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                            <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                            <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                            <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                            <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                            <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                            <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                            <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                            <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                            <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                            <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                            <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                            <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                            <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                            <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                            <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                            <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                            <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <main
+                class="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] px-4 md:px-8 relative overflow-hidden">
+                <!-- Background Accents -->
+                <div class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/10 blur-[120px] rounded-full"></div>
+                <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full"></div>
+
+                <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10 py-12">
+                    <!-- Text Content -->
+                    <div
+                        class="lg:col-span-7 space-y-8 text-center lg:text-left animate-in slide-in-from-left duration-1000">
+
+                        <h1 class="text-5xl md:text-7xl font-black leading-tight text-base-content italic uppercase">
+                            Empower your <br />
+                            <span class="text-primary not-italic">Sit-in Journey</span>
+                        </h1>
+
+                        <p class="text-lg md:text-xl text-base-content/60 max-w-2xl font-medium leading-relaxed">
+                            A centralized platform for tracking sit-in activities, managing access, and maintaining
+                            real-time records at the <span
+                                class="text-base-content font-bold underline decoration-primary decoration-4">College of
+                                Computer Studies</span>.
+                        </p>
+
+                        <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
+                            <a href="register.html"
+                                class="btn btn-primary btn-lg px-10 rounded-2xl shadow-xl shadow-primary/30">
+                                Get Started <i class="fa-solid fa-arrow-right-long ml-2"></i>
+                            </a>
+                            <a href="login.html"
+                                class="btn btn-ghost btn-lg border border-base-content/10 rounded-2xl hover:bg-base-content hover:text-base-100 transition-all duration-500">
+                                Student Login
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <!-- Visual Side -->
+                    <div class="lg:col-span-5 relative animate-in zoom-in duration-1000 delay-300">
+                        <div class="relative w-full aspect-square max-w-lg mx-auto">
+
+                            <!-- Main Visual Container -->
+                            <div
+                                class="w-full h-full rounded-[4rem] bg-gradient-to-br from-primary/20 to-secondary/20 p-4 border-2 border-base-content/5 relative overflow-hidden group">
+                                <div
+                                    class="w-full h-full rounded-[3rem] bg-base-100 shadow-inner overflow-hidden relative">
+                                    <img src="assets/student/student-image.png" alt="Admin Dashboard Preview"
+                                        class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-1000" />
+                                    <!-- Overlay Decor -->
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-base-100 via-transparent to-transparent">
+                                    </div>
+                                    <div class="absolute bottom-10 left-10 right-10">
+                                        <div class="h-2 w-2/3 bg-primary/20 rounded-full mb-2"></div>
+                                        <div class="h-2 w-1/2 bg-primary/10 rounded-full"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Mobile drawer menu -->
-            <div class="drawer-side">
-                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-                <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content space-y-2">
-                    <li class="mb-4">
-                        <span class="text-primary font-bold text-lg">CCS - Sit-In Monitoring</span>
-                    </li>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#community">Community</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="login.html" class="text-primary font-bold">Login</a></li>
-                    <li><a href="register.html" class="text-primary font-bold">Register</a></li>
-                </ul>
-            </div>
+            </main>
         </div>
-    </body>
+
+        <!-- Sidebar (Drawer) -->
+        <div class="drawer-side z-[200]">
+            <label for="my-drawer" class="drawer-overlay"></label>
+            <ul class="menu p-6 w-80 min-h-full bg-base-100 text-base-content space-y-4">
+                <li class="mb-4">
+                    <div class="flex items-center gap-3 px-0 bg-transparent hover:bg-transparent">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center p-2 border border-primary/20">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="object-contain" />
+                        </div>
+                        <span class="font-black text-xl tracking-tighter italic">CCS SIT-IN</span>
+                    </div>
+                </li>
+                <li><a href="index.html" class="active rounded-xl font-bold p-4">Home</a></li>
+                <li><a href="login.html" class="rounded-xl font-bold p-4">Login</a></li>
+                <li><a href="register.html" class="rounded-xl font-bold p-4 text-primary bg-primary/10">Register</a>
+                </li>
+
+                <li class="mt-auto opacity-30 px-4">
+                    <p class="text-[10px] font-black uppercase tracking-[4px] text-center">University of Cebu • CICS</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Initial Theme Setup
+        const currentTheme = localStorage.getItem('theme') || 'forest';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+        // Theme Switcher Logic
+        document.querySelectorAll('.theme-controller').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.getAttribute('data-set-theme');
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            });
+        });
+    </script>
+</body>
+
 </html>
