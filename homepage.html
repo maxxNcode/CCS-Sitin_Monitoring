@@ -1,75 +1,26 @@
 <!DOCTYPE html>
-<html data-theme="silk">
-<!-- themes from daisy UI
-    light
-dark
-cupcake
-bumblebee
-emerald
-corporate
-synthwave
-retro
-cyberpunk
-valentine
-halloween
-garden
-forest
-aqua
-lofi
-pastel
-fantasy
-wireframe
-black
-luxury
-dracula
-cmyk
-autumn
-business
-acid
-lemonade
-night
-coffee
-winter
-dim
-nord
-sunset
-caramellatte
-abyss
-silk
--->
+<html data-theme="forest">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CCS - Sit-In Monitoring System</title>
-    <link href="src/output.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body>
-    <!-- Responsive Navbar Component -->
-    <!-- This navbar uses DaisyUI drawer for mobile menu -->
-
+<body class="bg-base-200 min-h-screen">
     <div class="drawer">
-        <input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content flex flex-col">
-            <!-- Mobile navbar header (visible only on mobile) -->
-            <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm md:hidden">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
-                        </div>
-                        <span class="text-primary font-bold text-lg">CCS</span>
-                    </div>
-                </div>
-                <div class="flex-none">
-                    <label for="my-drawer-3" class="btn btn-ghost btn-circle drawer-button">
+            <!-- Navbar -->
+            <div
+                class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
+                <div class="flex-none md:hidden">
+                    <label for="my-drawer" class="btn btn-ghost btn-square">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             class="inline-block w-6 h-6 stroke-current">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -77,314 +28,352 @@ silk
                         </svg>
                     </label>
                 </div>
-            </div>
 
-            <!-- Desktop navbar (visible only on desktop) -->
-            <div class="navbar bg-base-100/40 backdrop-blur-md h-16 shadow-sm hidden md:flex fixed z-[100] w-full px-8">
-                <!-- Left: Logo + Name -->
-                <div class="flex-1 flex items-center gap-2">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                        <img src="assets/ccslogo.png" alt="CCS Logo" class="w-10 h-10 object-contain">
+                <div class="flex-1 gap-3 flex items-center">
+                    <div class="avatar">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                        </div>
                     </div>
-                    <a href="index.html" class="btn btn-ghost text-xl font-bold">
-                        <span class="text-primary">CCS</span> - Sit-In Monitoring System
-                    </a>
+                    <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN
+                        MONITORING</a>
                 </div>
 
-                <!-- Right: Navigation Links (customize based on page) -->
-                <!-- PUBLIC NAV (for index.html, login.html, register.html) -->
-                <div class="flex items-center gap-2" id="public-nav">
-                    <div class="dropdown">
-                        <div tabindex="0" role="button" class="flex m-1 gap-1 btn btn-ghost btn-sm">Notifications <img
-                                src="/assets/ui/down-arrow.png" width="16px" alt=""></div>
-                        <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                            <li><a>Item 1</a></li>
-                            <li><a>Item 2</a></li>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex flex-none items-center gap-1">
+                    <a href="homepage.html" class="btn btn-ghost btn-sm">Home</a>
+                    <a href="reservation.html" class="btn btn-ghost btn-sm">Reservation</a>
+
+                    <div class="dropdown dropdown-end ml-4">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                            <i class="fa-solid fa-palette opacity-50"></i>
+                            Theme
+                            <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                        </div>
+                        <ul tabindex="0"
+                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                            <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                            <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                            <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                            <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                            <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                            <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                            <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                            <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                            <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                            <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                            <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                            <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
                         </ul>
                     </div>
 
-                    <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
-                    <a href="#community" class="btn btn-ghost btn-sm">Edit Profile</a>
-                    <a href="#about" class="btn btn-ghost btn-sm">History</a>
-                    <a href="reservation.html" class="btn btn-ghost btn-sm">Reservation</a>
-                    <a href="register.html" class="btn btn-primary btn-sm">Register</a>
-                </div>
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                            <div class="indicator">
+                                <i class="fa-solid fa-bell text-lg"></i>
+                                <span class="badge badge-xs badge-primary indicator-item"></span>
+                            </div>
+                        </div>
+                        <ul tabindex="0"
+                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2">
+                            <li
+                                class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">
+                                Notifications</li>
+                            <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                        </ul>
+                    </div>
 
-                <!-- PROTECTED NAV (for main.html) -->
-                <div class="flex items-center gap-2" id="protected-nav" style="display: none;">
-                    <a href="main.html" class="btn btn-ghost btn-sm">Home</a>
-                    <a href="#" class="btn btn-ghost btn-sm">Dashboard</a>
-                    <button onclick="logout()" class="btn btn-primary btn-sm">Logout</button>
+                    <button onclick="logout()" class="btn btn-primary btn-sm ml-4">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                    </button>
                 </div>
             </div>
 
-            <!-- Page content goes here -->
-            <!-- This section is filled by the main page content -->
-            <div id="page-content" class="md:mt-16">
-                <!-- Page content will be inserted here -->
-            </div>
+            <!-- Page Content -->
+            <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                    <!-- Left: Profile & Stats (Col 4) -->
+                    <div class="lg:col-span-4 space-y-6">
+                        <!-- Profile Card -->
+                        <div class="card bg-base-100 shadow-xl border border-base-content/5 overflow-hidden">
+                            <div class="h-24 bg-primary relative">
+                                <div class="absolute -bottom-12 left-6">
+                                    <div class="avatar online">
+                                        <div
+                                            class="w-24 rounded-2xl ring ring-base-100 ring-offset-base-100 ring-offset-2 bg-base-100 shadow-lg">
+                                            <img src="/assets/student/student-image.png" alt="Student Profile" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body pt-14 pb-6">
+                                <h2 id="student-name-header" class="card-title text-2xl font-black capitalize">---</h2>
+                                <p class="text-sm opacity-60 font-medium">College of Information & Computer Studies</p>
+
+                                <div class="divider my-2"></div>
+
+                                <div id="student-infos" class="space-y-3">
+                                    <!-- Populated by JS -->
+                                    <div class="skeleton h-8 w-full opacity-10"></div>
+                                    <div class="skeleton h-8 w-full opacity-10"></div>
+                                    <div class="skeleton h-8 w-full opacity-10"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats Card -->
+                        <div
+                            class="card bg-primary text-primary-content shadow-xl shadow-primary/20 overflow-hidden relative group">
+                            <div
+                                class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                                <i class="fa-solid fa-clock text-9xl"></i>
+                            </div>
+                            <div class="card-body relative z-10">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-[10px] uppercase font-bold tracking-widest opacity-70">Remaining
+                                            Sessions</p>
+                                        <h3 class="text-5xl font-black mt-1">24</h3>
+                                    </div>
+                                    <div class="radial-progress bg-primary-content/10"
+                                        style="--value:70; --size:3rem; --thickness: 4px;" role="progressbar">70%</div>
+                                </div>
+                                <div class="card-actions justify-end mt-4">
+                                    <a href="reservation.html"
+                                        class="btn btn-sm btn-ghost bg-primary-content/10 hover:bg-primary-content/20 border-none">Reserve
+                                        Session <i class="fa-solid fa-arrow-right ml-2 text-[10px]"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Announcements & Rules (Col 8) -->
+                    <div class="lg:col-span-8 space-y-6">
+
+                        <!-- Announcements Section -->
+                        <div class="card bg-base-100 shadow-xl border border-base-content/5">
+                            <div class="card-body">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-black flex items-center gap-3">
+                                        <i class="fa-solid fa-bullhorn text-primary animate-pulse"></i>
+                                        Announcements
+                                    </h2>
+                                </div>
+
+                                <div id="announcements"
+                                    class="space-y-6 max-h-[550px] overflow-y-auto pr-4 custom-scrollbar py-2">
+                                    <!-- Populated by JS -->
+                                    <div class="flex gap-4 p-4 rounded-3xl bg-base-200/30 animate-pulse">
+                                        <div class="w-12 h-12 rounded-2xl bg-base-300"></div>
+                                        <div class="flex-1 space-y-2">
+                                            <div class="h-4 bg-base-300 rounded w-1/4"></div>
+                                            <div class="h-10 bg-base-300 rounded w-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rules Section with Accordions -->
+                        <div class="card bg-base-100 shadow-xl border border-base-content/5">
+                            <div class="card-body">
+                                <h2
+                                    class="text-xl font-black mb-6 flex items-center gap-3 text-center w-full justify-center lg:justify-start">
+                                    <i class="fa-solid fa-gavel text-primary"></i>
+                                    Rules & Regulations
+                                </h2>
+
+                                <div class="space-y-2">
+                                    <div class="collapse collapse-plus bg-base-200/50 border border-base-content/5">
+                                        <input type="radio" name="rules-accordion" checked="checked" />
+                                        <div class="collapse-title font-bold flex items-center gap-4">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
+                                                01</div>
+                                            Camaraderie & Decorum
+                                        </div>
+                                        <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                            <p>To avoid embarrassment and maintain camaraderie with your friends and
+                                                superiors at our laboratories, please observe the following:</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="collapse collapse-plus bg-base-200/50 border border-base-content/5">
+                                        <input type="radio" name="rules-accordion" />
+                                        <div class="collapse-title font-bold flex items-center gap-4">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
+                                                02</div>
+                                            Silence & Discipline
+                                        </div>
+                                        <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                            <p>Maintain silence, proper decorum, and discipline inside the laboratory.
+                                                Mobile phones, walkmans and other personal pieces of equipment must be
+                                                switched off.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="collapse collapse-plus bg-base-200/50 border border-base-content/5">
+                                        <input type="radio" name="rules-accordion" />
+                                        <div class="collapse-title font-bold flex items-center gap-4">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
+                                                03</div>
+                                            Game Restrictions
+                                        </div>
+                                        <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                            <p>Games are not allowed inside the lab. This includes computer-related
+                                                games, card games and other games that may disturb the operation of the
+                                                lab.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="collapse collapse-plus bg-base-200/50 border border-base-content/5">
+                                        <input type="radio" name="rules-accordion" />
+                                        <div class="collapse-title font-bold flex items-center gap-4">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
+                                                04</div>
+                                            Internet Usage Policy
+                                        </div>
+                                        <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                            <p>Surfing the Internet is allowed only with the permission of the
+                                                instructor. Downloading and installing of software are strictly
+                                                prohibited.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="mt-8 text-center opacity-40 uppercase text-[10px] font-black tracking-[4px]">
+                                    University of Cebu • CICS
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
 
-        <!-- Mobile drawer menu -->
-        <div class="drawer-side">
-            <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
-            <ul class="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
-                <!-- Mobile menu header -->
-                <li class="mb-4 bold text-xl">
-                    <span class="text-primary font-bold">CCS - Sit-In Monitoring</span>
+        <!-- Sidebar (Mobile drawer) -->
+        <div class="drawer-side z-[200]">
+            <label for="my-drawer" class="drawer-overlay"></label>
+            <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <span class="text-xl font-black">CCS SIT-IN</span>
                 </li>
+                <li><a href="homepage.html" class="active"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
+                <li><a href="reservation.html"><i class="fa-solid fa-calendar-check mr-2"></i>Reservation</a></li>
+                <li><a><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
+                <li><a><i class="fa-solid fa-user-pen mr-2"></i>Edit Profile</a></li>
 
-                <!-- PUBLIC MOBILE NAV -->
-                <div id="public-mobile-nav">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#community">Community</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="login.html" class="text-primary font-bold">Login</a></li>
-                    <li><a href="register.html" class="text-primary font-bold">Register</a></li>
-                </div>
-
-                <!-- PROTECTED MOBILE NAV -->
-                <div id="protected-mobile-nav" style="display: none;">
-                    <li><a href="main.html">Home</a></li>
-                    <li><a href="#">Dashboard</a></li>
-                    <li><a href="#" onclick="logout()" class="text-error">Logout</a></li>
-                </div>
+                <li class="mt-auto">
+                    <button onclick="logout()" class="btn btn-error btn-outline mt-4">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                    </button>
+                </li>
             </ul>
         </div>
     </div>
 
-    <!-- Main Student Homepage -->
-    <main class="h-[calc(100vh-64px)] flex gap-2 mt-4 mx-4 mb-4 ">
-        <div
-            class="student-info bg-base-100 flex-1 flex justify-start flex-col items-center border border-gray-300 rounded-xl">
-            <div class="header bg-primary h-14 text-lg flex items-center justify-center rounded-xl w-full">
-                <p style="color: azure;" class="font-semibold">Student Information</p>
-            </div>
-
-            <div
-                class="student-profile flex justify-center mt-[32px] h-[200px] w-[200px] rounded-[100%] overflow-hidden">
-                <img src="/assets/student/student-image.png" alt="Student Profile">
-            </div>
-
-            <div class="separator h-[1px] w-full bg-gray-300 mt-[32px]"></div>
-
-            <div id="student-infos" class="student-infos w-full p-4 gap-4 flex flex-col">
-
-            </div>
-        </div>
-
-        <div
-            class="announcement flex-1 bg-base-100 flex-1 flex justify-start flex-col items-start border border-gray-300 rounded-xl">
-            <div class="header bg-primary min-h-14 text-lg flex items-center justify-center rounded-xl w-full">
-                <p style="color: azure;" class="font-semibold">Announcement</p>
-            </div>
-
-
-
-            <div id="announcements" class="announcement-section flex flex-col items-start w-full overflow-y-auto">
-
-            </div>
-        </div>
-
-
-
-
-
-
-
-        <div
-            class="rules flex-1 bg-base-100 flex-1 flex justify-start flex-col items-start border border-gray-300 rounded-xl">
-            <div class="header bg-primary h-14 text-lg flex items-center justify-center rounded-xl w-full">
-                <p style="color: azure;" class="font-semibold">Rules & Regulation</p>
-            </div>
-
-            <div class="contents flex justify-start items-start flex-col p-4 w-full ">
-                <p class="w-full text-center font-bold">University of Cebu</p>
-                <p class="w-full text-center font-bold">COLLEGE OF INFORMATION & COMPUTER STUDIES</p>
-                <br>
-                <p class="font-bold">LABORATORY RULES AND REGULATOIONS</p>
-                <br>
-                <p>1. To avoid embarrassment and maintain camaraderie with your friends and superiors at our
-                    laboratories, please observe the following:</p>
-                <br>
-                <p>2. Maintain silence, proper decorum, and discipline inside the laboratory. Mobile phones, walkmans
-                    and other personal pieces of equipment must be switched off.</p>
-                <br>
-                <p>3. Games are not allowed inside the lab. This includes computer-related games, card games and other
-                    games that may disturb the operation of the lab.</p>
-                <br>
-                <p>4. Surfing the Internet is allowed only with the permission of the instructor. Downloading and
-                    installing of software are strictly</p>
-
-            </div>
-        </div>
-    </main>
-
-
-    <script src="https://example.com/fontawesome/v7.0.1/js/fontawesome.js" data-auto-replace-svg="nest"></script>
-    <script src="https://example.com/fontawesome/v7.0.1/js/solid.js"></script>
-    <script src="https://example.com/fontawesome/v7.0.1/js/brands.js"></script>
-
-
-    <!-- <script>
-        fetch('/api/announcements')
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('announcements');
-                data.foreach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'announcement min-h-[128px] w-full flex flex-col gap-4 justify-start p-4';
-                    div.innerHTML = `<div class="title font-bold">CCS Admin | ${new Date(item.created_at).toLocaleDateString()}</div>
-                    <p>${item.description}</p>
-                    <div class="separator h-[1px] w-full bg-gray-300 mt-[32px]"></div>
-                `;
-
-                    container.appendChild(div);
-
-                    // Add line separator
-                    const sep = document.createElement('div');
-                    sep.className = 'separator h-[1px] w-full bg-gray-300 mt-[32px]';
-                    container.appendChild(sep);
-                });
-            });
-    </script> -->
-
     <script>
-        // Check if user is logged in on page load
+        // Check session
         window.addEventListener('DOMContentLoaded', () => {
             fetch('/check-session')
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.loggedIn) {
-                        window.location.href = '/login.html';
-                    }
-                })
-                .catch(err => {
-                    console.error('Error checking session:', err);
-                    window.location.href = '/login.html';
-                });
-        });
+                .then(r => r.json())
+                .then(d => { if (!d.loggedIn) window.location.href = '/login.html'; })
+                .catch(() => window.location.href = '/login.html');
 
+            // Initial Theme Setup
+            const currentTheme = localStorage.getItem('theme') || 'forest';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            // Theme Switcher Logic
+            document.querySelectorAll('.theme-controller').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const theme = btn.getAttribute('data-set-theme');
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
+            });
+        });
+        // Announcements (Premium Activity Feed V4)
         fetch('/api/announcements')
             .then(res => res.json())
             .then(data => {
                 const container = document.getElementById('announcements');
+                container.innerHTML = '';
                 data.forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'announcement min-h-[128px] w-full flex flex-col gap-4 justify-start p-4';
+                    div.className = 'relative group';
                     div.innerHTML = `
-                        <div class="title font-bold">${item.title} | ${new Date(item.created_at).toLocaleDateString()}</div>
-                        <p>${item.description}</p>
+                        <div class="p-5 rounded-3xl bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                            <!-- Header Area -->
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 opacity-70">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    Official Announcement
+                                </span>
+                                <time class="text-xs font-black text-primary uppercase tracking-wider">${new Date(item.created_at).toLocaleDateString()}</time>
+                            </div>
+                            
+                            <!-- Content Area -->
+                            <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
+                            <div class="bg-base-100/50 rounded-2xl p-4 border border-base-content/5 group-hover:border-primary/10 transition-colors">
+                                <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
+                            </div>
+                            
+                            <div class="flex justify-end mt-4">
+                                <button class="text-[10px] font-black uppercase tracking-widest text-primary/50 group-hover:text-primary transition-colors flex items-center gap-2">
+                                    Read Full Update <i class="fa-solid fa-arrow-right-long text-[9px]"></i>
+                                </button>
+                            </div>
+                        </div>
                     `;
                     container.appendChild(div);
-
-                    // Add line separator
-                    const sep = document.createElement('div');
-                    sep.className = 'separator h-[1px] w-full bg-gray-300 mt-[32px]';
-                    container.appendChild(sep);
                 });
             });
 
-
-        // fetch('/api/studentinfo')
-        //     .then(res => res.json())
-        //     .then(data => {
-        //         const container = document.getElementById('student-infos');
-        //         container.innerHTML = `
-        //             <div class="name flex items-center">
-        //                 <i class="fa-solid fa-user mr-[4px]"></i>
-        //                 <p class="mr-[6px] font-bold">Name: </p>
-        //                 <p id="studentname"> ${data.name} </p>
-        //             </div>
-
-        //             <div class="name flex items-center">
-        //                 <i class="fa-solid fa-book mr-[4px]"></i>
-        //                 <p class="mr-[6px] font-bold">Course: </p>
-        //                 <p id="studentname">${data.course}</p>
-        //             </div>
-
-        //             <div class="name flex items-center">
-        //                 <i class="fa-solid fa-calendar mr-[4px]"></i>
-        //                 <p class="mr-[6px] font-bold">Year: </p>
-        //                 <p id="studentname">${data.courseLevel}</p>
-        //             </div>
-
-        //             <div class="name flex items-center">
-        //                 <i class="fa-solid fa-at mr-[4px]"></i>
-        //                 <p class="mr-[6px] font-bold">Email: </p>
-        //                 <p id="studentname">${data.email}</p>
-        //             </div>
-
-        //             <div class="name flex items-center">
-        //                 <i class="fa-solid fa-address-book mr-[4px]"></i>
-        //                 <p class="mr-[6px] font-bold">Address: </p>
-        //                 <p id="studentname">${data.address}</p>
-        //             </div>
-
-        //             <div class="name flex items-center">
-        //                 <i class="fa-solid fa-clock mr-[4px]"></i>
-        //                 <p class="mr-[6px] font-bold">Session: </p>
-        //                 <p id="studentname">24</p>
-        //             </div>
-        //         `;
-        // });
-
-
+        // Student Info
         fetch('/api/studentinfo')
             .then(res => res.json())
             .then(data => {
-                if (data.error) {
-                    console.error('Error fetching student info:', data.error);
-                    return;
-                }
-                const container = document.getElementById('student-infos');
-                container.innerHTML = `
-                <div class="name flex items-center">
-                    <i class="fa-solid fa-user mr-[4px]"></i>
-                    <p class="mr-[6px] font-bold">Name: </p>
-                    <p>${data.name}</p>
-                </div>
-                <div class="name flex items-center">
-                    <i class="fa-solid fa-at mr-[4px]"></i>
-                    <p class="mr-[6px] font-bold">Email: </p>
-                    <p>${data.email}</p>
-                </div>
-                <div class="name flex items-center">
-                    <i class="fa-solid fa-book mr-[4px]"></i>
-                    <p class="mr-[6px] font-bold">Course: </p>
-                    <p>${data.course}</p>
-                </div>
-                <div class="name flex items-center">
-                    <i class="fa-solid fa-calendar mr-[4px]"></i>
-                    <p class="mr-[6px] font-bold">Year: </p>
-                    <p>${data.courseLevel}</p>
-                </div>
-                <div class="name flex items-center">
-                    <i class="fa-solid fa-address-book mr-[4px]"></i>
-                    <p class="mr-[6px] font-bold">Address: </p>
-                    <p>${data.address}</p>
-                </div>
-                <div class="name flex items-center">
-                    <i class="fa-solid fa-clock mr-[4px]"></i>
-                    <p class="mr-[6px] font-bold">Session: </p>
-                    <p>24</p>
-                </div>
-            `;
-            })
-            .catch(err => console.error('Error fetching student info:', err));
+                if (data.error) return;
 
-        // Logout function
+                document.getElementById('student-name-header').innerText = data.name;
+
+                const container = document.getElementById('student-infos');
+                const fields = [
+                    { icon: 'fa-at', label: 'Email', value: data.email },
+                    { icon: 'fa-book-open', label: 'Course', value: data.course },
+                    { icon: 'fa-graduation-cap', label: 'Year', value: data.courseLevel },
+                    { icon: 'fa-location-dot', label: 'Address', value: data.address }
+                ];
+
+                container.innerHTML = fields.map(f => `
+                    <div class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-base-200 transition-all duration-300">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid ${f.icon}"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40">${f.label}</p>
+                            <p class="text-sm font-bold truncate max-w-[180px]">${f.value}</p>
+                        </div>
+                    </div>
+                `).join('');
+            });
+
         function logout() {
             fetch('/logout', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = data.redirectUrl;
-                    }
-                })
-                .catch(err => console.error('Logout error:', err));
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.href = d.redirectUrl; });
         }
-
     </script>
 </body>
 
