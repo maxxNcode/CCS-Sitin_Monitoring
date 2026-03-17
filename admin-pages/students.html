@@ -1,0 +1,805 @@
+<!doctype html>
+<html data-theme="coffee">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CCS - Sit-In Monitoring System</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script
+            src="https://kit.fontawesome.com"
+            crossorigin="anonymous"
+        ></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+
+    <body class="bg-base-200 min-h-screen">
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Navbar -->
+                <div
+                    class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5"
+                >
+                    <div class="flex-none md:hidden">
+                        <label for="my-drawer" class="btn btn-ghost btn-square">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                class="inline-block w-6 h-6 stroke-current"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                ></path>
+                            </svg>
+                        </label>
+                    </div>
+
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20"
+                            >
+                                <img
+                                    src="../assets/ccslogo.png"
+                                    alt="CCS Logo"
+                                    class="w-full h-full object-contain"
+                                />
+                            </div>
+                        </div>
+                        <a class="text-xl font-black tracking-tight"
+                            ><span class="text-primary">CCS</span> SIT-IN
+                            MONITORING</a
+                        >
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-1">
+                        <!-- Open the modal using ID.showModal() method -->
+                        <button
+                            class="btn btn-ghost btn-sm"
+                            onclick="my_modal_1.showModal()"
+                        >
+                            <i class="fa-solid fa-search"></i>Search
+                        </button>
+                        <dialog id="my_modal_1" class="modal">
+                            <div class="modal-box">
+                                <h3 class="text-lg font-bold">Search</h3>
+                                <p class="py-4">Search for a student</p>
+
+                                <input
+                                    type="text"
+                                    placeholder="Search"
+                                    class="input input-bordered bg-base-200 w-full"
+                                />
+                                <div class="modal-action">
+                                    <button
+                                        class="btn bg-primary text-primary-content"
+                                    >
+                                        Search
+                                    </button>
+                                    <form method="dialog">
+                                        <!-- if there is a button in form, it will close the modal -->
+
+                                        <button class="btn">Exit</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </dialog>
+
+                        <!-- Open the modal using ID.showModal() method -->
+                        <button
+                            class="btn btn-ghost btn-sm"
+                            onclick="my_modal_2.showModal()"
+                        >
+                            <i class="fa-solid fa-plus"></i>Sit-in
+                        </button>
+                        <dialog id="my_modal_2" class="modal">
+                            <div class="modal-box flex flex-col gap-4">
+                                <h3 class="text-lg font-bold">Sit-in Form</h3>
+
+                                <div class="flex justify-center items-center">
+                                    <p class="flex-1">ID Number:</p>
+                                    <input
+                                        type="text"
+                                        placeholder="ID Number"
+                                        class="input input-bordered bg-base-200 w-full flex-1"
+                                    />
+                                </div>
+                                <div class="flex justify-center items-center">
+                                    <p class="flex-1">Student Name:</p>
+                                    <input
+                                        type="text"
+                                        placeholder="Student Name"
+                                        class="input input-bordered bg-base-200 w-full flex-1"
+                                    />
+                                </div>
+                                <div class="flex justify-center items-center">
+                                    <p class="flex-1">Purpose:</p>
+                                    <input
+                                        type="text"
+                                        placeholder="Purpose"
+                                        class="input input-bordered bg-base-200 w-full flex-1"
+                                    />
+                                </div>
+                                <div class="flex justify-center items-center">
+                                    <p class="flex-1">Lab:</p>
+                                    <input
+                                        type="text"
+                                        placeholder="Lab"
+                                        class="input input-bordered bg-base-200 w-full flex-1"
+                                    />
+                                </div>
+                                <div class="flex justify-center items-center">
+                                    <p class="flex-1">Remaining Sessions:</p>
+                                    <p class="flex-1">10</p>
+                                </div>
+
+                                <div class="modal-action">
+                                    <button
+                                        class="btn bg-primary text-primary-content"
+                                    >
+                                        Sit-in
+                                    </button>
+                                    <form method="dialog">
+                                        <!-- if there is a button in form, it will close the modal -->
+
+                                        <button class="btn">Exit</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </dialog>
+
+                        <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
+                        <a
+                            href="students.html"
+                            class="btn btn-ghost btn-sm bg-primary text-primary-content"
+                        >
+                            Students
+                        </a>
+
+                        <a href="/sit-in-records" class="btn btn-ghost btn-sm">
+                            Sit-in Records
+                        </a>
+                        <a href="/sit-in-reports" class="btn btn-ghost btn-sm">
+                            Sit-in Reports
+                        </a>
+                        <a
+                            href="/feedback-reports"
+                            class="btn btn-ghost btn-sm"
+                        >
+                            Feedback Reports
+                        </a>
+                        <a href="/reservations" class="btn btn-ghost btn-sm">
+                            Reservations
+                        </a>
+
+                        <div class="dropdown dropdown-end ml-4">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-ghost btn-sm gap-2"
+                            >
+                                <i class="fa-solid fa-palette opacity-50"></i>
+                                Theme
+                                <i
+                                    class="fa-solid fa-chevron-down text-[10px] opacity-50"
+                                ></i>
+                            </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto"
+                            >
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="light"
+                                    >
+                                        Light
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="dark"
+                                    >
+                                        Dark
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="cupcake"
+                                    >
+                                        Cupcake
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="bumblebee"
+                                    >
+                                        Bumblebee
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="emerald"
+                                    >
+                                        Emerald
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="corporate"
+                                    >
+                                        Corporate
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="synthwave"
+                                    >
+                                        Synthwave
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="retro"
+                                    >
+                                        Retro
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="cyberpunk"
+                                    >
+                                        Cyberpunk
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="valentine"
+                                    >
+                                        Valentine
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="halloween"
+                                    >
+                                        Halloween
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="garden"
+                                    >
+                                        Garden
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="forest"
+                                    >
+                                        Forest
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="aqua"
+                                    >
+                                        Aqua
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="lofi"
+                                    >
+                                        Lofi
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="pastel"
+                                    >
+                                        Pastel
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="fantasy"
+                                    >
+                                        Fantasy
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="wireframe"
+                                    >
+                                        Wireframe
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="black"
+                                    >
+                                        Black
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="luxury"
+                                    >
+                                        Luxury
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="dracula"
+                                    >
+                                        Dracula
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="cmyk"
+                                    >
+                                        Cmyk
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="autumn"
+                                    >
+                                        Autumn
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="business"
+                                    >
+                                        Business
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="acid"
+                                    >
+                                        Acid
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="lemonade"
+                                    >
+                                        Lemonade
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="night"
+                                    >
+                                        Night
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="coffee"
+                                    >
+                                        Coffee
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="winter"
+                                    >
+                                        Winter
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="dim"
+                                    >
+                                        Dim
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="nord"
+                                    >
+                                        Nord
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="sunset"
+                                    >
+                                        Sunset
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="caramellatte"
+                                    >
+                                        Caramellatte
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="abyss"
+                                    >
+                                        Abyss
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="silk"
+                                    >
+                                        Silk
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="dropdown dropdown-end">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-ghost btn-circle"
+                            >
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-lg"></i>
+                                    <span
+                                        class="badge badge-xs badge-primary indicator-item"
+                                    ></span>
+                                </div>
+                            </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2"
+                            >
+                                <li
+                                    class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0"
+                                >
+                                    Notifications
+                                </li>
+                                <li>
+                                    <a
+                                        class="text-sm py-3 opacity-60 italic justify-center"
+                                        >No new notifications</a
+                                    >
+                                </li>
+                            </ul>
+                        </div>
+
+                        <button
+                            onclick="logout()"
+                            class="btn btn-primary btn-sm ml-4"
+                        >
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i
+                            >Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <main
+                    class="p-4 md:p-8 max-w-7xl mx-auto w-[100vw] animate-in fade-in duration-700 flex justify-center items-center"
+                >
+                    <div class="flex flex-col w-full">
+                        <div class="flex flex-col items-center justify-center">
+                            <h1 class="text-3xl font-black">
+                                Students Information
+                            </h1>
+                            <p class="text-center">
+                                View and manage students information
+                            </p>
+                        </div>
+
+                        <div
+                            class="w-full flex justify-start items-center mt-4"
+                        >
+                            <button class="btn btn-primary btn-sm">
+                                Add Student
+                            </button>
+                            <button class="btn btn-warning btn-sm ml-2">
+                                Reset All Sessions
+                            </button>
+                        </div>
+
+                        <div class="flex justify-end items-center mt-4">
+                            <!-- add filtering and search -->
+
+                            <div class="flex gap-2">
+                                <select
+                                    class="select select-bordered bg-base-200 flex-1 w-52"
+                                >
+                                    <!-- filter by page -->
+                                    <option disabled selected>
+                                        Filter by Page
+                                    </option>
+                                    <option>All</option>
+                                    <option>Page 1</option>
+                                    <option>Page 2</option>
+                                    <option>Page 3</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    placeholder="Search"
+                                    class="input input-bordered bg-base-200 flex-3 w-52"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Student Table -->
+                        <div
+                            class="overflow-x-auto lg:overflow-x-hidden mt-6 card bg-base-100 border border-base-content/5 shadow-xl"
+                        >
+                            <table class="table table-md">
+                                <!-- head -->
+                                <thead class="bg-base-200/50">
+                                    <tr>
+                                        <th class="w-12">
+                                            <input
+                                                type="checkbox"
+                                                class="checkbox checkbox-sm"
+                                            />
+                                        </th>
+                                        <th>Student</th>
+                                        <th>ID Number</th>
+                                        <th>Year & Course</th>
+                                        <th>Remaining Sessions</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                    <!-- Dynamic rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Sidebar (Mobile drawer) -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul
+                    class="menu p-4 w-80 min-h-full bg-base-100 text-base-content"
+                >
+                    <li
+                        class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4"
+                    >
+                        <div
+                            class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"
+                        >
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <span class="text-xl font-black">CCS SIT-IN</span>
+                    </li>
+                    <li>
+                        <a href="homepage" class="active"
+                            ><i class="fa-solid fa-house mr-2"></i>Home</a
+                        >
+                    </li>
+                    <li>
+                        <a><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a>
+                    </li>
+
+                    <li class="mt-auto">
+                        <button
+                            onclick="logout()"
+                            class="btn btn-error btn-outline mt-4"
+                        >
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i
+                            >Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            // Check session
+            window.addEventListener("DOMContentLoaded", () => {
+                fetch("/check-session")
+                    .then((r) => r.json())
+                    .then((d) => {
+                        if (!d.loggedIn || d.role !== 'admin') window.location.href = "/login";
+                        else {
+                            fetchStudents();
+                            fetchProfileInfo();
+                        }
+                    })
+                    .catch(() => (window.location.href = "/login"));
+
+                // Initial Theme Setup
+                const currentTheme = localStorage.getItem("theme") || "forest";
+                document.documentElement.setAttribute("data-theme", currentTheme);
+
+                // Theme Switcher Logic
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                    });
+                });
+            });
+
+            function fetchProfileInfo() {
+                fetch("/api/studentinfo")
+                    .then((res) => res.json())
+                    .then((data) => {
+                        if (data.error) return;
+                        const headerName = document.getElementById("student-name-header");
+                        if (headerName) headerName.innerText = data.name;
+                        
+                        if (data.profilePic) {
+                            const avatars = document.querySelectorAll('.avatar img');
+                            avatars.forEach(img => {
+                                if (!img.src.includes('ccslogo')) img.src = data.profilePic;
+                            });
+                        }
+                    });
+            }
+
+            async function fetchStudents() {
+                try {
+                    const res = await fetch('/api/admin/students');
+                    const data = await res.json();
+                    if (res.ok) {
+                        const tbody = document.getElementById('studentsTableBody');
+                        tbody.innerHTML = data.map(student => `
+                            <tr class="hover:bg-base-200/30 transition-colors">
+                                <th><input type="checkbox" class="checkbox checkbox-sm" /></th>
+                                <td>
+                                    <div class="flex items-center gap-4">
+                                        <div class="avatar">
+                                            <div class="mask mask-squircle h-10 w-10">
+                                                <img src="${student.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.firstName}`}" alt="Avatar" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-sm">${student.firstName} ${student.lastName}</div>
+                                            <div class="text-[10px] opacity-50 font-black uppercase tracking-widest text-primary">Student</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="font-mono text-xs font-bold">${student.idNumber}</td>
+                                <td>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm">${student.course} - ${student.courseLevel}</span>
+                                        <span class="text-[10px] opacity-50 uppercase font-black tracking-tighter">CCS</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="flex flex-col gap-1 w-32">
+                                        <div class="flex justify-between text-[10px] font-black opacity-50">
+                                            <span>SESSIONS</span>
+                                            <span>${student.sessionLeft}/30</span>
+                                        </div>
+                                        <progress class="progress progress-primary w-full h-1.5" value="${student.sessionLeft}" max="30"></progress>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="flex justify-center gap-2">
+                                        <button class="btn btn-square btn-ghost btn-xs text-info"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button class="btn btn-square btn-ghost btn-xs text-warning"><i class="fa-solid fa-rotate-right"></i></button>
+                                        <button class="btn btn-square btn-ghost btn-xs text-error opacity-30 hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                } catch (err) {
+                    console.error('Error fetching students:', err);
+                }
+            }
+
+            async function searchStudent() {
+                const input = document.querySelector('#my_modal_1 input[type="text"]');
+                const val = input ? input.value : '';
+                if (!val) return alert('Please enter an ID Number');
+                try {
+                    const res = await fetch(`/api/admin/search-student/${val}`);
+                    const data = await res.json();
+                    if (res.ok) {
+                        document.querySelector('#my_modal_2 input[placeholder="ID Number"]').value = val;
+                        document.querySelector('#my_modal_2 input[placeholder="Student Name"]').value = data.name;
+                        const sessionDisplay = document.querySelector('#my_modal_2 p.flex-1:nth-child(2)'); // Target the remaining sessions display
+                        if (sessionDisplay) sessionDisplay.innerText = data.sessionLeft;
+
+                        document.getElementById('my_modal_1').close();
+                        document.getElementById('my_modal_2').showModal();
+                    } else {
+                        alert(data.error || 'Student not found');
+                    }
+                } catch (err) { console.error(err); alert('Search failed'); }
+            }
+
+            async function submitSitin() {
+                const modal2 = document.getElementById('my_modal_2');
+                const payload = {
+                    idNumber: modal2.querySelector('input[placeholder="ID Number"]').value,
+                    studentName: modal2.querySelector('input[placeholder="Student Name"]').value,
+                    purpose: modal2.querySelector('input[placeholder="Purpose"]').value,
+                    lab: modal2.querySelector('input[placeholder="Lab"]').value
+                };
+                if (!payload.purpose || !payload.lab) return alert('Please enter purpose and lab');
+                try {
+                    const res = await fetch('/api/admin/sit-in', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) {
+                        alert('Sit-in recorded!');
+                        modal2.close();
+                        fetchStudents();
+                    } else {
+                        const data = await res.json();
+                        alert(data.error || 'Failed');
+                    }
+                } catch (err) { alert('Error'); }
+            }
+
+            function logout() {
+                fetch("/logout", { method: "POST" })
+                    .then((r) => r.json())
+                    .then((d) => {
+                        if (d.success) window.location.href = d.redirectUrl;
+                    });
+            }
+        </script>
+    </body>
+</html>

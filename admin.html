@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html data-theme="coffee">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCS - Sit-In Monitoring System</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-base-200 min-h-screen">
+    <div class="drawer">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content flex flex-col">
+            <!-- Navbar -->
+            <div
+                class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
+                <div class="flex-none md:hidden">
+                    <label for="my-drawer" class="btn btn-ghost btn-square">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            class="inline-block w-6 h-6 stroke-current">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                </div>
+
+                <div class="flex-1 gap-3 flex items-center">
+                    <div class="avatar">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                        </div>
+                    </div>
+                    <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN
+                        MONITORING</a>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex flex-none items-center gap-1">
+
+                    <!-- Open the modal using ID.showModal() method -->
+                    <button class="btn btn-ghost btn-sm" onclick="my_modal_1.showModal()"><i
+                            class="fa-solid fa-search"></i>Search</button>
+                    <dialog id="my_modal_1" class="modal">
+                        <div class="modal-box">
+                            <h3 class="text-lg font-bold">Search</h3>
+                            <p class="py-4 text-sm opacity-60">Enter the student's ID Number to start a sit-in session.</p>
+
+                            <input type="text" id="searchIdNumber" placeholder="e.g. 21-1234-567" class="input input-bordered bg-base-200 w-full" />
+                            <div class="modal-action">
+                                <button class="btn btn-primary" onclick="searchStudent()">Search</button>
+                                <form method="dialog">
+                                    <button class="btn">Cancel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </dialog>
+
+                    <!-- Open the modal using ID.showModal() method -->
+                    <button class="btn btn-ghost btn-sm" onclick="my_modal_2.showModal()"><i
+                            class="fa-solid fa-plus"></i>Sit-in</button>
+                    <dialog id="my_modal_2" class="modal">
+                        <div class="modal-box flex flex-col gap-4">
+                            <h3 class="text-lg font-bold">Sit-in Form</h3>
+
+                            <div class="flex justify-center items-center">
+                                <p class="flex-1 font-bold text-sm">ID Number:</p>
+                                <input type="text" id="formIdNumber" placeholder="ID Number"
+                                    class="input input-bordered bg-base-200 w-full flex-1" readonly />
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <p class="flex-1 font-bold text-sm">Student Name:</p>
+                                <input type="text" id="formStudentName" placeholder="Student Name"
+                                    class="input input-bordered bg-base-200 w-full flex-1" readonly />
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <p class="flex-1 font-bold text-sm">Purpose:</p>
+                                <select id="formPurpose" class="select select-bordered bg-base-200 w-full flex-1">
+                                    <option value="" disabled selected>Select Purpose</option>
+                                    <option value="Java Programming">Java Programming</option>
+                                    <option value="Python Programming">Python Programming</option>
+                                    <option value="C++ Programming">C++ Programming</option>
+                                    <option value="Web Development">Web Development</option>
+                                    <option value="Database Systems">Database Systems</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <p class="flex-1 font-bold text-sm">Lab:</p>
+                                <select id="formLab" class="select select-bordered bg-base-200 w-full flex-1">
+                                    <option value="" disabled selected>Select Lab</option>
+                                    <option value="Lab 524">Lab 524</option>
+                                    <option value="Lab 526">Lab 526</option>
+                                    <option value="Lab 542">Lab 542</option>
+                                    <option value="Mac Lab">Mac Lab</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-center items-center">
+                                <p class="flex-1 font-bold text-sm">Remaining Sessions:</p>
+                                <p class="flex-1 font-black text-primary" id="formSessions">0</p>
+                            </div>
+
+
+                            <div class="modal-action">
+                                <button class="btn btn-primary" onclick="submitSitin()">Record Sit-in</button>
+                                <form method="dialog">
+                                    <button class="btn" id="closeSitinModal">Cancel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </dialog>
+
+                    <a href="/admin" class="btn btn-ghost btn-sm bg-primary text-primary-content">Home</a>
+                    <a href="/students" class="btn btn-ghost btn-sm">
+                        Students
+                    </a>
+
+
+
+                    <a href="/sit-in-records" class="btn btn-ghost btn-sm">
+                        Sit-in Records
+                    </a>
+                    <a href="/sit-in-reports" class="btn btn-ghost btn-sm">
+                        Sit-in Reports
+                    </a>
+                    <a href="/feedback-reports" class="btn btn-ghost btn-sm">
+                        Feedback Reports
+                    </a>
+                    <a href="/reservations" class="btn btn-ghost btn-sm">
+                        Reservations
+                    </a>
+
+
+                    <div class="dropdown dropdown-end ml-4">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                            <i class="fa-solid fa-palette opacity-50"></i>
+                            Theme
+                            <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                        </div>
+                        <ul tabindex="0"
+                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                            <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                            <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                            <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                            <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                            <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                            <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                            <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                            <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                            <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                            <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                            <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                            <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                            <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                            <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                            <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                            <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                            <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                            <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                            <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                            <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                            <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                            <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                            <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                            <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                            <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                            <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                            <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                            <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                            <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                            <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                            <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                            <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button>
+                            </li>
+                            <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                            <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                        </ul>
+                    </div>
+
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                            <div class="indicator">
+                                <i class="fa-solid fa-bell text-lg"></i>
+                                <span class="badge badge-xs badge-primary indicator-item"></span>
+                            </div>
+                        </div>
+                        <ul tabindex="0"
+                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2">
+                            <li
+                                class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">
+                                Notifications</li>
+                            <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                        </ul>
+                    </div>
+
+                    <button onclick="logout()" class="btn btn-primary btn-sm ml-4">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <main
+                class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700 flex justify-center items-center">
+                <div class="admin-container flex gap-[200px]">
+                    <!--  -->
+                    <div class=" flex gap-6">
+
+                        <!-- Statistics Section -->
+                        <div class="card bg-base-100 shadow-xl border border-base-content/5 w-[600px] h-[auto]">
+                            <div class="card-body">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-[20px] font-bold flex items-center gap-3">
+                                        <i class="fa-solid fa-chart-line text-primary"></i>
+                                        Statistics
+                                    </h2>
+                                </div>
+
+                                <div id="statistics" class="  ">
+
+                                    <div id="statistics-data"
+                                        class="stats stats-vertical w-full bg-base-200/30 border border-base-content/5 shadow-inner flex">
+                                        <!-- Registered Students -->
+                                        <div class="stat">
+                                            <div class="stat-figure text-primary">
+                                                <!-- <i class="fa-solid fa-users text-3xl"></i> -->
+                                            </div>
+                                            <div
+                                                class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">
+                                                Students Registered</div>
+                                            <div class="stat-value text-primary text-4xl">100</div>
+                                            <div class="stat-desc font-bold opacity-40"></div>
+                                        </div>
+
+                                        <!-- Active Sit-ins -->
+                                        <div class="stat border-t border-base-content/5">
+                                            <div class="stat-figure text-secondary">
+                                                <div class="indicator">
+
+                                                    <!-- <i class="fa-solid fa-clock-rotate-left text-3xl"></i> -->
+                                                </div>
+                                            </div>
+                                            <div
+                                                class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">
+                                                Currently Sit-In</div>
+                                            <div class="stat-value text-secondary text-4xl">42</div>
+                                        </div>
+
+                                        <!-- All-time Records -->
+                                        <div class="stat border-t border-base-content/5">
+                                            <div class="stat-figure text-accent">
+                                                <!-- <i class="fa-solid fa-database text-3xl"></i> -->
+                                            </div>
+                                            <div
+                                                class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">
+                                                Total Sit-In</div>
+                                            <div class="stat-value text-accent text-4xl">1,280</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="graph-view mt-6">
+                                        <div class="card bg-base-200/50 border border-base-content/5 shadow-inner">
+                                            <div class="card-body p-4">
+                                                <h3
+                                                    class="text-[10px] font-black uppercase tracking-[4px] opacity-40 mb-4 px-2">
+                                                    Weekly Activity</h3>
+                                                <div id="bar-chart" class="h-[240px]"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Announcements Section -->
+                        <div class="card bg-base-100 shadow-xl border border-base-content/5 w-[600px] min-h-[500px]">
+                            <div class="card-body">
+                                <h2
+                                    class="text-[20px] font-bold mb-6 flex items-center gap-3 text-center w-full justify-center lg:justify-start">
+                                    <i class="fa-solid fa-bullhorn text-primary"></i>
+                                    Announcements
+                                </h2>
+                                <!-- Create Announcements -->
+                                <div id="" class="space-y-6 max-h-[550px] overflow-y-auto custom-scrollbar py-2">
+
+                                    <div class="create-announcements">
+                                        <input type="text" placeholder="Title" id="announcementTitle"
+                                            class="input input-bordered w-full mb-2" />
+                                        <textarea class="textarea textarea-bordered resize-y w-full"
+                                            placeholder="Announcement..." id="announcementDescription"></textarea>
+
+
+                                        <button class="btn btn-primary mt-4" onclick="addAnnouncement()">Add
+                                            Announcement</button>
+                                    </div>
+
+                                    <div class="announcements flex flex-col gap-4" id="announcements">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </main>
+        </div>
+
+        <!-- Sidebar (Mobile drawer) -->
+        <div class="drawer-side z-[200]">
+            <label for="my-drawer" class="drawer-overlay"></label>
+            <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <span class="text-xl font-black">CCS SIT-IN</span>
+                </li>
+                <li><a href="/admin" class="active"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
+                <li><a><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
+                <li class="mt-auto">
+                    <button onclick="logout()" class="btn btn-error btn-outline mt-4">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check session
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch('/check-session')
+                .then(r => r.json())
+                .then(d => { 
+                    if (!d.loggedIn || d.role !== 'admin') window.location.href = '/login'; 
+                })
+                .catch(() => window.location.href = '/login');
+
+            // Initial Theme Setup
+            const currentTheme = localStorage.getItem('theme') || 'forest';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            // Theme Switcher Logic
+                document.querySelectorAll('.theme-controller').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const theme = btn.getAttribute('data-set-theme');
+                        document.documentElement.setAttribute('data-theme', theme);
+                        localStorage.setItem('theme', theme);
+                        // Update chart color after theme change
+                        setTimeout(updateChartColor, 100);
+                    });
+                });
+        });
+        // Announcements (Premium Activity Feed V4)
+        fetch('/api/announcements')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('announcements');
+                container.innerHTML = '';
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'relative group';
+                    div.innerHTML = `
+                        <div class="p-5 rounded-box bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                            <!-- Header Area -->
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 opacity-70">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    Official Announcement
+                                </span>
+                                <time class="text-xs font-black text-primary uppercase tracking-wider">${new Date(item.created_at).toLocaleDateString()}</time>
+                            </div>
+                            
+                            <!-- Content Area -->
+                            <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
+                            <div class="bg-base-100/50 rounded-btn p-4 border border-base-content/5 group-hover:border-primary/10 transition-colors">
+                                <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
+                            </div>
+                            
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+
+        // Student Info
+        fetch('/api/studentinfo')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) return;
+
+                document.getElementById('student-name-header').innerText = data.name;
+                if (data.profilePic) {
+                    const avatars = document.querySelectorAll('.avatar img');
+                    avatars.forEach(img => {
+                        if (!img.src.includes('ccslogo')) img.src = data.profilePic;
+                    });
+                }
+
+                const container = document.getElementById('student-infos');
+                const fields = [
+                    { icon: 'fa-at', label: 'Email', value: data.email },
+                    { icon: 'fa-book-open', label: 'Course', value: data.course },
+                    { icon: 'fa-graduation-cap', label: 'Year', value: data.courseLevel },
+                    { icon: 'fa-location-dot', label: 'Address', value: data.address }
+                ];
+
+                container.innerHTML = fields.map(f => `
+                    <div class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-base-200 transition-all duration-300">
+                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid ${f.icon}"></i>
+                        </div>
+                        <div>
+                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40">${f.label}</p>
+                            <p class="text-sm font-bold truncate max-w-[180px]">${f.value}</p>
+                        </div>
+                    </div>
+                `).join('');
+            });
+
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+        const chartConfig = {
+            series: [
+                {
+                    name: "Sales",
+                    data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+                },
+            ],
+            chart: {
+                type: "bar",
+                height: 345,
+                toolbar: {
+                    show: false,
+                },
+            },
+            title: {
+                show: "",
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            colors: [getPrimaryColor()], // Using dynamic primary color
+            plotOptions: {
+                bar: {
+                    columnWidth: "40%",
+                    borderRadius: 2,
+                },
+            },
+            xaxis: {
+                axisTicks: {
+                    show: false,
+                },
+                axisBorder: {
+                    show: false,
+                },
+                labels: {
+                    style: {
+                        colors: "#616161",
+                        fontSize: "12px",
+                        fontFamily: "inherit",
+                        fontWeight: 400,
+                    },
+                },
+                categories: [
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                ],
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: "#616161",
+                        fontSize: "12px",
+                        fontFamily: "inherit",
+                        fontWeight: 400,
+                    },
+                },
+            },
+            grid: {
+                show: true,
+                borderColor: "#dddddd",
+                strokeDashArray: 5,
+                xaxis: {
+                    lines: {
+                        show: true,
+                    },
+                },
+                padding: {
+                    top: 5,
+                    right: 20,
+                },
+            },
+            fill: {
+                opacity: 0.8,
+            },
+            tooltip: {
+                theme: "dark",
+            },
+        };
+
+        const chart = new ApexCharts(document.querySelector("#bar-chart"), chartConfig);
+
+        chart.render();
+
+        function getPrimaryColor() {
+            // Create a temporary element to get the computed primary color
+            const temp = document.createElement('div');
+            temp.style.color = 'oklch(var(--p))';
+            document.body.appendChild(temp);
+            const color = window.getComputedStyle(temp).color;
+            document.body.removeChild(temp);
+            return color;
+        }
+
+        function updateChartColor() {
+            if (chart) {
+                const primaryColor = getPrimaryColor();
+                chart.updateOptions({
+                    colors: [primaryColor],
+                    tooltip: {
+                        theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+                    }
+                });
+            }
+        }
+    </script>
+
+    <script>
+        async function addAnnouncement() {
+            const title = document.getElementById("announcementTitle").value;
+            const description = document.getElementById("announcementDescription").value;
+
+            if (!title || !description) {
+                alert("Please fill in both title and description");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title,
+                        description
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Announcement added successfully!");
+
+                    document.getElementById("announcementTitle").value = "";
+                    document.getElementById("announcementDescription").value = "";
+
+                    location.reload();
+                } else {
+                    alert(result.error || "Failed to add announcement");
+                }
+            } catch (error) {
+                console.error("Error adding announcement:", error);
+                alert("An error occurred while adding the announcement");
+            }
+        }
+
+        async function searchStudent() {
+            const idNumber = document.getElementById('searchIdNumber').value;
+            if (!idNumber) return alert('Please enter an ID Number');
+
+            try {
+                const res = await fetch(`/api/admin/search-student/${idNumber}`);
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Populate Form
+                    document.getElementById('formIdNumber').value = idNumber;
+                    document.getElementById('formStudentName').value = data.name;
+                    document.getElementById('formSessions').innerText = data.sessionLeft;
+
+                    // Swap Modals
+                    document.getElementById('my_modal_1').close();
+                    document.getElementById('my_modal_2').showModal();
+                } else {
+                    alert(data.error || 'Student not found');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Search failed');
+            }
+        }
+
+        async function submitSitin() {
+            const payload = {
+                idNumber: document.getElementById('formIdNumber').value,
+                studentName: document.getElementById('formStudentName').value,
+                purpose: document.getElementById('formPurpose').value,
+                lab: document.getElementById('formLab').value
+            };
+
+            if (!payload.purpose || !payload.lab) {
+                return alert('Please select a purpose and a lab');
+            }
+
+            try {
+                const res = await fetch('/api/admin/sit-in', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Sit-in recorded successfully!');
+                    document.getElementById('my_modal_2').close();
+                    location.reload(); // Refresh dashboard stats
+                } else {
+                    alert(data.error || 'Failed to record sit-in');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred');
+            }
+        }
+    </script>
+</body>
+
+</html>

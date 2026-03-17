@@ -1,421 +1,924 @@
-<!DOCTYPE html>
+<!doctype html>
 <html data-theme="forest">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Register - CCS Sit-In Monitoring System</title>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register - CCS Sit-In Monitoring System</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+            body {
+                font-family: "Inter", sans-serif;
+            }
 
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+            /* Fix browser autofill colors to match theme */
+            input:-webkit-autofill,
+            input:-webkit-autofill:hover,
+            input:-webkit-autofill:focus {
+                -webkit-text-fill-color: var(--color-base-content);
+                -webkit-box-shadow: 0 0 0px 1000px oklch(var(--b2)) inset;
+                transition: background-color 5000s ease-in-out 0s;
+                caret-color: var(--color-base-content);
+            }
+        </style>
+    </head>
 
-        /* Fix browser autofill colors to match theme */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus {
-            -webkit-text-fill-color: var(--color-base-content);
-            -webkit-box-shadow: 0 0 0px 1000px oklch(var(--b2)) inset;
-            transition: background-color 5000s ease-in-out 0s;
-            caret-color: var(--color-base-content);
-        }
-    </style>
-</head>
+    <body
+        class="min-h-screen bg-base-200 flex flex-col selection:bg-primary selection:text-primary-content"
+    >
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col min-h-screen">
+                <!-- Navbar -->
+                <div
+                    class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5"
+                >
+                    <div class="flex-none md:hidden">
+                        <label
+                            for="my-drawer"
+                            class="btn btn-ghost btn-square text-base-content"
+                        >
+                            <i class="fa-solid fa-bars-staggered text-xl"></i>
+                        </label>
+                    </div>
 
-<body class="min-h-screen bg-base-200 flex flex-col selection:bg-primary selection:text-primary-content">
-    <div class="drawer">
-        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content flex flex-col min-h-screen">
-            <!-- Navbar -->
-            <div
-                class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
-                <div class="flex-none md:hidden">
-                    <label for="my-drawer" class="btn btn-ghost btn-square text-base-content">
-                        <i class="fa-solid fa-bars-staggered text-xl"></i>
-                    </label>
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar text-base-content">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20"
+                            >
+                                <img
+                                    src="assets/ccslogo.png"
+                                    alt="CCS Logo"
+                                    class="w-full h-full object-contain"
+                                />
+                            </div>
+                        </div>
+                        <a
+                            href="index.html"
+                            class="text-xl font-black tracking-tight text-base-content"
+                            ><span class="text-primary">CCS</span> SIT-IN
+                            MONITORING</a
+                        >
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-2">
+                        <a
+                            href="index.html"
+                            class="btn btn-ghost btn-sm text-base-content"
+                            >Home</a
+                        >
+                        <a
+                            href="/login"
+                            class="btn btn-ghost btn-sm text-base-content"
+                            >Login</a
+                        >
+
+                        <div class="divider divider-horizontal mx-1"></div>
+
+                        <div class="dropdown dropdown-end">
+                            <div
+                                tabindex="0"
+                                role="button"
+                                class="btn btn-ghost btn-sm gap-2 text-base-content"
+                            >
+                                <i class="fa-solid fa-palette opacity-50"></i>
+                                <span
+                                    class="text-[10px] font-black uppercase tracking-widest"
+                                    >Theme</span
+                                >
+                                <i
+                                    class="fa-solid fa-chevron-down text-[10px] opacity-50"
+                                ></i>
+                            </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto"
+                            >
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="light"
+                                    >
+                                        Light
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="dark"
+                                    >
+                                        Dark
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="cupcake"
+                                    >
+                                        Cupcake
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="bumblebee"
+                                    >
+                                        Bumblebee
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="emerald"
+                                    >
+                                        Emerald
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="corporate"
+                                    >
+                                        Corporate
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="synthwave"
+                                    >
+                                        Synthwave
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="retro"
+                                    >
+                                        Retro
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="cyberpunk"
+                                    >
+                                        Cyberpunk
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="valentine"
+                                    >
+                                        Valentine
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="halloween"
+                                    >
+                                        Halloween
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="garden"
+                                    >
+                                        Garden
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="forest"
+                                    >
+                                        Forest
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="aqua"
+                                    >
+                                        Aqua
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="lofi"
+                                    >
+                                        Lofi
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="pastel"
+                                    >
+                                        Pastel
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="fantasy"
+                                    >
+                                        Fantasy
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="wireframe"
+                                    >
+                                        Wireframe
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="black"
+                                    >
+                                        Black
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="luxury"
+                                    >
+                                        Luxury
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="dracula"
+                                    >
+                                        Dracula
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="cmyk"
+                                    >
+                                        Cmyk
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="autumn"
+                                    >
+                                        Autumn
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="business"
+                                    >
+                                        Business
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="acid"
+                                    >
+                                        Acid
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="lemonade"
+                                    >
+                                        Lemonade
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="night"
+                                    >
+                                        Night
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="coffee"
+                                    >
+                                        Coffee
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="winter"
+                                    >
+                                        Winter
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="dim"
+                                    >
+                                        Dim
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="nord"
+                                    >
+                                        Nord
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="sunset"
+                                    >
+                                        Sunset
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="caramellatte"
+                                    >
+                                        Caramellatte
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="abyss"
+                                    >
+                                        Abyss
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        class="theme-controller"
+                                        data-set-theme="silk"
+                                    >
+                                        Silk
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex-1 gap-3 flex items-center">
-                    <div class="avatar text-base-content">
+                <!-- Page Content -->
+                <main
+                    class="flex-1 flex items-center justify-center p-4 md:p-8 relative overflow-hidden"
+                >
+                    <!-- Background Accents -->
+                    <div
+                        class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 blur-[100px] rounded-full"
+                    ></div>
+                    <div
+                        class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/5 blur-[100px] rounded-full"
+                    ></div>
+
+                    <div
+                        class="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom duration-700"
+                    >
                         <div
-                            class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
-                            <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                            class="card bg-base-100 shadow-2xl border border-base-content/5 overflow-hidden rounded-[2.5rem]"
+                        >
+                            <div
+                                class="card-body p-8 md:p-12 overflow-y-auto custom-scrollbar"
+                            >
+                                <div
+                                    class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-base-content/5 pb-8"
+                                >
+                                    <div class="space-y-1">
+                                        <h1
+                                            class="text-4xl font-black italic uppercase tracking-tighter text-base-content"
+                                        >
+                                            Create Your
+                                            <span
+                                                class="text-primary not-italic"
+                                                >Account</span
+                                            >
+                                        </h1>
+                                        <p
+                                            class="text-xs font-black uppercase tracking-[4px] opacity-40"
+                                        >
+                                            Registration Gateway
+                                        </p>
+                                    </div>
+                                    <div class="avatar">
+                                        <div
+                                            class="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center p-3 border border-primary/20 rotate-3"
+                                        >
+                                            <img
+                                                src="assets/ccslogo.png"
+                                                alt="CCS Logo"
+                                                class="object-contain"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form id="registerForm" class="space-y-8">
+                                    <!-- Personal Information Section -->
+                                    <div class="space-y-6">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-black"
+                                            >
+                                                01
+                                            </div>
+                                            <h2
+                                                class="text-sm font-black uppercase tracking-widest opacity-60 italic"
+                                            >
+                                                Personal Identity
+                                            </h2>
+                                        </div>
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-3 gap-6"
+                                        >
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Last Name</span
+                                                    ></label
+                                                >
+                                                <input
+                                                    type="text"
+                                                    id="lastName"
+                                                    placeholder="Required"
+                                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >First Name</span
+                                                    ></label
+                                                >
+                                                <input
+                                                    type="text"
+                                                    id="firstName"
+                                                    placeholder="Required"
+                                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Middle Name</span
+                                                    ></label
+                                                >
+                                                <input
+                                                    type="text"
+                                                    id="middleName"
+                                                    placeholder="Optional"
+                                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="form-control">
+                                            <label class="label pt-0"
+                                                ><span
+                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                    >Complete Address</span
+                                                ></label
+                                            >
+                                            <input
+                                                type="text"
+                                                id="address"
+                                                placeholder="Barangay, City, Province"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <!-- Academic Information Section -->
+                                    <div class="space-y-6">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-sm font-black"
+                                            >
+                                                02
+                                            </div>
+                                            <h2
+                                                class="text-sm font-black uppercase tracking-widest opacity-60 italic"
+                                            >
+                                                Academic Credentials
+                                            </h2>
+                                        </div>
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                        >
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Year Level</span
+                                                    ></label
+                                                >
+                                                <select
+                                                    id="courseLevel"
+                                                    class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                    required
+                                                >
+                                                    <option
+                                                        value=""
+                                                        disabled
+                                                        selected
+                                                    >
+                                                        Select Level
+                                                    </option>
+                                                    <option>1st Year</option>
+                                                    <option>2nd Year</option>
+                                                    <option>3rd Year</option>
+                                                    <option>4th Year</option>
+                                                    <option>5th Year</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Program / Course</span
+                                                    ></label
+                                                >
+                                                <select
+                                                    id="course"
+                                                    class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                    required
+                                                >
+                                                    <option
+                                                        value=""
+                                                        disabled
+                                                        selected
+                                                    >
+                                                        Select Program
+                                                    </option>
+                                                    <option>
+                                                        BS Computer Science
+                                                    </option>
+                                                    <option>
+                                                        BS Information
+                                                        Technology
+                                                    </option>
+                                                    <option>
+                                                        BS Information Systems
+                                                    </option>
+                                                    <option>
+                                                        BS Computer Engineering
+                                                    </option>
+                                                    <option>
+                                                        Associate in Computer
+                                                        Technology
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                        >
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >ID Number</span
+                                                    ></label
+                                                >
+                                                <div class="relative group">
+                                                    <div
+                                                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10"
+                                                    >
+                                                        <i
+                                                            class="fa-solid fa-id-card"
+                                                        ></i>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        id="idNumber"
+                                                        placeholder="XX-XXXX-XXX"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Email Address</span
+                                                    ></label
+                                                >
+                                                <div class="relative group">
+                                                    <div
+                                                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10"
+                                                    >
+                                                        <i
+                                                            class="fa-solid fa-envelope"
+                                                        ></i>
+                                                    </div>
+                                                    <input
+                                                        type="email"
+                                                        id="email"
+                                                        placeholder="student@university.edu"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Security Section -->
+                                    <div class="space-y-6">
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-sm font-black"
+                                            >
+                                                03
+                                            </div>
+                                            <h2
+                                                class="text-sm font-black uppercase tracking-widest opacity-60 italic"
+                                            >
+                                                Security Access
+                                            </h2>
+                                        </div>
+                                        <div
+                                            class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                        >
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Create Password</span
+                                                    ></label
+                                                >
+                                                <div class="relative group">
+                                                    <div
+                                                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10"
+                                                    >
+                                                        <i
+                                                            class="fa-solid fa-lock"
+                                                        ></i>
+                                                    </div>
+                                                    <input
+                                                        type="password"
+                                                        id="password"
+                                                        placeholder="••••••••"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Verify Password</span
+                                                    ></label
+                                                >
+                                                <div class="relative group">
+                                                    <div
+                                                        class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10"
+                                                    >
+                                                        <i
+                                                            class="fa-solid fa-shield-halved"
+                                                        ></i>
+                                                    </div>
+                                                    <input
+                                                        type="password"
+                                                        id="confirmPassword"
+                                                        placeholder="••••••••"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Error Message -->
+                                    <div
+                                        id="errorMessage"
+                                        class="hidden animate-in fade-in slide-in-from-top duration-300"
+                                    >
+                                        <div
+                                            class="alert alert-error rounded-2xl py-3 border-none bg-error/10 text-error flex items-center gap-3"
+                                        >
+                                            <i
+                                                class="fa-solid fa-circle-exclamation"
+                                            ></i>
+                                            <span
+                                                id="errorText"
+                                                class="text-xs font-bold leading-tight"
+                                            ></span>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex flex-col md:flex-row gap-4 pt-4"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary btn-lg flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase"
+                                        >
+                                            Complete Enrollment
+                                            <i
+                                                class="fa-solid fa-user-plus ml-2"
+                                            ></i>
+                                        </button>
+                                        <a
+                                            href="/login"
+                                            class="btn btn-ghost btn-lg rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500 px-8"
+                                        >
+                                            Cancel
+                                        </a>
+                                    </div>
+                                </form>
+
+                                <p
+                                    class="text-center text-xs font-bold opacity-40 mt-10 tracking-widest uppercase"
+                                >
+                                    Already registered?
+                                    <a
+                                        href="/login"
+                                        class="text-primary hover:underline decoration-2 underline-offset-4 font-black italic"
+                                        >Return to Sign In</a
+                                    >
+                                </p>
+                            </div>
                         </div>
+                        <p
+                            class="text-center mt-8 text-[10px] font-black uppercase tracking-[4px] opacity-20"
+                        >
+                            University of Cebu • CICS • CCS Monitoring v5.0
+                        </p>
                     </div>
-                    <a href="index.html" class="text-xl font-black tracking-tight text-base-content"><span
-                            class="text-primary">CCS</span> SIT-IN MONITORING</a>
-                </div>
-
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex flex-none items-center gap-2">
-                    <a href="index.html" class="btn btn-ghost btn-sm text-base-content">Home</a>
-                    <a href="login.html" class="btn btn-ghost btn-sm text-base-content">Login</a>
-
-                    <div class="divider divider-horizontal mx-1"></div>
-
-                    <div class="dropdown dropdown-end">
-                        <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2 text-base-content">
-                            <i class="fa-solid fa-palette opacity-50"></i>
-                            <span class="text-[10px] font-black uppercase tracking-widest">Theme</span>
-                            <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
-                        </div>
-                        <ul tabindex="0"
-                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
-                            <li><button class="theme-controller" data-set-theme="light">Light</button></li>
-                            <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
-                            <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
-                            <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
-                            <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
-                            <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
-                            <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
-                            <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
-                            <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
-                            <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
-                            <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
-                            <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
-                            <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
-                            <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
-                            <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
-                            <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
-                            <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
-                            <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
-                            <li><button class="theme-controller" data-set-theme="black">Black</button></li>
-                            <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
-                            <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
-                            <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
-                            <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
-                            <li><button class="theme-controller" data-set-theme="business">Business</button></li>
-                            <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
-                            <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
-                            <li><button class="theme-controller" data-set-theme="night">Night</button></li>
-                            <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
-                            <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
-                            <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
-                            <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
-                            <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
-                            <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
-                            <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
-                            <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
-                        </ul>
-                    </div>
-                </div>
+                </main>
             </div>
 
-            <!-- Page Content -->
-            <main class="flex-1 flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
-                <!-- Background Accents -->
-                <div class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 blur-[100px] rounded-full"></div>
-                <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/5 blur-[100px] rounded-full"></div>
-
-                <div class="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom duration-700">
-                    <div
-                        class="card bg-base-100 shadow-2xl border border-base-content/5 overflow-hidden rounded-[2.5rem]">
-                        <div class="card-body p-8 md:p-12 overflow-y-auto custom-scrollbar">
-                            <div
-                                class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-base-content/5 pb-8">
-                                <div class="space-y-1">
-                                    <h1 class="text-4xl font-black italic uppercase tracking-tighter text-base-content">
-                                        Create Your <span class="text-primary not-italic">Account</span></h1>
-                                    <p class="text-xs font-black uppercase tracking-[4px] opacity-40">Registration
-                                        Gateway</p>
-                                </div>
-                                <div class="avatar">
-                                    <div
-                                        class="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center p-3 border border-primary/20 rotate-3">
-                                        <img src="assets/ccslogo.png" alt="CCS Logo" class="object-contain" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <form id="registerForm" class="space-y-8">
-                                <!-- Personal Information Section -->
-                                <div class="space-y-6">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-black">
-                                            01</div>
-                                        <h2 class="text-sm font-black uppercase tracking-widest opacity-60 italic">
-                                            Personal Identity</h2>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Last
-                                                    Name</span></label>
-                                            <input type="text" id="lastName" placeholder="Required"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                                required />
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">First
-                                                    Name</span></label>
-                                            <input type="text" id="firstName" placeholder="Required"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                                required />
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Middle
-                                                    Name</span></label>
-                                            <input type="text" id="middleName" placeholder="Optional"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
-                                        </div>
-                                    </div>
-                                    <div class="form-control">
-                                        <label class="label pt-0"><span
-                                                class="label-text-alt font-black uppercase opacity-40 tracking-widest">Complete
-                                                Address</span></label>
-                                        <input type="text" id="address" placeholder="Barangay, City, Province"
-                                            class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
-                                    </div>
-                                </div>
-
-                                <!-- Academic Information Section -->
-                                <div class="space-y-6">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-sm font-black">
-                                            02</div>
-                                        <h2 class="text-sm font-black uppercase tracking-widest opacity-60 italic">
-                                            Academic Credentials</h2>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Year
-                                                    Level</span></label>
-                                            <select id="courseLevel"
-                                                class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
-                                                required>
-                                                <option value="" disabled selected>Select Level</option>
-                                                <option>1st Year</option>
-                                                <option>2nd Year</option>
-                                                <option>3rd Year</option>
-                                                <option>4th Year</option>
-                                                <option>5th Year</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Program
-                                                    / Course</span></label>
-                                            <select id="course"
-                                                class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
-                                                required>
-                                                <option value="" disabled selected>Select Program</option>
-                                                <option>BS Computer Science</option>
-                                                <option>BS Information Technology</option>
-                                                <option>BS Information Systems</option>
-                                                <option>BS Computer Engineering</option>
-                                                <option>Associate in Computer Technology</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">ID
-                                                    Number</span></label>
-                                            <div class="relative group">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
-                                                    <i class="fa-solid fa-id-card"></i>
-                                                </div>
-                                                <input type="text" id="idNumber" placeholder="XX-XXXX-XXX"
-                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                                    required />
-                                            </div>
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Email
-                                                    Address</span></label>
-                                            <div class="relative group">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
-                                                    <i class="fa-solid fa-envelope"></i>
-                                                </div>
-                                                <input type="email" id="email" placeholder="student@university.edu"
-                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                                    required />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Security Section -->
-                                <div class="space-y-6">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-sm font-black">
-                                            03</div>
-                                        <h2 class="text-sm font-black uppercase tracking-widest opacity-60 italic">
-                                            Security Access</h2>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Create
-                                                    Password</span></label>
-                                            <div class="relative group">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
-                                                    <i class="fa-solid fa-lock"></i>
-                                                </div>
-                                                <input type="password" id="password" placeholder="••••••••"
-                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
-                                                    required />
-                                            </div>
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label pt-0"><span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest">Verify
-                                                    Password</span></label>
-                                            <div class="relative group">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
-                                                    <i class="fa-solid fa-shield-halved"></i>
-                                                </div>
-                                                <input type="password" id="confirmPassword" placeholder="••••••••"
-                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
-                                                    required />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Error Message -->
-                                <div id="errorMessage" class="hidden animate-in fade-in slide-in-from-top duration-300">
-                                    <div
-                                        class="alert alert-error rounded-2xl py-3 border-none bg-error/10 text-error flex items-center gap-3">
-                                        <i class="fa-solid fa-circle-exclamation"></i>
-                                        <span id="errorText" class="text-xs font-bold leading-tight"></span>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-col md:flex-row gap-4 pt-4">
-                                    <button type="submit"
-                                        class="btn btn-primary btn-lg flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase">
-                                        Complete Enrollment <i class="fa-solid fa-user-plus ml-2"></i>
-                                    </button>
-                                    <a href="login.html"
-                                        class="btn btn-ghost btn-lg rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500 px-8">
-                                        Cancel
-                                    </a>
-                                </div>
-                            </form>
-
-                            <p class="text-center text-xs font-bold opacity-40 mt-10 tracking-widest uppercase">
-                                Already registered?
-                                <a href="login.html"
-                                    class="text-primary hover:underline decoration-2 underline-offset-4 font-black italic">Return
-                                    to Sign In</a>
-                            </p>
-                        </div>
-                    </div>
-                    <p class="text-center mt-8 text-[10px] font-black uppercase tracking-[4px] opacity-20">University of
-                        Cebu • CICS • CCS Monitoring v5.0</p>
-                </div>
-            </main>
-        </div>
-
-        <!-- Sidebar (Drawer) -->
-        <div class="drawer-side z-[200]">
-            <label for="my-drawer" class="drawer-overlay"></label>
-            <ul class="menu p-6 w-80 min-h-full bg-base-100 text-base-content space-y-4">
-                <li class="mb-4">
-                    <div class="flex items-center gap-3 px-0 bg-transparent hover:bg-transparent">
+            <!-- Sidebar (Drawer) -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul
+                    class="menu p-6 w-80 min-h-full bg-base-100 text-base-content space-y-4"
+                >
+                    <li class="mb-4">
                         <div
-                            class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center p-2 border border-primary/20">
-                            <img src="assets/ccslogo.png" alt="CCS Logo" class="object-contain" />
+                            class="flex items-center gap-3 px-0 bg-transparent hover:bg-transparent"
+                        >
+                            <div
+                                class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center p-2 border border-primary/20"
+                            >
+                                <img
+                                    src="assets/ccslogo.png"
+                                    alt="CCS Logo"
+                                    class="object-contain"
+                                />
+                            </div>
+                            <span
+                                class="font-black text-xl tracking-tighter italic"
+                                >CCS SIT-IN</span
+                            >
                         </div>
-                        <span class="font-black text-xl tracking-tighter italic">CCS SIT-IN</span>
-                    </div>
-                </li>
-                <li><a href="index.html" class="rounded-xl font-bold p-4">Home</a></li>
-                <li><a href="login.html" class="rounded-xl font-bold p-4">Login</a></li>
-                <li><a href="register.html"
-                        class="active rounded-xl font-bold p-4 text-primary bg-primary/10">Register</a></li>
-            </ul>
+                    </li>
+                    <li>
+                        <a href="index.html" class="rounded-xl font-bold p-4"
+                            >Home</a
+                        >
+                    </li>
+                    <li>
+                        <a href="/login" class="rounded-xl font-bold p-4"
+                            >Login</a
+                        >
+                    </li>
+                    <li>
+                        <a
+                            href="/register"
+                            class="active rounded-xl font-bold p-4 text-primary bg-primary/10"
+                            >Register</a
+                        >
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    <script>
-        // Initial Theme Setup
-        const currentTheme = localStorage.getItem('theme') || 'forest';
-        document.documentElement.setAttribute('data-theme', currentTheme);
+        <script>
+            // Initial Theme Setup
+            const currentTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", currentTheme);
 
-        // Theme Switcher Logic
-        document.querySelectorAll('.theme-controller').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const theme = btn.getAttribute('data-set-theme');
-                document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('theme', theme);
-            });
-        });
-
-        // Registration Submission Logic
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalContent = btn.innerHTML;
-
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const errorDiv = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
-
-            // Validation
-            if (password !== confirmPassword) {
-                errorText.textContent = 'Passwords do not match. Integrity check failed.';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            // Loading State
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Processing Enrollment...';
-
-            const formData = {
-                lastName: document.getElementById('lastName').value,
-                firstName: document.getElementById('firstName').value,
-                middleName: document.getElementById('middleName').value,
-                courseLevel: document.getElementById('courseLevel').value,
-                course: document.getElementById('course').value,
-                address: document.getElementById('address').value,
-                idNumber: document.getElementById('idNumber').value,
-                email: document.getElementById('email').value,
-                password: password
-            };
-
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
+            // Theme Switcher Logic
+            document.querySelectorAll(".theme-controller").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const theme = btn.getAttribute("data-set-theme");
+                    document.documentElement.setAttribute("data-theme", theme);
+                    localStorage.setItem("theme", theme);
                 });
+            });
 
-                const data = await response.json();
+            // Registration Submission Logic
+            document
+                .getElementById("registerForm")
+                .addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    const originalContent = btn.innerHTML;
 
-                if (data.success) {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    errorText.textContent = data.error || 'Registration was rejected by the system.';
-                    errorDiv.classList.remove('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = originalContent;
-                }
-            } catch (err) {
-                errorText.textContent = 'Connection failure. Please try again.';
-                errorDiv.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerHTML = originalContent;
-            }
-        });
-    </script>
-</body>
+                    const password = document.getElementById("password").value;
+                    const confirmPassword =
+                        document.getElementById("confirmPassword").value;
+                    const errorDiv = document.getElementById("errorMessage");
+                    const errorText = document.getElementById("errorText");
 
+                    // Validation
+                    if (password !== confirmPassword) {
+                        errorText.textContent =
+                            "Passwords do not match. Integrity check failed.";
+                        errorDiv.classList.remove("hidden");
+                        return;
+                    }
+
+                    // Loading State
+                    btn.disabled = true;
+                    btn.innerHTML =
+                        '<span class="loading loading-spinner loading-sm"></span> Processing Enrollment...';
+
+                    const formData = {
+                        lastName: document.getElementById("lastName").value,
+                        firstName: document.getElementById("firstName").value,
+                        middleName: document.getElementById("middleName").value,
+                        courseLevel:
+                            document.getElementById("courseLevel").value,
+                        course: document.getElementById("course").value,
+                        address: document.getElementById("address").value,
+                        idNumber: document.getElementById("idNumber").value,
+                        email: document.getElementById("email").value,
+                        password: password,
+                    };
+
+                    try {
+                        const response = await fetch("/register", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(formData),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            window.location.href = data.redirectUrl;
+                        } else {
+                            errorText.textContent =
+                                data.error ||
+                                "Registration was rejected by the system.";
+                            errorDiv.classList.remove("hidden");
+                            btn.disabled = false;
+                            btn.innerHTML = originalContent;
+                        }
+                    } catch (err) {
+                        errorText.textContent =
+                            "Connection failure. Please try again.";
+                        errorDiv.classList.remove("hidden");
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    }
+                });
+        </script>
+    </body>
 </html>

@@ -34,6 +34,7 @@ function initializeDatabase() {
             course TEXT,
             address TEXT,
             sessionLeft INTEGER,
+            profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky',
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `, (err) => {
@@ -44,14 +45,6 @@ function initializeDatabase() {
         }
     });
 }
-
-// let createTableAnnouncements = db.run(`
-//         CREATE TABLE IF NOT EXISTS Annoucements (
-//             id INTEGER PRIMARY KEY AUTOINCREMENT,
-//             title TEXT NOT NULL,
-//             description TEXT NULL
-//         )
-//     `);
 
 function createTableAnnouncements() {
     db.run(`
@@ -64,6 +57,36 @@ function createTableAnnouncements() {
     `)
 }
 
+function createTableSitInRecords() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS sitin_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            studentName TEXT NOT NULL,
+            idNumber TEXT NOT NULL,
+            purpose TEXT NOT NULL,
+            lab TEXT NOT NULL,
+            session TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
+}
+
+function createTableAdmins() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS admins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            idNumber TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            firstName TEXT NOT NULL,
+            lastName TEXT NOT NULL,
+            middleName TEXT,
+            profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
+}
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -73,6 +96,9 @@ app.use(express.static(path.join(__dirname)));
 // Serve Static
 app.use(express.static('public'));
 
+
+
+
 // Session configuration
 app.use(session({
     secret: 'ccs-sitin-monitoring-secret',
@@ -81,7 +107,9 @@ app.use(session({
     cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
 
-// Middleware to check if user is logged in
+
+
+// Middleware to check if user is logged in (any role)
 function checkAuth(req, res, next) {
     if (req.session.userId) {
         next();
@@ -89,12 +117,46 @@ function checkAuth(req, res, next) {
         if (req.path.startsWith('/api/')) {
             res.status(401).json({ error: 'Unauthorized. Please log in.' });
         } else {
-            res.redirect('/login.html');
+            res.redirect('/login');
+        }
+    }
+}
+
+// Middleware to check if user is an ADMIN
+function checkAdminAuth(req, res, next) {
+    if (req.session.userId && req.session.role === 'admin') {
+        next();
+    } else {
+        if (req.path.startsWith('/api/')) {
+            res.status(403).json({ error: 'Access denied. Admin only.' });
+        } else {
+            res.redirect('/login');
         }
     }
 }
 
 // Routes
+
+// Route to create a new announcement
+app.post('/api/announcements', (req, res) => {
+    const { title, description } = req.body;
+
+
+    if (!title || !description) {
+        return res.status(400).json({ error: 'Title and description are required' });
+    }
+
+    const query = `INSERT INTO Annoucements (title, description) VALUES (?, ?)`
+
+    db.run(query, [title, description],
+        function (err) {
+            if (err) {
+                console.error(err.message);
+                return res.status(500).json({ error: 'Failed to create announcement' })
+            }
+            res.json({ success: true, message: 'Announcement created successfully' });
+        });
+});
 
 // Login route
 app.post('/login', (req, res) => {
@@ -104,32 +166,56 @@ app.post('/login', (req, res) => {
         return res.status(400).json({ error: 'ID Number and Password are required' });
     }
 
-    db.get('SELECT * FROM users WHERE idNumber = ?', [idNumber], (err, user) => {
-        if (err) {
-            return res.status(500).json({ error: 'Server error' });
+    // First check in admins table
+    db.get('SELECT * FROM admins WHERE idNumber = ?', [idNumber], (err, admin) => {
+        if (err) return res.status(500).json({ error: 'Server error' });
+
+        if (admin) {
+            bcrypt.compare(password, admin.password, (err, isMatch) => {
+                if (err) return res.status(500).json({ error: 'Server error' });
+                if (!isMatch) return res.status(401).json({ error: 'Invalid ID Number or Password' });
+
+                req.session.userId = admin.id;
+                req.session.idNumber = admin.idNumber;
+                req.session.firstName = admin.firstName;
+                req.session.lastName = admin.lastName;
+                req.session.role = 'admin';
+
+                return res.json({ 
+                    success: true, 
+                    message: 'Admin logged in successfully', 
+                    redirectUrl: '/admin',
+                    role: 'admin'
+                });
+            });
+        } else {
+            // If not found in admins, check in users (students)
+            db.get('SELECT * FROM users WHERE idNumber = ?', [idNumber], (err, user) => {
+                if (err) return res.status(500).json({ error: 'Server error' });
+
+                if (!user) {
+                    return res.status(401).json({ error: 'Invalid ID Number or Password' });
+                }
+
+                bcrypt.compare(password, user.password, (err, isMatch) => {
+                    if (err) return res.status(500).json({ error: 'Server error' });
+                    if (!isMatch) return res.status(401).json({ error: 'Invalid ID Number or Password' });
+
+                    req.session.userId = user.id;
+                    req.session.idNumber = user.idNumber;
+                    req.session.firstName = user.firstName;
+                    req.session.lastName = user.lastName;
+                    req.session.role = 'student';
+
+                    return res.json({ 
+                        success: true, 
+                        message: 'Student logged in successfully', 
+                        redirectUrl: '/homepage',
+                        role: 'student'
+                    });
+                });
+            });
         }
-
-        if (!user) {
-            return res.status(401).json({ error: 'Invalid ID Number or Password' });
-        }
-
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-            if (err) {
-                return res.status(500).json({ error: 'Server error' });
-            }
-
-            if (!isMatch) {
-                return res.status(401).json({ error: 'Invalid ID Number or Password' });
-            }
-
-            // Set session
-            req.session.userId = user.id;
-            req.session.idNumber = user.idNumber;
-            req.session.firstName = user.firstName;
-            req.session.lastName = user.lastName;
-
-            res.json({ success: true, message: 'Logged in successfully', redirectUrl: '/homepage.html' });
-        });
     });
 });
 
@@ -143,39 +229,52 @@ app.get('/api/announcements', (req, res) => {
     });
 });
 
+// Generic User Info API - Fetch current user (student or admin)
+app.get('/api/studentinfo', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
 
-// STUDENT INFO API ROUTE
-// app.get('/api/studentinfo', (req, res) => {
-//     db.all(`
-//             SELECT firstName || ' ' || lastName as name, course, courseLevel, email, address
-//             FROM users
-//     `, [], (err, rows) => {
-//         if (err) {
-//             return res.status(500).json({ error: 'Error'});
-//         }
-//         res.json(rows);
-//     });
-// });
-
-
-// STUDENT INFO API ROUTE - Fetch current user only
-app.get('/api/studentinfo', checkAuth, (req, res) => {
     const userId = req.session.userId;
+    const role = req.session.role;
+    const table = role === 'admin' ? 'admins' : 'users';
+
     db.get(`
-        SELECT firstName || ' ' || lastName AS name, course, courseLevel, email, address
-        FROM users
+        SELECT firstName || ' ' || lastName AS name, email, profilePic, 
+        ${role === 'student' ? 'course, courseLevel, address' : '"" as course, "" as courseLevel, "" as address'}
+        FROM ${table}
         WHERE id = ?
     `, [userId], (err, row) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        if (!row) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!row) return res.status(404).json({ error: 'User not found' });
         res.json(row);
     });
 });
 
+// Update Profile API
+app.post('/api/update-profile', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { firstName, lastName, middleName, email, profilePic, course, courseLevel, address } = req.body;
+    const userId = req.session.userId;
+    const role = req.session.role;
+
+    if (role === 'admin') {
+        db.run(`UPDATE admins SET firstName = ?, lastName = ?, middleName = ?, email = ?, profilePic = ? WHERE id = ?`,
+            [firstName, lastName, middleName, email, profilePic, userId], function(err) {
+                if (err) return res.status(500).json({ error: 'Update failed' });
+                req.session.firstName = firstName;
+                req.session.lastName = lastName;
+                res.json({ success: true });
+            });
+    } else {
+        db.run(`UPDATE users SET firstName = ?, lastName = ?, middleName = ?, email = ?, course = ?, courseLevel = ?, address = ?, profilePic = ? WHERE id = ?`,
+            [firstName, lastName, middleName, email, course, courseLevel, address, profilePic, userId], function(err) {
+                if (err) return res.status(500).json({ error: 'Update failed' });
+                req.session.firstName = firstName;
+                req.session.lastName = lastName;
+                res.json({ success: true });
+            });
+    }
+});
 
 
 // Register route
@@ -211,6 +310,93 @@ app.post('/register', (req, res) => {
     });
 });
 
+// Admin API: Search Student by ID
+app.get('/api/admin/search-student/:idNumber', (req, res) => {
+    const idNumber = req.params.idNumber;
+    db.get('SELECT firstName || " " || lastName as name, sessionLeft FROM users WHERE idNumber = ?', [idNumber], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!row) return res.status(404).json({ error: 'Student not found' });
+        res.json(row);
+    });
+});
+
+// Admin API: Record Sit-in
+app.post('/api/admin/sit-in', (req, res) => {
+    const { idNumber, studentName, purpose, lab } = req.body;
+
+    if (!idNumber || !studentName || !purpose || !lab) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    db.get('SELECT sessionLeft FROM users WHERE idNumber = ?', [idNumber], (err, user) => {
+        if (err || !user) return res.status(404).json({ error: 'Student not found' });
+        
+        if (user.sessionLeft <= 0) {
+            return res.status(400).json({ error: 'No sessions remaining' });
+        }
+
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION');
+            
+            // Increment record
+            db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
+                [studentName, idNumber, purpose, lab, (user.sessionLeft - 1).toString(), 'Active']);
+
+            // Decrement sessions
+            db.run('UPDATE users SET sessionLeft = sessionLeft - 1 WHERE idNumber = ?', [idNumber]);
+
+            db.run('COMMIT', (err) => {
+                if (err) return res.status(500).json({ error: 'Failed to record sit-in' });
+                res.json({ success: true, message: 'Sit-in recorded successfully' });
+            });
+        });
+    });
+});
+
+// Admin API: Fetch Sit-in Records
+app.get('/api/admin/sit-in-records', (req, res) => {
+    db.all('SELECT * FROM sitin_records ORDER BY created_at DESC', (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin API: Fetch All Students
+app.get('/api/admin/students', (req, res) => {
+    db.all('SELECT idNumber, firstName, lastName, middleName, email, course, courseLevel, sessionLeft, profilePic FROM users', (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin Register route
+app.post('/api/admin/register', (req, res) => {
+    const { idNumber, email, password, firstName, lastName, middleName } = req.body;
+
+    if (!idNumber || !email || !password || !firstName || !lastName) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+        if (err) return res.status(500).json({ error: 'Server error' });
+
+        db.run(
+            `INSERT INTO admins (idNumber, email, password, firstName, lastName, middleName)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [idNumber, email, hashedPassword, firstName, lastName, middleName],
+            (err) => {
+                if (err) {
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(400).json({ error: 'ID Number or Email already exists' });
+                    }
+                    return res.status(500).json({ error: 'Server error' });
+                }
+                res.json({ success: true, message: 'Admin registered successfully' });
+            }
+        );
+    });
+});
+
 // Logout route
 app.post('/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -224,52 +410,85 @@ app.post('/logout', (req, res) => {
 // Check session route
 app.get('/check-session', (req, res) => {
     if (req.session.userId) {
-        res.json({ loggedIn: true, idNumber: req.session.idNumber, firstName: req.session.firstName, lastName: req.session.lastName });
+        res.json({ 
+            loggedIn: true, 
+            idNumber: req.session.idNumber, 
+            firstName: req.session.firstName, 
+            lastName: req.session.lastName,
+            role: req.session.role 
+        });
     } else {
         res.json({ loggedIn: false });
     }
 });
 
 // Serve main.html only if logged in
-app.get('/main.html', checkAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'main.html'));
-});
 
 // Serve login and register pages
-app.get('/login.html', (req, res) => {
+app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-app.get('/register.html', (req, res) => {
+app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'register.html'));
 });
 
-// app.get('/homepage.html', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'homepage.html'));
-// })
-
-app.get('/homepage.html', (req, res) => {
+app.get('/homepage', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'homepage.html'));
 });
 
-// Route to fetch announcements in teh database
-// app.get('/api/announcements', (req, res) => {
-//     db.all(`
-//         SELECT id, title, description, created_at
-//         FROM Announcements
-//         ORDER BY created_at DESC
-//     `, [], (err, rows) => {
-//         if (err) {
-//             return res.status(500).json({ error: 'Failed to fetch announcements'});
-//         }
-//     })
-// })
+app.get('/admin', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
 
+app.get('/admin-register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-register.html'));
+});
 
+app.get('/students', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/students.html'));
+});
 
+app.get('/sit-in-records', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/sit-in-records.html'));
+});
+
+app.get('/sit-in-reports', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/sit-in-reports.html'));
+});
+
+app.get('/feedback-reports', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/feedback-reports.html'));
+});
+
+app.get('/reservations', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/reservations.html'));
+});
+
+app.get('/edit-profile', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'edit-profile.html'));
+});
 
 
 createTableAnnouncements();
+createTableSitInRecords();
+createTableAdmins();
+
+// Ensure profilePic column exists (Migration)
+function ensureProfilePicColumn() {
+    db.all("PRAGMA table_info(users)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'profilePic')) {
+            db.run("ALTER TABLE users ADD COLUMN profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky'");
+        }
+    });
+    db.all("PRAGMA table_info(admins)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'profilePic')) {
+            db.run("ALTER TABLE admins ADD COLUMN profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin'");
+        }
+    });
+}
+ensureProfilePicColumn();
+
 
 // Seed dummy announcement if empty
 db.get('SELECT COUNT(*) as count FROM Annoucements', (err, row) => {
@@ -277,7 +496,6 @@ db.get('SELECT COUNT(*) as count FROM Annoucements', (err, row) => {
         db.run('INSERT INTO Annoucements (title, description) VALUES (?, ?)', ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
     }
 });
-
 
 // Start server
 app.listen(PORT, () => {

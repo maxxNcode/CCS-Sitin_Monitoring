@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html data-theme="coffee">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration - CCS Sit-In Monitoring</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-base-200 min-h-screen flex items-center justify-center p-4">
+    <div class="card bg-base-100 shadow-2xl w-full max-w-md border border-base-content/5">
+        <div class="card-body gap-6">
+            <div class="flex flex-col items-center gap-2 mb-2">
+                <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center p-3 border border-primary/20">
+                    <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain">
+                </div>
+                <h1 class="text-2xl font-black tracking-tight">ADMIN <span class="text-primary">REGISTER</span></h1>
+                <p class="text-sm opacity-60">Temporary Gateway for Administrators</p>
+            </div>
+
+            <form id="registerForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label text-[10px] font-bold uppercase tracking-widest opacity-50">First Name</label>
+                        <input type="text" name="firstName" placeholder="John" class="input input-bordered bg-base-200 focus:input-primary transition-all rounded-xl" required>
+                    </div>
+                    <div class="form-control">
+                        <label class="label text-[10px] font-bold uppercase tracking-widest opacity-50">Last Name</label>
+                        <input type="text" name="lastName" placeholder="Doe" class="input input-bordered bg-base-200 focus:input-primary transition-all rounded-xl" required>
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label text-[10px] font-bold uppercase tracking-widest opacity-50">Middle Name (Optional)</label>
+                    <input type="text" name="middleName" placeholder="Quincy" class="input input-bordered bg-base-200 focus:input-primary transition-all rounded-xl">
+                </div>
+
+                <div class="form-control">
+                    <label class="label text-[10px] font-bold uppercase tracking-widest opacity-50">ID Number</label>
+                    <input type="text" name="idNumber" placeholder="2021-00123" class="input input-bordered bg-base-200 focus:input-primary transition-all rounded-xl" required>
+                </div>
+
+                <div class="form-control">
+                    <label class="label text-[10px] font-bold uppercase tracking-widest opacity-50">Email Address</label>
+                    <input type="email" name="email" placeholder="admin@uic.edu.ph" class="input input-bordered bg-base-200 focus:input-primary transition-all rounded-xl" required>
+                </div>
+
+                <div class="form-control">
+                    <label class="label text-[10px] font-bold uppercase tracking-widest opacity-50">Password</label>
+                    <input type="password" name="password" placeholder="••••••••" class="input input-bordered bg-base-200 focus:input-primary transition-all rounded-xl font-mono" required>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="btn btn-primary w-full group">
+                        Register Admin
+                        <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    <a href="/login" class="btn btn-ghost btn-sm w-full mt-2 opacity-60 font-normal">Back to Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/admin/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Admin registration successful!');
+                    window.location.href = '/login';
+                } else {
+                    alert(result.error || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

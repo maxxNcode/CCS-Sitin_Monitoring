@@ -1,0 +1,38 @@
+/* Add this to your <style> block in admin.html */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    /* For Firefox */
+    scrollbar-color: oklch(var(--p) / 0.3) transparent;
+    /* For Firefox */
+}
+
+/* For Chrome, Edge, and Safari */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    /* Very thin scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    /* No background for the track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: oklch(var(--p) / 0.2);
+    /* Subtle thumb color */
+    border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: oklch(var(--p) / 0.5);
+    /* Brightens on hover */
+}
+
+.custom-scrollbar {
+    overflow-y: overlay;
+    /* Replaces overflow-y: auto */
+}
+
+.custom-scrollbar {
+    scrollbar-gutter: stable;
+}
