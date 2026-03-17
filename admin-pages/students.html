@@ -81,27 +81,45 @@
                         </button>
                         <dialog id="my_modal_1" class="modal">
                             <div class="modal-box">
-                                <h3 class="text-lg font-bold">Search</h3>
-                                <p class="py-4">Search for a student</p>
+                                <h3 class="text-xl font-black italic tracking-tighter text-base-content mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass text-primary"></i> 
+                                    Search <span class="text-primary not-italic">Student</span>
+                                </h3>
+                                <p class="text-sm opacity-60 mb-6 font-medium">Enter the student's ID Number to start a sit-in session.</p>
 
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    class="input input-bordered bg-base-200 w-full"
-                                />
-                                <div class="modal-action">
-                                    <button
-                                        class="btn bg-primary text-primary-content"
-                                    >
-                                        Search
-                                    </button>
-                                    <form method="dialog">
-                                        <!-- if there is a button in form, it will close the modal -->
-
-                                        <button class="btn">Exit</button>
+                                <div class="form-control w-full">
+                                    <label class="label pt-0 pb-1">
+                                        <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student ID Number</span>
+                                    </label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
+                                            <i class="fa-solid fa-id-card"></i>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            id="searchIdNumber"
+                                            placeholder="e.g. 21-1234-567"
+                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div class="modal-action mt-8">
+                                    <form method="dialog" class="w-full flex gap-3">
+                                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500">Cancel</button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase"
+                                            onclick="searchStudent()"
+                                        >
+                                            Search <i class="fa-solid fa-arrow-right ml-1"></i>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
+                            <form method="dialog" class="modal-backdrop">
+                                <button>close</button>
+                            </form>
                         </dialog>
 
                         <!-- Open the modal using ID.showModal() method -->
@@ -112,59 +130,65 @@
                             <i class="fa-solid fa-plus"></i>Sit-in
                         </button>
                         <dialog id="my_modal_2" class="modal">
-                            <div class="modal-box flex flex-col gap-4">
-                                <h3 class="text-lg font-bold">Sit-in Form</h3>
+                            <div class="modal-box p-8 max-w-md">
+                                <h3 class="text-2xl font-black italic tracking-tighter text-base-content mb-6 flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-user text-primary"></i>
+                                    Record <span class="text-primary not-italic">Sit-in</span>
+                                </h3>
 
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">ID Number:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="ID Number"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Student Name:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Student Name"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Purpose:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Purpose"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Lab:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Lab"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Remaining Sessions:</p>
-                                    <p class="flex-1">10</p>
+                                <div class="space-y-4">
+                                    <!-- Readonly Info Cards -->
+                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                        <div class="bg-base-200/50 rounded-2xl p-4 border border-base-content/5">
+                                            <p class="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">ID Number</p>
+                                            <input type="text" id="formIdNumber" class="w-full bg-transparent font-bold text-sm outline-none focus:text-primary transition-colors" placeholder="Enter ID" />
+                                        </div>
+                                        <div class="bg-primary/10 rounded-2xl p-4 border border-primary/20 flex flex-col justify-center items-center text-center">
+                                            <p class="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">Remaining</p>
+                                            <p class="text-2xl font-black text-primary leading-none" id="formSessions">0</p>
+                                        </div>
+                                        <div class="bg-base-200/50 rounded-2xl p-4 border border-base-content/5 col-span-2">
+                                            <p class="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Student Name</p>
+                                            <input type="text" id="formStudentName" class="w-full bg-transparent font-bold text-base outline-none focus:text-primary transition-colors" placeholder="Enter Name" />
+                                        </div>
+                                    </div>
+
+                                    <div class="divider text-xs font-black opacity-30 uppercase tracking-widest before:bg-base-content/10 after:bg-base-content/10">Session Details</div>
+
+                                    <!-- Inputs -->
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1">
+                                            <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Purpose</span>
+                                        </label>
+                                        <input type="text" id="formPurpose" placeholder="e.g. Java Programming, Assignment" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1">
+                                            <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Laboratory</span>
+                                        </label>
+                                        <select id="formLab" class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold">
+                                            <option value="" disabled selected>Select Lab Room</option>
+                                            <option value="Lab 524">Lab 524</option>
+                                            <option value="Lab 526">Lab 526</option>
+                                            <option value="Lab 542">Lab 542</option>
+                                            <option value="Mac Lab">Mac Lab</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <div class="modal-action">
-                                    <button
-                                        class="btn bg-primary text-primary-content"
-                                    >
-                                        Sit-in
-                                    </button>
-                                    <form method="dialog">
-                                        <!-- if there is a button in form, it will close the modal -->
-
-                                        <button class="btn">Exit</button>
+                                <div class="modal-action mt-8">
+                                    <form method="dialog" class="w-full flex gap-3">
+                                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500" id="closeSitinModal">Cancel</button>
+                                        <button type="button" class="btn btn-primary flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase" onclick="submitSitin()">
+                                            Confirm Sit-in
+                                        </button>
                                     </form>
                                 </div>
                             </div>
+                            <form method="dialog" class="modal-backdrop">
+                                <button>close</button>
+                            </form>
                         </dialog>
 
                         <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
@@ -687,7 +711,10 @@
                         if (data.profilePic) {
                             const avatars = document.querySelectorAll('.avatar img');
                             avatars.forEach(img => {
-                                if (!img.src.includes('ccslogo')) img.src = data.profilePic;
+                                if (!img.src.includes('ccslogo')) {
+                                    img.src = data.profilePic;
+                                    img.classList.add('w-full', 'h-full', 'object-cover');
+                                }
                             });
                         }
                     });
@@ -705,8 +732,8 @@
                                 <td>
                                     <div class="flex items-center gap-4">
                                         <div class="avatar">
-                                            <div class="mask mask-squircle h-10 w-10">
-                                                <img src="${student.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.firstName}`}" alt="Avatar" />
+                                            <div class="mask mask-squircle h-10 w-10 bg-base-200">
+                                                <img src="${student.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.firstName}`}" alt="Avatar" class="w-full h-full object-cover" />
                                             </div>
                                         </div>
                                         <div>
@@ -747,50 +774,62 @@
             }
 
             async function searchStudent() {
-                const input = document.querySelector('#my_modal_1 input[type="text"]');
-                const val = input ? input.value : '';
-                if (!val) return alert('Please enter an ID Number');
-                try {
-                    const res = await fetch(`/api/admin/search-student/${val}`);
-                    const data = await res.json();
-                    if (res.ok) {
-                        document.querySelector('#my_modal_2 input[placeholder="ID Number"]').value = val;
-                        document.querySelector('#my_modal_2 input[placeholder="Student Name"]').value = data.name;
-                        const sessionDisplay = document.querySelector('#my_modal_2 p.flex-1:nth-child(2)'); // Target the remaining sessions display
-                        if (sessionDisplay) sessionDisplay.innerText = data.sessionLeft;
+                const idNumber = document.getElementById('searchIdNumber').value;
+                if (!idNumber) return alert('Please enter an ID Number');
 
+                try {
+                    const res = await fetch(`/api/admin/search-student/${idNumber}`);
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        // Populate the sit-in form
+                        document.getElementById('formIdNumber').value = idNumber;
+                        document.getElementById('formStudentName').value = data.name;
+                        document.getElementById('formSessions').innerText = data.sessionLeft;
+
+                        // Swap modals
                         document.getElementById('my_modal_1').close();
                         document.getElementById('my_modal_2').showModal();
                     } else {
                         alert(data.error || 'Student not found');
                     }
-                } catch (err) { console.error(err); alert('Search failed'); }
+                } catch (err) {
+                    console.error(err);
+                    alert('Search failed');
+                }
             }
 
             async function submitSitin() {
-                const modal2 = document.getElementById('my_modal_2');
                 const payload = {
-                    idNumber: modal2.querySelector('input[placeholder="ID Number"]').value,
-                    studentName: modal2.querySelector('input[placeholder="Student Name"]').value,
-                    purpose: modal2.querySelector('input[placeholder="Purpose"]').value,
-                    lab: modal2.querySelector('input[placeholder="Lab"]').value
+                    idNumber: document.getElementById('formIdNumber').value,
+                    studentName: document.getElementById('formStudentName').value,
+                    purpose: document.getElementById('formPurpose').value,
+                    lab: document.getElementById('formLab').value
                 };
-                if (!payload.purpose || !payload.lab) return alert('Please enter purpose and lab');
+
+                if (!payload.purpose || !payload.lab) {
+                    return alert('Please select a purpose and a lab');
+                }
+
                 try {
                     const res = await fetch('/api/admin/sit-in', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    const data = await res.json();
+
                     if (res.ok) {
-                        alert('Sit-in recorded!');
-                        modal2.close();
-                        fetchStudents();
+                        alert('Sit-in recorded successfully!');
+                        document.getElementById('my_modal_2').close();
+                        fetchStudents(); // Refresh table
                     } else {
-                        const data = await res.json();
-                        alert(data.error || 'Failed');
+                        alert(data.error || 'Failed to record sit-in');
                     }
-                } catch (err) { alert('Error'); }
+                } catch (err) {
+                    console.error(err);
+                    alert('An error occurred');
+                }
             }
 
             function logout() {

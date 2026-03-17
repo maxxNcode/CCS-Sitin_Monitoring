@@ -25,14 +25,16 @@
             <div class="card-body gap-6">
                 <!-- Profile Header -->
                 <div class="flex flex-col items-center gap-4 py-4">
-                    <div class="avatar group relative cursor-pointer" onclick="changeAvatar()">
-                        <div class="w-32 h-32 rounded-3xl ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden transition-all duration-500 group-hover:scale-105">
-                            <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky" />
+                    <div class="avatar group relative cursor-pointer" onclick="document.getElementById('profileImageUpload').click()">
+                        <div class="w-32 h-32 rounded-3xl ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden transition-all duration-500 group-hover:scale-105 bg-base-200">
+                            <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky" class="w-full h-full object-cover" />
                         </div>
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white rounded-3xl">
-                            <i class="fa-solid fa-camera text-2xl"></i>
+                            <i class="fa-solid fa-upload text-2xl"></i>
                         </div>
                     </div>
+                    <input type="file" id="profileImageUpload" accept="image/*" class="hidden" onchange="previewImage(event)" />
+                    <button type="button" class="btn btn-ghost btn-sm text-xs font-bold uppercase tracking-widest opacity-60 hover:opacity-100" onclick="changeAvatar()">Or Select Dicebear Avatar</button>
                 </div>
 
                 <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -170,28 +172,46 @@
             if (url) selectAvatar(url);
         }
 
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                    // Clear the predefined picker if they upload a file
+                    document.getElementById('profilePic').value = ''; 
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
         document.getElementById('profileForm').onsubmit = async (e) => {
             e.preventDefault();
             
-            const payload = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                middleName: document.getElementById('middleName').value,
-                email: document.getElementById('email').value,
-                profilePic: document.getElementById('profilePic').value,
-            };
+            const formData = new FormData();
+            formData.append('firstName', document.getElementById('firstName').value);
+            formData.append('lastName', document.getElementById('lastName').value);
+            formData.append('middleName', document.getElementById('middleName').value);
+            formData.append('email', document.getElementById('email').value);
+            
+            // Only append textual profilePic (like Dicebear) if the user didn't upload a real file
+            const fileInput = document.getElementById('profileImageUpload');
+            if (fileInput && fileInput.files[0]) {
+                formData.append('profileImage', fileInput.files[0]);
+            } else {
+                formData.append('profilePic', document.getElementById('profilePic').value);
+            }
 
             if (currentUser.role === 'student') {
-                payload.course = document.getElementById('course').value;
-                payload.courseLevel = document.getElementById('courseLevel').value;
-                payload.address = document.getElementById('address').value;
+                formData.append('course', document.getElementById('course').value);
+                formData.append('courseLevel', document.getElementById('courseLevel').value);
+                formData.append('address', document.getElementById('address').value);
             }
 
             try {
                 const res = await fetch('/api/update-profile', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: formData
                 });
                 
                 const result = await res.json();

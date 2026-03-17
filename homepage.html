@@ -851,8 +851,10 @@
                         const avatars =
                             document.querySelectorAll(".avatar img");
                         avatars.forEach((img) => {
-                            if (!img.src.includes("ccslogo"))
+                            if (!img.src.includes("ccslogo")) {
                                 img.src = data.profilePic;
+                                img.classList.add('w-full', 'h-full', 'object-cover');
+                            }
                         });
                     }
 

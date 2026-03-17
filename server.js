@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { error } = require('console');
 
 const app = express();
@@ -33,7 +35,7 @@ function initializeDatabase() {
             courseLevel TEXT,
             course TEXT,
             address TEXT,
-            sessionLeft INTEGER,
+            sessionLeft INTEGER DEFAULT 40,
             profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky',
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -96,8 +98,24 @@ app.use(express.static(path.join(__dirname)));
 // Serve Static
 app.use(express.static('public'));
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
 
+// Multer generic upload config
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir)
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
+    }
+});
+const upload = multer({ storage: storage });
 
+app.use('/uploads', express.static(uploadsDir));
 
 // Session configuration
 app.use(session({
@@ -250,33 +268,36 @@ app.get('/api/studentinfo', (req, res) => {
 });
 
 // Update Profile API
-app.post('/api/update-profile', (req, res) => {
+app.post('/api/update-profile', upload.single('profileImage'), (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { firstName, lastName, middleName, email, profilePic, course, courseLevel, address } = req.body;
     const userId = req.session.userId;
     const role = req.session.role;
 
+    let finalProfilePic = profilePic;
+    if (req.file) {
+        finalProfilePic = '/uploads/' + req.file.filename;
+    }
+
     if (role === 'admin') {
         db.run(`UPDATE admins SET firstName = ?, lastName = ?, middleName = ?, email = ?, profilePic = ? WHERE id = ?`,
-            [firstName, lastName, middleName, email, profilePic, userId], function(err) {
+            [firstName, lastName, middleName, email, finalProfilePic, userId], function(err) {
                 if (err) return res.status(500).json({ error: 'Update failed' });
                 req.session.firstName = firstName;
                 req.session.lastName = lastName;
-                res.json({ success: true });
+                res.json({ success: true, profilePic: finalProfilePic });
             });
     } else {
         db.run(`UPDATE users SET firstName = ?, lastName = ?, middleName = ?, email = ?, course = ?, courseLevel = ?, address = ?, profilePic = ? WHERE id = ?`,
-            [firstName, lastName, middleName, email, course, courseLevel, address, profilePic, userId], function(err) {
+            [firstName, lastName, middleName, email, course, courseLevel, address, finalProfilePic, userId], function(err) {
                 if (err) return res.status(500).json({ error: 'Update failed' });
                 req.session.firstName = firstName;
                 req.session.lastName = lastName;
-                res.json({ success: true });
+                res.json({ success: true, profilePic: finalProfilePic });
             });
     }
 });
-
-
 // Register route
 app.post('/register', (req, res) => {
     const { idNumber, email, password, firstName, lastName, middleName, courseLevel, course, address } = req.body;
@@ -292,8 +313,8 @@ app.post('/register', (req, res) => {
         }
 
         db.run(
-            `INSERT INTO users (idNumber, email, password, firstName, lastName, middleName, courseLevel, course, address)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO users (idNumber, email, password, firstName, lastName, middleName, courseLevel, course, address, sessionLeft)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 40)`,
             [idNumber, email, hashedPassword, firstName, lastName, middleName, courseLevel, course, address],
             (err) => {
                 if (err) {
@@ -355,16 +376,51 @@ app.post('/api/admin/sit-in', (req, res) => {
 
 // Admin API: Fetch Sit-in Records
 app.get('/api/admin/sit-in-records', (req, res) => {
-    db.all('SELECT * FROM sitin_records ORDER BY created_at DESC', (err, rows) => {
+    db.all(`
+        SELECT s.*, u.profilePic 
+        FROM sitin_records s
+        LEFT JOIN users u ON s.idNumber = u.idNumber
+        ORDER BY s.created_at DESC
+    `, (err, rows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         res.json(rows);
+    });
+});
+
+// Admin API: Logout / End a Sit-in Session
+app.post('/api/admin/sit-in/logout/:id', (req, res) => {
+    const recordId = req.params.id;
+
+    db.get('SELECT * FROM sitin_records WHERE id = ?', [recordId], (err, record) => {
+        if (err || !record) return res.status(404).json({ error: 'Record not found' });
+        if (record.status !== 'Active') return res.status(400).json({ error: 'Session already ended' });
+
+        db.run('UPDATE sitin_records SET status = ? WHERE id = ?',
+            ['Inactive', recordId], function (err) {
+                if (err) return res.status(500).json({ error: 'Failed to end session' });
+                res.json({ success: true, message: 'Session ended successfully' });
+            });
+    });
+});
+
+// Admin API: Delete a Sit-in Record
+app.delete('/api/admin/sit-in/:id', (req, res) => {
+    const recordId = req.params.id;
+
+    db.run('DELETE FROM sitin_records WHERE id = ?', [recordId], function (err) {
+        if (err) return res.status(500).json({ error: 'Failed to delete record' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Record not found' });
+        res.json({ success: true, message: 'Record deleted successfully' });
     });
 });
 
 // Admin API: Fetch All Students
 app.get('/api/admin/students', (req, res) => {
     db.all('SELECT idNumber, firstName, lastName, middleName, email, course, courseLevel, sessionLeft, profilePic FROM users', (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
+        if (err) {
+            console.error('Error fetching students:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
         res.json(rows);
     });
 });
@@ -488,6 +544,26 @@ function ensureProfilePicColumn() {
     });
 }
 ensureProfilePicColumn();
+
+// Ensure sessionLeft column exists (Migration)
+function ensureSessionLeftColumn() {
+    db.all("PRAGMA table_info(users)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'sessionLeft')) {
+            db.run("ALTER TABLE users ADD COLUMN sessionLeft INTEGER DEFAULT 40", (err) => {
+                if (!err) {
+                    console.log('Added sessionLeft column to users table');
+                    db.run('UPDATE users SET sessionLeft = 40 WHERE sessionLeft IS NULL');
+                }
+            });
+        } else {
+            // Column exists, just fix any NULLs
+            db.run('UPDATE users SET sessionLeft = 40 WHERE sessionLeft IS NULL', (err) => {
+                if (!err) console.log('Ensured all students have sessionLeft set');
+            });
+        }
+    });
+}
+ensureSessionLeftColumn();
 
 
 // Seed dummy announcement if empty
