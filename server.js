@@ -35,7 +35,7 @@ function initializeDatabase() {
             courseLevel TEXT,
             course TEXT,
             address TEXT,
-            sessionLeft INTEGER DEFAULT 40,
+            sessionLeft INTEGER DEFAULT 30,
             profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky',
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
