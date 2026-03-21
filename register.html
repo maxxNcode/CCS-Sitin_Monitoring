@@ -400,14 +400,7 @@
                 <main
                     class="flex-1 flex items-center justify-center p-4 md:p-8 relative overflow-hidden"
                 >
-                    <!-- Background Accents -->
-                    <div
-                        class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 blur-[120px] rounded-full animate-pulse"
-                    ></div>
-                    <div
-                        class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/20 blur-[120px] rounded-full animate-pulse"
-                        style="animation-delay: 2s"
-                    ></div>
+
 
                     <div
                         class="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom duration-700"
@@ -533,7 +526,7 @@
                                     <div class="space-y-6">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/5 text-secondary flex items-center justify-center text-sm font-black shadow-sm shadow-secondary/20"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/5 text-primary flex items-center justify-center text-sm font-black shadow-sm shadow-secondary/20"
                                             >
                                                 02
                                             </div>
@@ -550,38 +543,12 @@
                                                 <label class="label pt-0"
                                                     ><span
                                                         class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                                        >Year Level</span
-                                                    ></label
-                                                >
-                                                <select
-                                                    id="courseLevel"
-                                                    class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
-                                                    required
-                                                >
-                                                    <option
-                                                        value=""
-                                                        disabled
-                                                        selected
-                                                    >
-                                                        Select Level
-                                                    </option>
-                                                    <option>1st Year</option>
-                                                    <option>2nd Year</option>
-                                                    <option>3rd Year</option>
-                                                    <option>4th Year</option>
-                                                    <option>5th Year</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-control">
-                                                <label class="label pt-0"
-                                                    ><span
-                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
                                                         >Program / Course</span
                                                     ></label
                                                 >
                                                 <select
                                                     id="course"
-                                                    class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                    class="select select-bordered w-full rounded-2xl bg-base-200/80 border-base-content/5 focus:border-primary font-bold"
                                                     required
                                                 >
                                                     <option
@@ -608,6 +575,32 @@
                                                         Associate in Computer
                                                         Technology
                                                     </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-control">
+                                                <label class="label pt-0"
+                                                    ><span
+                                                        class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                        >Year Level</span
+                                                    ></label
+                                                >
+                                                <select
+                                                    id="courseLevel"
+                                                    class="select select-bordered w-full rounded-2xl bg-base-200/80 border-base-content/5 backdrop-blur-md focus:border-primary font-bold"
+                                                    required
+                                                >
+                                                    <option
+                                                        value=""
+                                                        disabled
+                                                        selected
+                                                    >
+                                                        Select Level
+                                                    </option>
+                                                    <option>1st Year</option>
+                                                    <option>2nd Year</option>
+                                                    <option>3rd Year</option>
+                                                    <option>4th Year</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -669,7 +662,7 @@
                                     <div class="space-y-6">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-accent flex items-center justify-center text-sm font-black shadow-sm shadow-accent/20"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-primary flex items-center justify-center text-sm font-black shadow-sm shadow-accent/20"
                                             >
                                                 03
                                             </div>
@@ -787,7 +780,7 @@
                         <p
                             class="text-center mt-8 text-[10px] font-black uppercase tracking-[4px] opacity-20"
                         >
-                            University of Cebu • CICS • CCS Monitoring v5.0
+                            University of Cebu • CCS
                         </p>
                     </div>
                 </main>

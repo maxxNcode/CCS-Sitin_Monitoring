@@ -25,21 +25,11 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     </head>
     <body class="bg-base-200 min-h-screen">
-        <!-- Global Ambient Background -->
-        <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
-            <div
-                class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse"
-            ></div>
-            <div
-                class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full animate-pulse"
-                style="animation-delay: 2s"
-            ></div>
-        </div>
 
         <div
             class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
         >
-            <div class="flex-1 gap-3">
+            <div class="flex-1 gap-3 flex items-center">
                 <a
                     href="javascript:history.back()"
                     class="btn btn-ghost btn-sm"
