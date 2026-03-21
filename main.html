@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-theme="fantasy">
+<html data-theme="dark">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -161,7 +161,7 @@
                     .then((data) => {
                         if (!data.loggedIn) {
                             window.location.href = "/login";
-                        } else if (data.role === 'admin') {
+                        } else if (data.role === "admin") {
                             window.location.href = "/admin";
                         }
                     })

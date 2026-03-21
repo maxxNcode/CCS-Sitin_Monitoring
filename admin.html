@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="coffee">
+<html data-theme="fantasy">
 
 <head>
     <meta charset="UTF-8" />
@@ -17,9 +17,14 @@
     <div class="drawer">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content flex flex-col">
+            <!-- Global Ambient Background -->
+            <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+                <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse"></div>
+                <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+            </div>
+
             <!-- Navbar -->
-            <div
-                class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
+            <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5">
                 <div class="flex-none md:hidden">
                     <label for="my-drawer" class="btn btn-ghost btn-square">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -103,17 +108,26 @@
                             <div class="space-y-4">
                                 <!-- Readonly Info Cards -->
                                 <div class="grid grid-cols-2 gap-4 mb-6">
-                                    <div class="bg-base-200/50 rounded-2xl p-4 border border-base-content/5">
-                                        <p class="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">ID Number</p>
-                                        <input type="text" id="formIdNumber" class="w-full bg-transparent font-bold text-sm outline-none focus:text-primary transition-colors" placeholder="Enter ID" />
+                                    <!-- ID Number Input -->
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1">
+                                            <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">ID Number</span>
+                                        </label>
+                                        <input type="text" id="formIdNumber" placeholder="Enter ID" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
-                                    <div class="bg-primary/10 rounded-2xl p-4 border border-primary/20 flex flex-col justify-center items-center text-center">
-                                        <p class="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">Remaining</p>
+
+                                    <!-- Remaining Sessions Highlight -->
+                                    <div class="bg-primary/10 rounded-2xl border border-primary/20 flex justify-center gap-2 items-center text-center mt-[1.6rem]">
+                                        <p class="text-[10px] font-black uppercase tracking-widest text-primary/60">Remaining</p>
                                         <p class="text-2xl font-black text-primary leading-none" id="formSessions">0</p>
                                     </div>
-                                    <div class="bg-base-200/50 rounded-2xl p-4 border border-base-content/5 col-span-2">
-                                        <p class="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Student Name</p>
-                                        <input type="text" id="formStudentName" class="w-full bg-transparent font-bold text-base outline-none focus:text-primary transition-colors" placeholder="Enter Name" />
+
+                                    <!-- Student Name Input -->
+                                    <div class="form-control col-span-2">
+                                        <label class="label pt-0 pb-1">
+                                            <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student Name</span>
+                                        </label>
+                                        <input type="text" id="formStudentName" placeholder="Enter Name" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
                                 </div>
 
@@ -253,7 +267,7 @@
                     <div class=" flex gap-6">
 
                         <!-- Statistics Section -->
-                        <div class="card bg-base-100 shadow-xl border border-base-content/5 w-[600px] h-[auto]">
+                        <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10 w-[600px] h-[auto]">
                             <div class="card-body">
                                 <div class="flex justify-between items-center mb-6">
                                     <h2 class="text-[20px] font-bold flex items-center gap-3">
@@ -265,7 +279,7 @@
                                 <div id="statistics" class="  ">
 
                                     <div id="statistics-data"
-                                        class="stats stats-vertical w-full bg-base-200/30 border border-base-content/5 shadow-inner flex">
+                                        class="stats stats-vertical w-full bg-base-200/50 backdrop-blur-md border border-base-content/10 shadow-inner flex">
                                         <!-- Registered Students -->
                                         <div class="stat">
                                             <div class="stat-figure text-primary">
@@ -279,7 +293,7 @@
                                         </div>
 
                                         <!-- Active Sit-ins -->
-                                        <div class="stat border-t border-base-content/5">
+                                        <div class="stat border-base-content/5">
                                             <div class="stat-figure text-secondary">
                                                 <div class="indicator">
 
@@ -293,7 +307,7 @@
                                         </div>
 
                                         <!-- All-time Records -->
-                                        <div class="stat border-t border-base-content/5">
+                                        <div class="stat border-base-content/5">
                                             <div class="stat-figure text-accent">
                                                 <!-- <i class="fa-solid fa-database text-3xl"></i> -->
                                             </div>
@@ -319,7 +333,7 @@
                         </div>
 
                         <!-- Announcements Section -->
-                        <div class="card bg-base-100 shadow-xl border border-base-content/5 w-[600px] min-h-[500px]">
+                        <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10 w-[600px] min-h-[500px]">
                             <div class="card-body">
                                 <h2
                                     class="text-[20px] font-bold mb-6 flex items-center gap-3 text-center w-full justify-center lg:justify-start">
@@ -327,14 +341,13 @@
                                     Announcements
                                 </h2>
                                 <!-- Create Announcements -->
-                                <div id="" class="space-y-6 max-h-[550px] overflow-y-auto custom-scrollbar py-2">
+                                <div id="" class="space-y-6 max-h-[550px] overflow-y-auto custom-scrollbar">
 
                                     <div class="create-announcements">
                                         <input type="text" placeholder="Title" id="announcementTitle"
                                             class="input input-bordered w-full mb-2" />
                                         <textarea class="textarea textarea-bordered resize-y w-full"
                                             placeholder="Announcement..." id="announcementDescription"></textarea>
-
 
                                         <button class="btn btn-primary mt-4" onclick="addAnnouncement()">Add
                                             Announcement</button>
@@ -396,6 +409,7 @@
                     });
                 });
         });
+        
         // Announcements (Premium Activity Feed V4)
         fetch('/api/announcements')
             .then(res => res.json())
@@ -418,7 +432,7 @@
                             
                             <!-- Content Area -->
                             <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
-                            <div class="bg-base-100/50 rounded-btn p-4 border border-base-content/5 group-hover:border-primary/10 transition-colors">
+                            <div class="rounded-btn border-base-content/5 group-hover:border-primary/10 transition-colors">
                                 <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
                             </div>
                             

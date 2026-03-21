@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-theme="coffee">
+<html data-theme="dark">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -81,29 +81,71 @@
                         </button>
                         <dialog id="my_modal_1" class="modal">
                             <div class="modal-box">
-                                <h3 class="text-lg font-bold">Search</h3>
-                                <p class="py-4">Search for a student</p>
-
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    class="input input-bordered bg-base-200 w-full"
-                                />
-                                <div class="modal-action">
-                                    <button
-                                        class="btn bg-primary text-primary-content"
+                                <h3
+                                    class="text-xl font-black italic tracking-tighter text-base-content mb-2 flex items-center gap-2"
+                                >
+                                    <i
+                                        class="fa-solid fa-magnifying-glass text-primary"
+                                    ></i>
+                                    Search
+                                    <span class="text-primary not-italic"
+                                        >Student</span
                                     >
-                                        Search
-                                    </button>
-                                    <form method="dialog">
-                                        <!-- if there is a button in form, it will close the modal -->
+                                </h3>
+                                <p class="text-sm opacity-60 mb-6 font-medium">
+                                    Enter the student's ID Number to start a
+                                    sit-in session.
+                                </p>
 
-                                        <button class="btn">Exit</button>
+                                <div class="form-control w-full">
+                                    <label class="label pt-0 pb-1">
+                                        <span
+                                            class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                            >Student ID Number</span
+                                        >
+                                    </label>
+                                    <div class="relative group">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10"
+                                        >
+                                            <i class="fa-solid fa-id-card"></i>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            id="searchIdNumber"
+                                            placeholder="e.g. 21-1234-567"
+                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="modal-action mt-8">
+                                    <form
+                                        method="dialog"
+                                        class="w-full flex gap-3"
+                                    >
+                                        <button
+                                            class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase"
+                                            onclick="searchStudent()"
+                                        >
+                                            Search
+                                            <i
+                                                class="fa-solid fa-arrow-right ml-1"
+                                            ></i>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
+                            <form method="dialog" class="modal-backdrop">
+                                <button>close</button>
+                            </form>
                         </dialog>
-
                         <!-- Open the modal using ID.showModal() method -->
                         <button
                             class="btn btn-ghost btn-sm"
@@ -112,59 +154,148 @@
                             <i class="fa-solid fa-plus"></i>Sit-in
                         </button>
                         <dialog id="my_modal_2" class="modal">
-                            <div class="modal-box flex flex-col gap-4">
-                                <h3 class="text-lg font-bold">Sit-in Form</h3>
-
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">ID Number:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="ID Number"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Student Name:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Student Name"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Purpose:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Purpose"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Lab:</p>
-                                    <input
-                                        type="text"
-                                        placeholder="Lab"
-                                        class="input input-bordered bg-base-200 w-full flex-1"
-                                    />
-                                </div>
-                                <div class="flex justify-center items-center">
-                                    <p class="flex-1">Remaining Sessions:</p>
-                                    <p class="flex-1">10</p>
-                                </div>
-
-                                <div class="modal-action">
-                                    <button
-                                        class="btn bg-primary text-primary-content"
+                            <div class="modal-box p-8 max-w-md">
+                                <h3
+                                    class="text-2xl font-black italic tracking-tighter text-base-content mb-6 flex items-center gap-2"
+                                >
+                                    <i
+                                        class="fa-solid fa-clipboard-user text-primary"
+                                    ></i>
+                                    Record
+                                    <span class="text-primary not-italic"
+                                        >Sit-in</span
                                     >
-                                        Sit-in
-                                    </button>
-                                    <form method="dialog">
-                                        <!-- if there is a button in form, it will close the modal -->
+                                </h3>
 
-                                        <button class="btn">Exit</button>
+                                <div class="space-y-4">
+                                    <!-- Readonly Info Cards -->
+                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                        <!-- ID Number Input -->
+                                        <div class="form-control">
+                                            <label class="label pt-0 pb-1">
+                                                <span
+                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                    >ID Number</span
+                                                >
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="formIdNumber"
+                                                placeholder="Enter ID"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            />
+                                        </div>
+
+                                        <!-- Remaining Sessions Highlight -->
+                                        <div
+                                            class="bg-primary/10 rounded-2xl border border-primary/20 flex justify-center gap-2 items-center text-center mt-[1.6rem]"
+                                        >
+                                            <p
+                                                class="text-[10px] font-black uppercase tracking-widest text-primary/60"
+                                            >
+                                                Remaining
+                                            </p>
+                                            <p
+                                                class="text-2xl font-black text-primary leading-none"
+                                                id="formSessions"
+                                            >
+                                                0
+                                            </p>
+                                        </div>
+
+                                        <!-- Student Name Input -->
+                                        <div class="form-control col-span-2">
+                                            <label class="label pt-0 pb-1">
+                                                <span
+                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                    >Student Name</span
+                                                >
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="formStudentName"
+                                                placeholder="Enter Name"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="divider text-xs font-black opacity-30 uppercase tracking-widest before:bg-base-content/10 after:bg-base-content/10"
+                                    >
+                                        Session Details
+                                    </div>
+
+                                    <!-- Inputs -->
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1">
+                                            <span
+                                                class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                >Purpose</span
+                                            >
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="formPurpose"
+                                            placeholder="e.g. Java Programming, Assignment"
+                                            class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                        />
+                                    </div>
+
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1">
+                                            <span
+                                                class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                >Laboratory</span
+                                            >
+                                        </label>
+                                        <select
+                                            id="formLab"
+                                            class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                        >
+                                            <option value="" disabled selected>
+                                                Select Lab Room
+                                            </option>
+                                            <option value="Lab 524">
+                                                Lab 524
+                                            </option>
+                                            <option value="Lab 526">
+                                                Lab 526
+                                            </option>
+                                            <option value="Lab 542">
+                                                Lab 542
+                                            </option>
+                                            <option value="Mac Lab">
+                                                Mac Lab
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="modal-action mt-8">
+                                    <form
+                                        method="dialog"
+                                        class="w-full flex gap-3"
+                                    >
+                                        <button
+                                            class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500"
+                                            id="closeSitinModal"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase"
+                                            onclick="submitSitin()"
+                                        >
+                                            Confirm Sit-in
+                                        </button>
                                     </form>
                                 </div>
                             </div>
+                            <form method="dialog" class="modal-backdrop">
+                                <button>close</button>
+                            </form>
                         </dialog>
 
                         <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
@@ -567,7 +698,10 @@
                         >
                     </li>
                     <li>
-                        <a><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a>
+                        <a
+                            ><i class="fa-solid fa-clock-rotate-left mr-2"></i
+                            >History</a
+                        >
                     </li>
 
                     <li class="mt-auto">
@@ -589,7 +723,8 @@
                 fetch("/check-session")
                     .then((r) => r.json())
                     .then((d) => {
-                        if (!d.loggedIn || d.role !== 'admin') window.location.href = "/login";
+                        if (!d.loggedIn || d.role !== "admin")
+                            window.location.href = "/login";
                     })
                     .catch(() => (window.location.href = "/login"));
 
@@ -619,19 +754,92 @@
                     .then((res) => res.json())
                     .then((data) => {
                         if (data.error) return;
-                        const header = document.getElementById("student-name-header");
+                        const header = document.getElementById(
+                            "student-name-header",
+                        );
                         if (header) header.innerText = data.name;
                         if (data.profilePic) {
-                            const avatars = document.querySelectorAll('.avatar img');
-                            avatars.forEach(img => {
-                                if (!img.src.includes('ccslogo')) {
+                            const avatars =
+                                document.querySelectorAll(".avatar img");
+                            avatars.forEach((img) => {
+                                if (!img.src.includes("ccslogo")) {
                                     img.src = data.profilePic;
-                                    img.classList.add('w-full', 'h-full', 'object-cover');
+                                    img.classList.add(
+                                        "w-full",
+                                        "h-full",
+                                        "object-cover",
+                                    );
                                 }
                             });
                         }
                     });
             });
+
+            async function searchStudent() {
+                const idNumber =
+                    document.getElementById("searchIdNumber").value;
+                if (!idNumber) return alert("Please enter an ID Number");
+
+                try {
+                    const res = await fetch(
+                        `/api/admin/search-student/${idNumber}`,
+                    );
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        // Populate Form
+                        document.getElementById("formIdNumber").value =
+                            idNumber;
+                        document.getElementById("formStudentName").value =
+                            data.name;
+                        document.getElementById("formSessions").innerText =
+                            data.sessionLeft;
+
+                        // Swap Modals
+                        document.getElementById("my_modal_1").close();
+                        document.getElementById("my_modal_2").showModal();
+                    } else {
+                        alert(data.error || "Student not found");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Search failed");
+                }
+            }
+
+            async function submitSitin() {
+                const payload = {
+                    idNumber: document.getElementById("formIdNumber").value,
+                    studentName:
+                        document.getElementById("formStudentName").value,
+                    purpose: document.getElementById("formPurpose").value,
+                    lab: document.getElementById("formLab").value,
+                };
+
+                if (!payload.purpose || !payload.lab) {
+                    return alert("Please select a purpose and a lab");
+                }
+
+                try {
+                    const res = await fetch("/api/admin/sit-in", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    });
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        alert("Sit-in recorded successfully!");
+                        document.getElementById("my_modal_2").close();
+                        location.reload(); // Refresh dashboard stats
+                    } else {
+                        alert(data.error || "Failed to record sit-in");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("An error occurred");
+                }
+            }
         </script>
     </body>
 </html>

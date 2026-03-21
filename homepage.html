@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-theme="forest">
+<html data-theme="dark">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,9 +29,22 @@
         <div class="drawer">
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
+                <!-- Global Ambient Background -->
+                <div
+                    class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden"
+                >
+                    <div
+                        class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse"
+                    ></div>
+                    <div
+                        class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full animate-pulse"
+                        style="animation-delay: 2s"
+                    ></div>
+                </div>
+
                 <!-- Navbar -->
                 <div
-                    class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5"
+                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
                 >
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
@@ -434,7 +447,7 @@
                         <div class="lg:col-span-4 space-y-6">
                             <!-- Profile Card -->
                             <div
-                                class="card bg-base-100 shadow-xl border border-base-content/5 overflow-hidden"
+                                class="card bg-base-100/80 backdrop-blur-xl shadow-xl shadow-base-content/5 border border-base-content/10 overflow-hidden hover:shadow-primary/5 transition-all duration-300"
                             >
                                 <div class="h-24 bg-primary relative">
                                     <div class="absolute -bottom-12 left-6">
@@ -481,10 +494,10 @@
 
                             <!-- Quick Stats Card -->
                             <div
-                                class="card bg-primary text-primary-content shadow-xl shadow-primary/20 overflow-hidden relative group"
+                                class="card bg-primary text-primary-content shadow-xl shadow-primary/30 overflow-hidden relative group hover:-translate-y-1 transition-transform duration-500"
                             >
                                 <div
-                                    class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700"
+                                    class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
                                 >
                                     <i class="fa-solid fa-clock text-9xl"></i>
                                 </div>
@@ -534,7 +547,7 @@
                         <div class="lg:col-span-8 space-y-6">
                             <!-- Announcements Section -->
                             <div
-                                class="card bg-base-100 shadow-xl border border-base-content/5"
+                                class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10"
                             >
                                 <div class="card-body">
                                     <div
@@ -576,7 +589,7 @@
 
                             <!-- Rules Section with Accordions -->
                             <div
-                                class="card bg-base-100 shadow-xl border border-base-content/5"
+                                class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10"
                             >
                                 <div class="card-body">
                                     <h2
@@ -807,6 +820,7 @@
                         });
                     });
             });
+
             // Announcements (Premium Activity Feed V4)
             fetch("/api/announcements")
                 .then((res) => res.json())
@@ -829,7 +843,7 @@
                             
                             <!-- Content Area -->
                             <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
-                            <div class="bg-base-100/50 rounded-btn p-4 border border-base-content/5 group-hover:border-primary/10 transition-colors">
+                            <div class="rounded-btn border-base-content/5 group-hover:border-primary/10 transition-colors">
                                 <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
                             </div>
                             
@@ -853,7 +867,11 @@
                         avatars.forEach((img) => {
                             if (!img.src.includes("ccslogo")) {
                                 img.src = data.profilePic;
-                                img.classList.add('w-full', 'h-full', 'object-cover');
+                                img.classList.add(
+                                    "w-full",
+                                    "h-full",
+                                    "object-cover",
+                                );
                             }
                         });
                     }

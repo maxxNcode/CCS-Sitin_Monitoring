@@ -1,231 +1,425 @@
-<!DOCTYPE html>
-<html data-theme="forest">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile - CCS Sit-In Monitoring</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
-    <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-</head>
-<body class="bg-base-200 min-h-screen">
-    <div class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
-        <div class="flex-1 gap-3">
-            <a href="javascript:history.back()" class="btn btn-ghost btn-sm">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <span class="text-xl font-black">Edit Profile</span>
+<!doctype html>
+<html data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Edit Profile - CCS Sit-In Monitoring</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script
+            src="https://kit.fontawesome.com"
+            crossorigin="anonymous"
+        ></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    </head>
+    <body class="bg-base-200 min-h-screen">
+        <!-- Global Ambient Background -->
+        <div class="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
+            <div
+                class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full animate-pulse"
+            ></div>
+            <div
+                class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[120px] rounded-full animate-pulse"
+                style="animation-delay: 2s"
+            ></div>
         </div>
-    </div>
 
-    <main class="p-4 md:p-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div class="card bg-base-100 shadow-xl border border-base-content/5">
-            <div class="card-body gap-6">
-                <!-- Profile Header -->
-                <div class="flex flex-col items-center gap-4 py-4">
-                    <div class="avatar group relative cursor-pointer" onclick="document.getElementById('profileImageUpload').click()">
-                        <div class="w-32 h-32 rounded-3xl ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden transition-all duration-500 group-hover:scale-105 bg-base-200">
-                            <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky" class="w-full h-full object-cover" />
-                        </div>
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white rounded-3xl">
-                            <i class="fa-solid fa-upload text-2xl"></i>
-                        </div>
-                    </div>
-                    <input type="file" id="profileImageUpload" accept="image/*" class="hidden" onchange="previewImage(event)" />
-                    <button type="button" class="btn btn-ghost btn-sm text-xs font-bold uppercase tracking-widest opacity-60 hover:opacity-100" onclick="changeAvatar()">Or Select Dicebear Avatar</button>
-                </div>
+        <div
+            class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
+        >
+            <div class="flex-1 gap-3">
+                <a
+                    href="javascript:history.back()"
+                    class="btn btn-ghost btn-sm"
+                >
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <span class="text-xl font-black">Edit Profile</span>
+            </div>
+        </div>
 
-                <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Basic Info -->
-                    <div class="form-control w-full">
-                        <label class="label"><span class="label-text font-bold">First Name</span></label>
-                        <input type="text" id="firstName" class="input input-bordered w-full" required />
-                    </div>
-                    <div class="form-control w-full">
-                        <label class="label"><span class="label-text font-bold">Last Name</span></label>
-                        <input type="text" id="lastName" class="input input-bordered w-full" required />
-                    </div>
-                    <div class="form-control w-full">
-                        <label class="label"><span class="label-text font-bold">Middle Name</span></label>
-                        <input type="text" id="middleName" class="input input-bordered w-full" />
-                    </div>
-                    <div class="form-control w-full">
-                        <label class="label"><span class="label-text font-bold">Email</span></label>
-                        <input type="email" id="email" class="input input-bordered w-full" required />
-                    </div>
-
-                    <!-- Hidden role-specific fields will be shown via JS -->
-                    <div id="student-fields" class="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-1 md:col-span-2 hidden">
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text font-bold">Course</span></label>
-                            <input type="text" id="course" class="input input-bordered w-full" />
+        <main
+            class="p-4 md:p-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700"
+        >
+            <div
+                class="card bg-base-100/80 backdrop-blur-xl shadow-xl shadow-base-content/5 border border-base-content/10"
+            >
+                <div class="card-body gap-6">
+                    <!-- Profile Header -->
+                    <div class="flex flex-col items-center gap-4 py-4">
+                        <div
+                            class="avatar group relative cursor-pointer"
+                            onclick="
+                                document
+                                    .getElementById('profileImageUpload')
+                                    .click()
+                            "
+                        >
+                            <div
+                                class="w-32 h-32 rounded-3xl ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden transition-all duration-500 group-hover:scale-105 bg-base-200"
+                            >
+                                <img
+                                    id="avatar-preview"
+                                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky"
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div
+                                class="absolute inset-0 bg-base-content/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center text-base-100 rounded-3xl"
+                            >
+                                <i class="fa-solid fa-upload text-2xl"></i>
+                            </div>
                         </div>
-                        <div class="form-control w-full">
-                            <label class="label"><span class="label-text font-bold">Year Level</span></label>
-                            <input type="text" id="courseLevel" class="input input-bordered w-full" />
-                        </div>
-                        <div class="form-control w-full col-span-1 md:col-span-2">
-                            <label class="label"><span class="label-text font-bold">Address</span></label>
-                            <textarea id="address" class="textarea textarea-bordered w-full"></textarea>
-                        </div>
-                    </div>
-
-                    <input type="hidden" id="profilePic" />
-                    
-                    <div class="col-span-1 md:col-span-2 pt-4">
-                        <button type="submit" class="btn btn-primary w-full">
-                            <i class="fa-solid fa-save mr-2"></i>Save Changes
+                        <input
+                            type="file"
+                            id="profileImageUpload"
+                            accept="image/*"
+                            class="hidden"
+                            onchange="previewImage(event)"
+                        />
+                        <button
+                            type="button"
+                            class="btn btn-ghost btn-sm text-xs font-bold uppercase tracking-widest opacity-60 hover:opacity-100"
+                            onclick="changeAvatar()"
+                        >
+                            Or Select Dicebear Avatar
                         </button>
                     </div>
-                </form>
+
+                    <form
+                        id="profileForm"
+                        class="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
+                        <!-- Basic Info -->
+                        <div class="form-control w-full">
+                            <label class="label"
+                                ><span class="label-text font-bold"
+                                    >First Name</span
+                                ></label
+                            >
+                            <input
+                                type="text"
+                                id="firstName"
+                                class="input input-bordered w-full"
+                                required
+                            />
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"
+                                ><span class="label-text font-bold"
+                                    >Last Name</span
+                                ></label
+                            >
+                            <input
+                                type="text"
+                                id="lastName"
+                                class="input input-bordered w-full"
+                                required
+                            />
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"
+                                ><span class="label-text font-bold"
+                                    >Middle Name</span
+                                ></label
+                            >
+                            <input
+                                type="text"
+                                id="middleName"
+                                class="input input-bordered w-full"
+                            />
+                        </div>
+                        <div class="form-control w-full">
+                            <label class="label"
+                                ><span class="label-text font-bold"
+                                    >Email</span
+                                ></label
+                            >
+                            <input
+                                type="email"
+                                id="email"
+                                class="input input-bordered w-full"
+                                required
+                            />
+                        </div>
+
+                        <!-- Hidden role-specific fields will be shown via JS -->
+                        <div
+                            id="student-fields"
+                            class="grid grid-cols-1 md:grid-cols-2 gap-4 col-span-1 md:col-span-2 hidden"
+                        >
+                            <div class="form-control w-full">
+                                <label class="label"
+                                    ><span class="label-text font-bold"
+                                        >Course</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    id="course"
+                                    class="input input-bordered w-full"
+                                />
+                            </div>
+                            <div class="form-control w-full">
+                                <label class="label"
+                                    ><span class="label-text font-bold"
+                                        >Year Level</span
+                                    ></label
+                                >
+                                <input
+                                    type="text"
+                                    id="courseLevel"
+                                    class="input input-bordered w-full"
+                                />
+                            </div>
+                            <div
+                                class="form-control w-full col-span-1 md:col-span-2"
+                            >
+                                <label class="label"
+                                    ><span class="label-text font-bold"
+                                        >Address</span
+                                    ></label
+                                >
+                                <textarea
+                                    id="address"
+                                    class="textarea textarea-bordered w-full"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="profilePic" />
+
+                        <div class="col-span-1 md:col-span-2 pt-4">
+                            <button
+                                type="submit"
+                                class="btn btn-primary w-full shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all duration-300"
+                            >
+                                <i class="fa-solid fa-save mr-2"></i>Save
+                                Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
 
-    <!-- Avatar Picker Modal -->
-    <dialog id="avatar_modal" class="modal">
-        <div class="modal-box max-w-md">
-            <h3 class="font-bold text-lg mb-4 text-center">Select an Avatar</h3>
-            <div class="grid grid-cols-4 gap-4" id="avatar-grid">
-                <!-- Avatars will be injected here -->
+        <!-- Avatar Picker Modal -->
+        <dialog id="avatar_modal" class="modal">
+            <div class="modal-box max-w-md">
+                <h3 class="font-bold text-lg mb-4 text-center">
+                    Select an Avatar
+                </h3>
+                <div class="grid grid-cols-4 gap-4" id="avatar-grid">
+                    <!-- Avatars will be injected here -->
+                </div>
+                <div class="modal-action">
+                    <form method="dialog" class="w-full flex gap-2">
+                        <input
+                            type="text"
+                            id="custom-avatar-url"
+                            placeholder="Or paste image URL"
+                            class="input input-bordered flex-1 input-sm"
+                        />
+                        <button
+                            class="btn btn-sm btn-primary"
+                            onclick="setAvatarFromUrl()"
+                        >
+                            Set
+                        </button>
+                        <button class="btn btn-sm">Close</button>
+                    </form>
+                </div>
             </div>
-            <div class="modal-action">
-                <form method="dialog" class="w-full flex gap-2">
-                    <input type="text" id="custom-avatar-url" placeholder="Or paste image URL" class="input input-bordered flex-1 input-sm" />
-                    <button class="btn btn-sm btn-primary" onclick="setAvatarFromUrl()">Set</button>
-                    <button class="btn btn-sm">Close</button>
-                </form>
-            </div>
-        </div>
-    </dialog>
+        </dialog>
 
-    <script>
-        let currentUser = null;
+        <script>
+            let currentUser = null;
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            // Load theme
-            document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'forest');
+            window.addEventListener("DOMContentLoaded", async () => {
+                // Load theme
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    localStorage.getItem("theme") || "forest",
+                );
 
-            // Fetch session info
-            const res = await fetch('/check-session');
-            const data = await res.json();
-            
-            if (!data.loggedIn) {
-                window.location.href = '/login';
-                return;
-            }
+                // Fetch session info
+                const res = await fetch("/check-session");
+                const data = await res.json();
 
-            currentUser = data;
-
-            // Fetch full profile info from /api/studentinfo (or admin info if we had a route, but for now we'll use session + session storage if needed)
-            // For now, let's assume /api/studentinfo handles returning basic info for whichever user is logged in if we adjust it
-            // Or just use the session data for names/pics
-            
-            // Let's adjust server.js to make /api/studentinfo more generic if needed, but for now let's use session data
-            // Actually, /api/studentinfo exists, let's use it.
-            const profileRes = await fetch('/api/studentinfo');
-            const profileData = await profileRes.json();
-            
-            if (!profileData.error) {
-                // Populate forms
-                const names = profileData.name.split(' ');
-                document.getElementById('firstName').value = names[0] || '';
-                document.getElementById('lastName').value = names[names.length - 1] || '';
-                document.getElementById('email').value = profileData.email || '';
-                document.getElementById('profilePic').value = profileData.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky';
-                document.getElementById('avatar-preview').src = document.getElementById('profilePic').value;
-
-                if (currentUser.role === 'student') {
-                    document.getElementById('student-fields').classList.remove('hidden');
-                    document.getElementById('course').value = profileData.course || '';
-                    document.getElementById('courseLevel').value = profileData.courseLevel || '';
-                    document.getElementById('address').value = profileData.address || '';
+                if (!data.loggedIn) {
+                    window.location.href = "/login";
+                    return;
                 }
-            }
-        });
 
-        function changeAvatar() {
-            const grid = document.getElementById('avatar-grid');
-            grid.innerHTML = '';
-            const seeds = ['Felix', 'Aneka', 'Lucky', 'Scooter', 'Boots', 'Mochi', 'Pepper', 'Ginger'];
-            seeds.forEach(seed => {
-                const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
-                const div = document.createElement('div');
-                div.className = 'avatar cursor-pointer hover:scale-110 transition-transform';
-                div.onclick = () => selectAvatar(url);
-                div.innerHTML = `<div class="w-16 h-16 rounded-xl border-2 border-transparent hover:border-primary overflow-hidden"><img src="${url}"></div>`;
-                grid.appendChild(div);
+                currentUser = data;
+
+                // Fetch full profile info from /api/studentinfo (or admin info if we had a route, but for now we'll use session + session storage if needed)
+                // For now, let's assume /api/studentinfo handles returning basic info for whichever user is logged in if we adjust it
+                // Or just use the session data for names/pics
+
+                // Let's adjust server.js to make /api/studentinfo more generic if needed, but for now let's use session data
+                // Actually, /api/studentinfo exists, let's use it.
+                const profileRes = await fetch("/api/studentinfo");
+                const profileData = await profileRes.json();
+
+                if (!profileData.error) {
+                    // Populate forms
+                    const names = profileData.name.split(" ");
+                    document.getElementById("firstName").value = names[0] || "";
+                    document.getElementById("lastName").value =
+                        names[names.length - 1] || "";
+                    document.getElementById("email").value =
+                        profileData.email || "";
+                    document.getElementById("profilePic").value =
+                        profileData.profilePic ||
+                        "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky";
+                    document.getElementById("avatar-preview").src =
+                        document.getElementById("profilePic").value;
+
+                    if (currentUser.role === "student") {
+                        document
+                            .getElementById("student-fields")
+                            .classList.remove("hidden");
+                        document.getElementById("course").value =
+                            profileData.course || "";
+                        document.getElementById("courseLevel").value =
+                            profileData.courseLevel || "";
+                        document.getElementById("address").value =
+                            profileData.address || "";
+                    }
+                }
             });
-            document.getElementById('avatar_modal').showModal();
-        }
 
-        function selectAvatar(url) {
-            document.getElementById('avatar-preview').src = url;
-            document.getElementById('profilePic').value = url;
-            document.getElementById('avatar_modal').close();
-        }
-
-        function setAvatarFromUrl() {
-            const url = document.getElementById('custom-avatar-url').value;
-            if (url) selectAvatar(url);
-        }
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('avatar-preview').src = e.target.result;
-                    // Clear the predefined picker if they upload a file
-                    document.getElementById('profilePic').value = ''; 
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        document.getElementById('profileForm').onsubmit = async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            formData.append('firstName', document.getElementById('firstName').value);
-            formData.append('lastName', document.getElementById('lastName').value);
-            formData.append('middleName', document.getElementById('middleName').value);
-            formData.append('email', document.getElementById('email').value);
-            
-            // Only append textual profilePic (like Dicebear) if the user didn't upload a real file
-            const fileInput = document.getElementById('profileImageUpload');
-            if (fileInput && fileInput.files[0]) {
-                formData.append('profileImage', fileInput.files[0]);
-            } else {
-                formData.append('profilePic', document.getElementById('profilePic').value);
-            }
-
-            if (currentUser.role === 'student') {
-                formData.append('course', document.getElementById('course').value);
-                formData.append('courseLevel', document.getElementById('courseLevel').value);
-                formData.append('address', document.getElementById('address').value);
-            }
-
-            try {
-                const res = await fetch('/api/update-profile', {
-                    method: 'POST',
-                    body: formData
+            function changeAvatar() {
+                const grid = document.getElementById("avatar-grid");
+                grid.innerHTML = "";
+                const seeds = [
+                    "Felix",
+                    "Aneka",
+                    "Lucky",
+                    "Scooter",
+                    "Boots",
+                    "Mochi",
+                    "Pepper",
+                    "Ginger",
+                ];
+                seeds.forEach((seed) => {
+                    const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+                    const div = document.createElement("div");
+                    div.className =
+                        "avatar cursor-pointer hover:scale-110 transition-transform";
+                    div.onclick = () => selectAvatar(url);
+                    div.innerHTML = `<div class="w-16 h-16 rounded-xl border-2 border-transparent hover:border-primary overflow-hidden"><img src="${url}"></div>`;
+                    grid.appendChild(div);
                 });
-                
-                const result = await res.json();
-                if (res.ok) {
-                    alert('Profile updated successfully!');
-                    window.location.href = currentUser.role === 'admin' ? '/admin' : '/homepage';
-                } else {
-                    alert(result.error || 'Failed to update profile');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('An error occurred');
+                document.getElementById("avatar_modal").showModal();
             }
-        };
-    </script>
-</body>
+
+            function selectAvatar(url) {
+                document.getElementById("avatar-preview").src = url;
+                document.getElementById("profilePic").value = url;
+                document.getElementById("avatar_modal").close();
+            }
+
+            function setAvatarFromUrl() {
+                const url = document.getElementById("custom-avatar-url").value;
+                if (url) selectAvatar(url);
+            }
+
+            function previewImage(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById("avatar-preview").src =
+                            e.target.result;
+                        // Clear the predefined picker if they upload a file
+                        document.getElementById("profilePic").value = "";
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            document.getElementById("profileForm").onsubmit = async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData();
+                formData.append(
+                    "firstName",
+                    document.getElementById("firstName").value,
+                );
+                formData.append(
+                    "lastName",
+                    document.getElementById("lastName").value,
+                );
+                formData.append(
+                    "middleName",
+                    document.getElementById("middleName").value,
+                );
+                formData.append(
+                    "email",
+                    document.getElementById("email").value,
+                );
+
+                // Only append textual profilePic (like Dicebear) if the user didn't upload a real file
+                const fileInput = document.getElementById("profileImageUpload");
+                if (fileInput && fileInput.files[0]) {
+                    formData.append("profileImage", fileInput.files[0]);
+                } else {
+                    formData.append(
+                        "profilePic",
+                        document.getElementById("profilePic").value,
+                    );
+                }
+
+                if (currentUser.role === "student") {
+                    formData.append(
+                        "course",
+                        document.getElementById("course").value,
+                    );
+                    formData.append(
+                        "courseLevel",
+                        document.getElementById("courseLevel").value,
+                    );
+                    formData.append(
+                        "address",
+                        document.getElementById("address").value,
+                    );
+                }
+
+                try {
+                    const res = await fetch("/api/update-profile", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    const result = await res.json();
+                    if (res.ok) {
+                        alert("Profile updated successfully!");
+                        window.location.href =
+                            currentUser.role === "admin"
+                                ? "/admin"
+                                : "/homepage";
+                    } else {
+                        alert(result.error || "Failed to update profile");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("An error occurred");
+                }
+            };
+        </script>
+    </body>
 </html>

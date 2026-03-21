@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-theme="forest">
+<html data-theme="dark  ">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -402,17 +402,18 @@
                 >
                     <!-- Background Accents -->
                     <div
-                        class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 blur-[100px] rounded-full"
+                        class="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 blur-[120px] rounded-full animate-pulse"
                     ></div>
                     <div
-                        class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/5 blur-[100px] rounded-full"
+                        class="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/20 blur-[120px] rounded-full animate-pulse"
+                        style="animation-delay: 2s"
                     ></div>
 
                     <div
                         class="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom duration-700"
                     >
                         <div
-                            class="card bg-base-100 shadow-2xl border border-base-content/5 overflow-hidden rounded-[2.5rem]"
+                            class="card bg-base-100/70 backdrop-blur-2xl shadow-2xl shadow-base-content/10 border border-base-content/10 overflow-hidden rounded-[2.5rem] hover:shadow-primary/5 transition-all duration-500"
                         >
                             <div
                                 class="card-body p-8 md:p-12 overflow-y-auto custom-scrollbar"
@@ -454,7 +455,7 @@
                                     <div class="space-y-6">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-black"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center text-sm font-black shadow-sm shadow-primary/20"
                                             >
                                                 01
                                             </div>
@@ -532,7 +533,7 @@
                                     <div class="space-y-6">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center text-sm font-black"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/5 text-secondary flex items-center justify-center text-sm font-black shadow-sm shadow-secondary/20"
                                             >
                                                 02
                                             </div>
@@ -668,7 +669,7 @@
                                     <div class="space-y-6">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center text-sm font-black"
+                                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-accent flex items-center justify-center text-sm font-black shadow-sm shadow-accent/20"
                                             >
                                                 03
                                             </div>
@@ -755,7 +756,7 @@
                                     >
                                         <button
                                             type="submit"
-                                            class="btn btn-primary btn-lg flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase"
+                                            class="btn btn-primary btn-lg flex-1 rounded-2xl shadow-xl shadow-primary/40 hover:shadow-primary/60 hover:-translate-y-1 transition-all duration-300 font-black italic uppercase"
                                         >
                                             Complete Enrollment
                                             <i
