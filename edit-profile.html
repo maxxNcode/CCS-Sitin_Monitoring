@@ -23,6 +23,7 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
     </head>
     <body class="bg-base-200 min-h-screen">
 
@@ -397,17 +398,17 @@
 
                     const result = await res.json();
                     if (res.ok) {
-                        alert("Profile updated successfully!");
+                        showToast("Profile updated successfully!", "success");
                         window.location.href =
                             currentUser.role === "admin"
                                 ? "/admin"
                                 : "/homepage";
                     } else {
-                        alert(result.error || "Failed to update profile");
+                        showToast(result.error || "Failed to update profile", "error");
                     }
                 } catch (err) {
                     console.error(err);
-                    alert("An error occurred");
+                    showToast("An error occurred", "error");
                 }
             };
         </script>

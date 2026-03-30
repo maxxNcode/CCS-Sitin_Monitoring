@@ -23,6 +23,7 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
         <link rel="stylesheet" href="style.css" />
     </head>
 
@@ -146,13 +147,7 @@
                                 <button>close</button>
                             </form>
                         </dialog>
-                        <!-- Open the modal using ID.showModal() method -->
-                        <button
-                            class="btn btn-ghost btn-sm"
-                            onclick="my_modal_2.showModal()"
-                        >
-                            <i class="fa-solid fa-plus"></i>Sit-in
-                        </button>
+
                         <dialog id="my_modal_2" class="modal">
                             <div class="modal-box p-8 max-w-md">
                                 <h3
@@ -302,7 +297,9 @@
                         <a href="/students" class="btn btn-ghost btn-sm">
                             Students
                         </a>
-
+                        <a href="/sit-in" class="btn btn-ghost btn-sm">
+                            Sit-in
+                        </a>
                         <a href="/sit-in-records" class="btn btn-ghost btn-sm">
                             Sit-in Records
                         </a>
@@ -778,7 +775,7 @@
             async function searchStudent() {
                 const idNumber =
                     document.getElementById("searchIdNumber").value;
-                if (!idNumber) return alert("Please enter an ID Number");
+                if (!idNumber) return showToast("Please enter an ID Number", "warning");
 
                 try {
                     const res = await fetch(
@@ -799,11 +796,11 @@
                         document.getElementById("my_modal_1").close();
                         document.getElementById("my_modal_2").showModal();
                     } else {
-                        alert(data.error || "Student not found");
+                        showToast(data.error || "Student not found", "error");
                     }
                 } catch (err) {
                     console.error(err);
-                    alert("Search failed");
+                    showToast("Search failed", "error");
                 }
             }
 
@@ -817,7 +814,7 @@
                 };
 
                 if (!payload.purpose || !payload.lab) {
-                    return alert("Please select a purpose and a lab");
+                    return showToast("Please select a purpose and a lab", "warning");
                 }
 
                 try {
@@ -829,15 +826,15 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                        alert("Sit-in recorded successfully!");
+                        showToast("Sit-in recorded successfully!", "success");
                         document.getElementById("my_modal_2").close();
-                        location.reload(); // Refresh dashboard stats
+                        location.reload();
                     } else {
-                        alert(data.error || "Failed to record sit-in");
+                        showToast(data.error || "Failed to record sit-in", "error");
                     }
                 } catch (err) {
                     console.error(err);
-                    alert("An error occurred");
+                    showToast("An error occurred", "error");
                 }
             }
         </script>

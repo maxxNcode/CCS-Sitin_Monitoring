@@ -23,6 +23,7 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
         <link rel="stylesheet" href="style.css" />
     </head>
 
@@ -146,13 +147,7 @@
                                 <button>close</button>
                             </form>
                         </dialog>
-                        <!-- Open the modal using ID.showModal() method -->
-                        <button
-                            class="btn btn-ghost btn-sm"
-                            onclick="my_modal_2.showModal()"
-                        >
-                            <i class="fa-solid fa-plus"></i>Sit-in
-                        </button>
+
                         <dialog id="my_modal_2" class="modal">
                             <div class="modal-box p-8 max-w-md">
                                 <h3
@@ -302,7 +297,9 @@
                         <a href="/students" class="btn btn-ghost btn-sm">
                             Students
                         </a>
-
+                        <a href="/sit-in" class="btn btn-ghost btn-sm">
+                            Sit-in
+                        </a>
                         <a
                             href="/sit-in-records"
                             class="btn btn-ghost btn-sm bg-primary text-primary-content"
@@ -669,8 +666,8 @@
                     <div class="flex flex-col w-full">
                         <div class="flex flex-col items-center justify-center">
                             <h1 class="text-3xl font-black">Sit-in Records</h1>
-                            <p class="text-center">
-                                View and manage sit-in records
+                            <p class="text-center opacity-60">
+                                Historical log of all past sit-in sessions
                             </p>
                         </div>
 
@@ -832,11 +829,15 @@
 
             async function fetchRecords() {
                 try {
-                    const res = await fetch("/api/admin/sit-in-records");
+                    const res = await fetch("/api/admin/sit-in-history");
                     if (res.ok) {
                         const data = await res.json();
                         const tbody =
                             document.getElementById("recordsTableBody");
+                        if (data.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-12 opacity-40"><i class="fa-solid fa-clock-rotate-left text-3xl mb-2"></i><br>No historical records yet</td></tr>`;
+                            return;
+                        }
                         tbody.innerHTML = data
                             .map(
                                 (record) => `
@@ -860,11 +861,10 @@
                                 <td><div class="badge badge-outline badge-sm opacity-70">${record.lab}</div></td>
                                 <td class="text-center font-bold">${record.session}</td>
                                 <td class="text-center">
-                                    <div class="badge ${record.status === "Active" ? "badge-success" : "badge-ghost opacity-50"} badge-outline badge-xs font-black p-2">${record.status.toUpperCase()}</div>
+                                    <div class="badge badge-ghost opacity-50 badge-outline badge-xs font-black p-2">COMPLETED</div>
                                 </td>
                                 <td>
                                     <div class="flex justify-center gap-2">
-                                        ${record.status === "Active" ? `<button class="btn btn-square btn-ghost btn-xs text-error" onclick="logoutSitin(${record.id})" title="End Session"><i class="fa-solid fa-power-off"></i></button>` : `<span class="btn btn-square btn-ghost btn-xs opacity-20 cursor-not-allowed"><i class="fa-solid fa-power-off"></i></span>`}
                                         <button class="btn btn-square btn-ghost btn-xs opacity-30 hover:opacity-100 text-error" onclick="deleteRecord(${record.id})" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button>
                                     </div>
                                 </td>
@@ -881,7 +881,7 @@
             async function searchStudent() {
                 const idNumber =
                     document.getElementById("searchIdNumber").value;
-                if (!idNumber) return alert("Please enter an ID Number");
+                if (!idNumber) return showToast("Please enter an ID Number", "warning");
 
                 try {
                     const res = await fetch(
@@ -902,11 +902,11 @@
                         document.getElementById("my_modal_1").close();
                         document.getElementById("my_modal_2").showModal();
                     } else {
-                        alert(data.error || "Student not found");
+                        showToast(data.error || "Student not found", "error");
                     }
                 } catch (err) {
                     console.error(err);
-                    alert("Search failed");
+                    showToast("Search failed", "error");
                 }
             }
 
@@ -920,7 +920,7 @@
                 };
 
                 if (!payload.purpose || !payload.lab) {
-                    return alert("Please select a purpose and a lab");
+                    return showToast("Please select a purpose and a lab", "warning");
                 }
 
                 try {
@@ -932,61 +932,59 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                        alert("Sit-in recorded successfully!");
+                        showToast("Sit-in recorded successfully!", "success");
                         document.getElementById("my_modal_2").close();
                         fetchRecords(); // Refresh table
                     } else {
-                        alert(data.error || "Failed to record sit-in");
+                        showToast(data.error || "Failed to record sit-in", "error");
                     }
                 } catch (err) {
                     console.error(err);
-                    alert("An error occurred");
+                    showToast("An error occurred", "error");
                 }
             }
 
             async function logoutSitin(recordId) {
-                if (!confirm("End this sit-in session?")) return;
+                showConfirm("End Session", "Are you sure you want to end this sit-in session?", async () => {
+                    try {
+                        const res = await fetch(
+                            `/api/admin/sit-in/logout/${recordId}`,
+                            { method: "POST" },
+                        );
+                        const data = await res.json();
 
-                try {
-                    const res = await fetch(
-                        `/api/admin/sit-in/logout/${recordId}`,
-                        {
-                            method: "POST",
-                        },
-                    );
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        alert("Session ended successfully!");
-                        fetchRecords();
-                    } else {
-                        alert(data.error || "Failed to end session");
+                        if (res.ok) {
+                            showToast("Session ended successfully!", "success");
+                            fetchRecords();
+                        } else {
+                            showToast(data.error || "Failed to end session", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast("An error occurred", "error");
                     }
-                } catch (err) {
-                    console.error(err);
-                    alert("An error occurred");
-                }
+                });
             }
 
             async function deleteRecord(recordId) {
-                if (!confirm("Delete this sit-in record permanently?")) return;
+                showConfirm("Delete Record", "Are you sure you want to permanently delete this sit-in record?", async () => {
+                    try {
+                        const res = await fetch(`/api/admin/sit-in/${recordId}`, {
+                            method: "DELETE",
+                        });
+                        const data = await res.json();
 
-                try {
-                    const res = await fetch(`/api/admin/sit-in/${recordId}`, {
-                        method: "DELETE",
-                    });
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        alert("Record deleted successfully!");
-                        fetchRecords();
-                    } else {
-                        alert(data.error || "Failed to delete record");
+                        if (res.ok) {
+                            showToast("Record deleted successfully!", "success");
+                            fetchRecords();
+                        } else {
+                            showToast(data.error || "Failed to delete record", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast("An error occurred", "error");
                     }
-                } catch (err) {
-                    console.error(err);
-                    alert("An error occurred");
-                }
+                });
             }
 
             function logout() {

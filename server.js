@@ -356,30 +356,50 @@ app.post('/api/admin/sit-in', (req, res) => {
             return res.status(400).json({ error: 'No sessions remaining' });
         }
 
-        db.serialize(() => {
-            db.run('BEGIN TRANSACTION');
-            
-            // Increment record
-            db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
-                [studentName, idNumber, purpose, lab, (user.sessionLeft - 1).toString(), 'Active']);
-
-            // Decrement sessions
-            db.run('UPDATE users SET sessionLeft = sessionLeft - 1 WHERE idNumber = ?', [idNumber]);
-
-            db.run('COMMIT', (err) => {
+        // Only insert the record — do NOT decrement sessionLeft yet
+        db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
+            [studentName, idNumber, purpose, lab, user.sessionLeft.toString(), 'Active'],
+            (err) => {
                 if (err) return res.status(500).json({ error: 'Failed to record sit-in' });
                 res.json({ success: true, message: 'Sit-in recorded successfully' });
             });
-        });
     });
 });
 
-// Admin API: Fetch Sit-in Records
+// Admin API: Fetch All Sit-in Records
 app.get('/api/admin/sit-in-records', (req, res) => {
     db.all(`
         SELECT s.*, u.profilePic 
         FROM sitin_records s
         LEFT JOIN users u ON s.idNumber = u.idNumber
+        ORDER BY s.created_at DESC
+    `, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin API: Fetch Active Sit-ins Only
+app.get('/api/admin/active-sitins', (req, res) => {
+    db.all(`
+        SELECT s.*, u.profilePic 
+        FROM sitin_records s
+        LEFT JOIN users u ON s.idNumber = u.idNumber
+        WHERE s.status = 'Active'
+        ORDER BY s.created_at DESC
+    `, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin API: Fetch Sit-in History (Inactive Only)
+app.get('/api/admin/sit-in-history', (req, res) => {
+    db.all(`
+        SELECT s.*, u.profilePic 
+        FROM sitin_records s
+        LEFT JOIN users u ON s.idNumber = u.idNumber
+        WHERE s.status = 'Inactive'
         ORDER BY s.created_at DESC
     `, (err, rows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
@@ -395,11 +415,20 @@ app.post('/api/admin/sit-in/logout/:id', (req, res) => {
         if (err || !record) return res.status(404).json({ error: 'Record not found' });
         if (record.status !== 'Active') return res.status(400).json({ error: 'Session already ended' });
 
-        db.run('UPDATE sitin_records SET status = ? WHERE id = ?',
-            ['Inactive', recordId], function (err) {
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION');
+
+            // Set status to Inactive
+            db.run('UPDATE sitin_records SET status = ? WHERE id = ?', ['Inactive', recordId]);
+
+            // Decrement sessionLeft on logout
+            db.run('UPDATE users SET sessionLeft = sessionLeft - 1 WHERE idNumber = ?', [record.idNumber]);
+
+            db.run('COMMIT', (err) => {
                 if (err) return res.status(500).json({ error: 'Failed to end session' });
                 res.json({ success: true, message: 'Session ended successfully' });
             });
+        });
     });
 });
 
@@ -503,6 +532,10 @@ app.get('/admin-register', (req, res) => {
 
 app.get('/students', checkAdminAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-pages/students.html'));
+});
+
+app.get('/sit-in', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/sit-in.html'));
 });
 
 app.get('/sit-in-records', checkAdminAuth, (req, res) => {

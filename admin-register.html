@@ -15,6 +15,7 @@
             crossorigin="anonymous"
         ></script>
         <link rel="stylesheet" href="style.css" />
+        <script src="/notify.js"></script>
     </head>
     <body class="bg-base-200 min-h-screen flex items-center justify-center p-4">
         <div
@@ -162,14 +163,14 @@
                         const result = await response.json();
 
                         if (response.ok) {
-                            alert("Admin registration successful!");
+                            showToast("Admin registration successful!", "success");
                             window.location.href = "/login";
                         } else {
-                            alert(result.error || "Registration failed");
+                            showToast(result.error || "Registration failed", "error");
                         }
                     } catch (error) {
                         console.error("Registration error:", error);
-                        alert("An error occurred. Please try again.");
+                        showToast("An error occurred. Please try again.", "error");
                     }
                 });
         </script>

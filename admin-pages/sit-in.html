@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CCS - Sit-In Monitoring System</title>
+        <title>CCS - Active Sit-In Students</title>
         <link
             href="https://cdn.jsdelivr.net/npm/daisyui@5"
             rel="stylesheet"
@@ -59,7 +59,7 @@
                                 class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20"
                             >
                                 <img
-                                    src="assets/ccslogo.png"
+                                    src="../assets/ccslogo.png"
                                     alt="CCS Logo"
                                     class="w-full h-full object-contain"
                                 />
@@ -73,7 +73,7 @@
 
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex flex-none items-center gap-1">
-                        <!-- Open the modal using ID.showModal() method -->
+                        <!-- Search Modal Button -->
                         <button
                             class="btn btn-ghost btn-sm"
                             onclick="my_modal_1.showModal()"
@@ -148,6 +148,7 @@
                             </form>
                         </dialog>
 
+                        <!-- Record Sit-in Modal -->
                         <dialog id="my_modal_2" class="modal">
                             <div class="modal-box p-8 max-w-md">
                                 <h3
@@ -163,9 +164,7 @@
                                 </h3>
 
                                 <div class="space-y-4">
-                                    <!-- Readonly Info Cards -->
                                     <div class="grid grid-cols-2 gap-4 mb-6">
-                                        <!-- ID Number Input -->
                                         <div class="form-control">
                                             <label class="label pt-0 pb-1">
                                                 <span
@@ -181,7 +180,6 @@
                                             />
                                         </div>
 
-                                        <!-- Remaining Sessions Highlight -->
                                         <div
                                             class="bg-primary/10 rounded-2xl border border-primary/20 flex justify-center gap-2 items-center text-center mt-[1.6rem]"
                                         >
@@ -198,7 +196,6 @@
                                             </p>
                                         </div>
 
-                                        <!-- Student Name Input -->
                                         <div class="form-control col-span-2">
                                             <label class="label pt-0 pb-1">
                                                 <span
@@ -221,7 +218,6 @@
                                         Session Details
                                     </div>
 
-                                    <!-- Inputs -->
                                     <div class="form-control">
                                         <label class="label pt-0 pb-1">
                                             <span
@@ -297,16 +293,16 @@
                         <a href="/students" class="btn btn-ghost btn-sm">
                             Students
                         </a>
-                        <a href="/sit-in" class="btn btn-ghost btn-sm">
+                        <a
+                            href="/sit-in"
+                            class="btn btn-ghost btn-sm bg-primary text-primary-content"
+                        >
                             Sit-in
                         </a>
                         <a href="/sit-in-records" class="btn btn-ghost btn-sm">
                             Sit-in Records
                         </a>
-                        <a
-                            href="/sit-in-reports"
-                            class="btn btn-ghost btn-sm bg-primary text-primary-content"
-                        >
+                        <a href="/sit-in-reports" class="btn btn-ghost btn-sm">
                             Sit-in Reports
                         </a>
                         <a
@@ -665,10 +661,76 @@
                 >
                     <div class="flex flex-col w-full">
                         <div class="flex flex-col items-center justify-center">
-                            <h1 class="text-3xl font-black">Sit-in Reports</h1>
-                            <p class="text-center">
-                                View and manage sit-in reports
+                            <h1 class="text-3xl font-black">
+                                Current Sit-in Students
+                            </h1>
+                            <p class="text-center opacity-60">
+                                Students currently sitting in the laboratories
                             </p>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-6">
+                            <div class="flex gap-2 items-center">
+                                <div
+                                    class="badge badge-primary badge-lg font-black gap-2"
+                                >
+                                    <i class="fa-solid fa-users"></i>
+                                    <span id="activeCount">0</span> Active
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button
+                                    class="btn btn-primary btn-sm"
+                                    onclick="my_modal_1.showModal()"
+                                >
+                                    <i class="fa-solid fa-plus mr-1"></i>New
+                                    Sit-in
+                                </button>
+                                <input
+                                    type="text"
+                                    id="searchInput"
+                                    placeholder="Search..."
+                                    class="input input-bordered bg-base-200 w-52 input-sm"
+                                    oninput="filterTable()"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Active Sit-ins Table -->
+                        <div
+                            class="overflow-x-auto lg:overflow-x-hidden mt-6 card bg-base-100 border border-base-content/5 shadow-xl"
+                        >
+                            <table class="table table-md">
+                                <thead class="bg-base-200/50">
+                                    <tr>
+                                        <th class="text-center">Sit ID</th>
+                                        <th>Student</th>
+                                        <th>ID Number</th>
+                                        <th>Purpose</th>
+                                        <th>Sit Lab</th>
+                                        <th class="text-center">Session</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeSitinsBody">
+                                    <!-- Dynamic rows will be inserted here -->
+                                </tbody>
+                            </table>
+
+                            <!-- Empty state -->
+                            <div
+                                id="emptyState"
+                                class="hidden flex flex-col items-center justify-center py-16 opacity-40"
+                            >
+                                <i class="fa-solid fa-chair text-5xl mb-4"></i>
+                                <p class="font-bold text-lg">
+                                    No active sit-ins
+                                </p>
+                                <p class="text-sm">
+                                    All labs are currently empty
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -691,14 +753,19 @@
                         <span class="text-xl font-black">CCS SIT-IN</span>
                     </li>
                     <li>
-                        <a href="/homepage" class="active"
+                        <a href="/admin"
                             ><i class="fa-solid fa-house mr-2"></i>Home</a
                         >
                     </li>
                     <li>
-                        <a
+                        <a href="/sit-in" class="active"
+                            ><i class="fa-solid fa-chair mr-2"></i>Sit-in</a
+                        >
+                    </li>
+                    <li>
+                        <a href="/sit-in-records"
                             ><i class="fa-solid fa-clock-rotate-left mr-2"></i
-                            >History</a
+                            >Sit-in Records</a
                         >
                     </li>
 
@@ -723,6 +790,9 @@
                     .then((d) => {
                         if (!d.loggedIn || d.role !== "admin")
                             window.location.href = "/login";
+                        else {
+                            fetchActiveSitins();
+                        }
                     })
                     .catch(() => (window.location.href = "/login"));
 
@@ -746,32 +816,86 @@
                             localStorage.setItem("theme", theme);
                         });
                     });
-
-                // Student/Admin Info Sync
-                fetch("/api/studentinfo")
-                    .then((res) => res.json())
-                    .then((data) => {
-                        if (data.error) return;
-                        const header = document.getElementById(
-                            "student-name-header",
-                        );
-                        if (header) header.innerText = data.name;
-                        if (data.profilePic) {
-                            const avatars =
-                                document.querySelectorAll(".avatar img");
-                            avatars.forEach((img) => {
-                                if (!img.src.includes("ccslogo")) {
-                                    img.src = data.profilePic;
-                                    img.classList.add(
-                                        "w-full",
-                                        "h-full",
-                                        "object-cover",
-                                    );
-                                }
-                            });
-                        }
-                    });
             });
+
+            let allActiveRecords = [];
+
+            async function fetchActiveSitins() {
+                try {
+                    const res = await fetch("/api/admin/active-sitins");
+                    if (res.ok) {
+                        allActiveRecords = await res.json();
+                        document.getElementById("activeCount").textContent =
+                            allActiveRecords.length;
+                        renderTable(allActiveRecords);
+                    }
+                } catch (err) {
+                    console.error("Error fetching active sit-ins:", err);
+                }
+            }
+
+            function renderTable(data) {
+                const tbody = document.getElementById("activeSitinsBody");
+                const emptyState = document.getElementById("emptyState");
+
+                if (data.length === 0) {
+                    tbody.innerHTML = "";
+                    emptyState.classList.remove("hidden");
+                    return;
+                }
+
+                emptyState.classList.add("hidden");
+                tbody.innerHTML = data
+                    .map(
+                        (record) => `
+                        <tr class="hover:bg-base-200/30 transition-colors">
+                            <td class="text-center font-mono text-xs opacity-50 font-bold">#S-${record.id}</td>
+                            <td>
+                                <div class="flex items-center gap-4">
+                                    <div class="avatar">
+                                        <div class="mask mask-squircle h-10 w-10 bg-base-200">
+                                            <img src="${record.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${record.studentName}`}" alt="Avatar" class="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-sm">${record.studentName}</div>
+                                        <div class="text-[10px] opacity-50 font-black uppercase tracking-widest text-primary">${record.lab}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="font-mono text-xs font-bold">${record.idNumber}</td>
+                            <td><span class="text-sm font-medium">${record.purpose}</span></td>
+                            <td><div class="badge badge-outline badge-sm opacity-70">${record.lab}</div></td>
+                            <td class="text-center font-bold">${record.session}</td>
+                            <td class="text-center">
+                                <div class="badge badge-success badge-outline badge-xs font-black p-2">ACTIVE</div>
+                            </td>
+                            <td>
+                                <div class="flex justify-center items-center gap-2">
+                                    <button class="btn btn-error btn-xs flex items-center justify-center gap-1" onclick="logoutSitin(${record.id})" title="End Session">
+                                        <i class="fa-solid fa-power-off"></i> Logout
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `,
+                    )
+                    .join("");
+            }
+
+            function filterTable() {
+                const query = document
+                    .getElementById("searchInput")
+                    .value.toLowerCase();
+                const filtered = allActiveRecords.filter(
+                    (r) =>
+                        r.studentName.toLowerCase().includes(query) ||
+                        r.idNumber.toLowerCase().includes(query) ||
+                        r.purpose.toLowerCase().includes(query) ||
+                        r.lab.toLowerCase().includes(query),
+                );
+                renderTable(filtered);
+            }
 
             async function searchStudent() {
                 const idNumber =
@@ -785,7 +909,6 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                        // Populate Form
                         document.getElementById("formIdNumber").value =
                             idNumber;
                         document.getElementById("formStudentName").value =
@@ -793,7 +916,6 @@
                         document.getElementById("formSessions").innerText =
                             data.sessionLeft;
 
-                        // Swap Modals
                         document.getElementById("my_modal_1").close();
                         document.getElementById("my_modal_2").showModal();
                     } else {
@@ -829,7 +951,7 @@
                     if (res.ok) {
                         showToast("Sit-in recorded successfully!", "success");
                         document.getElementById("my_modal_2").close();
-                        location.reload();
+                        fetchActiveSitins();
                     } else {
                         showToast(data.error || "Failed to record sit-in", "error");
                     }
@@ -837,6 +959,38 @@
                     console.error(err);
                     showToast("An error occurred", "error");
                 }
+            }
+
+            async function logoutSitin(recordId) {
+                showConfirm("End Session", "Are you sure you want to end this sit-in session?", async () => {
+                    try {
+                        const res = await fetch(
+                            `/api/admin/sit-in/logout/${recordId}`,
+                            {
+                                method: "POST",
+                            },
+                        );
+                        const data = await res.json();
+
+                        if (res.ok) {
+                            showToast("Session ended successfully!", "success");
+                            fetchActiveSitins();
+                        } else {
+                            showToast(data.error || "Failed to end session", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast("An error occurred", "error");
+                    }
+                });
+            }
+
+            function logout() {
+                fetch("/logout", { method: "POST" })
+                    .then((r) => r.json())
+                    .then((d) => {
+                        if (d.success) window.location.href = d.redirectUrl;
+                    });
             }
         </script>
     </body>
