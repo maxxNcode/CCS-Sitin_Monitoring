@@ -90,6 +90,22 @@ function createTableAdmins() {
     `)
 }
 
+function createTableStudentHistory() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS student_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            studentName TEXT NOT NULL,
+            idNumber TEXT NOT NULL,
+            purpose TEXT NOT NULL,
+            lab TEXT NOT NULL,
+            loginTime DATETIME NOT NULL,
+            logoutTime DATETIME NOT NULL,
+            date DATE NOT NULL,
+            feedbackStatus TEXT DEFAULT 'Pending'
+        )
+    `)
+}
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -424,6 +440,15 @@ app.post('/api/admin/sit-in/logout/:id', (req, res) => {
             // Decrement sessionLeft on logout
             db.run('UPDATE users SET sessionLeft = sessionLeft - 1 WHERE idNumber = ?', [record.idNumber]);
 
+            // Add record to student_history table
+            const loginTime = record.created_at;
+            const logoutTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+            const date = logoutTime.split(' ')[0]; // Extract YYYY-MM-DD
+            db.run(
+                'INSERT INTO student_history (studentName, idNumber, purpose, lab, loginTime, logoutTime, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [record.studentName, record.idNumber, record.purpose, record.lab, loginTime, logoutTime, date]
+            );
+
             db.run('COMMIT', (err) => {
                 if (err) return res.status(500).json({ error: 'Failed to end session' });
                 res.json({ success: true, message: 'Session ended successfully' });
@@ -530,6 +555,43 @@ app.get('/admin-register', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-register.html'));
 });
 
+// Student API: Fetch Sit-in History
+app.get('/api/student/history', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+    db.all(`
+        SELECT * FROM student_history 
+        WHERE idNumber = ? 
+        ORDER BY logoutTime DESC
+    `, [idNumber], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Student API: Submit Feedback
+app.post('/api/student/feedback', checkAuth, (req, res) => {
+    const { historyId, rating, comments } = req.body;
+    const idNumber = req.session.idNumber;
+
+    if (!historyId || !rating || !comments) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    db.get('SELECT * FROM student_history WHERE id = ? AND idNumber = ?', [historyId, idNumber], (err, record) => {
+        if (err || !record) return res.status(404).json({ error: 'Record not found' });
+        if (record.feedbackStatus === 'Completed') return res.status(400).json({ error: 'Feedback already submitted' });
+
+        db.run('UPDATE student_history SET feedbackStatus = ? WHERE id = ?', ['Completed', historyId], function (err) {
+            if (err) return res.status(500).json({ error: 'Failed to submit feedback' });
+            res.json({ success: true, message: 'Feedback submitted successfully' });
+        });
+    });
+});
+
+app.get('/student-history', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'student-history.html'));
+});
+
 app.get('/students', checkAdminAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-pages/students.html'));
 });
@@ -562,6 +624,7 @@ app.get('/edit-profile', checkAuth, (req, res) => {
 createTableAnnouncements();
 createTableSitInRecords();
 createTableAdmins();
+createTableStudentHistory();
 
 // Ensure profilePic column exists (Migration)
 function ensureProfilePicColumn() {
