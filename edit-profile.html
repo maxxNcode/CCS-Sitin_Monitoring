@@ -26,7 +26,6 @@
         <script src="/notify.js"></script>
     </head>
     <body class="bg-base-200 min-h-screen">
-
         <div
             class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
         >
@@ -103,6 +102,7 @@
                             <input
                                 type="text"
                                 id="firstName"
+                                placeholder="Enter First Name"
                                 class="input input-bordered w-full"
                                 required
                             />
@@ -116,6 +116,7 @@
                             <input
                                 type="text"
                                 id="lastName"
+                                placeholder="Enter Last Name"
                                 class="input input-bordered w-full"
                                 required
                             />
@@ -129,6 +130,7 @@
                             <input
                                 type="text"
                                 id="middleName"
+                                placeholder="Enter Middle Name (Optional)"
                                 class="input input-bordered w-full"
                             />
                         </div>
@@ -256,6 +258,19 @@
 
                 currentUser = data;
 
+                // PRE-FILL names immediately from session data so they aren't empty while loading
+                if (data.loggedIn) {
+                    if (data.firstName)
+                        document.getElementById("firstName").value =
+                            data.firstName;
+                    if (data.lastName)
+                        document.getElementById("lastName").value =
+                            data.lastName;
+                    if (data.middleName)
+                        document.getElementById("middleName").value =
+                            data.middleName;
+                }
+
                 // Fetch full profile info from /api/studentinfo (or admin info if we had a route, but for now we'll use session + session storage if needed)
                 // For now, let's assume /api/studentinfo handles returning basic info for whichever user is logged in if we adjust it
                 // Or just use the session data for names/pics
@@ -267,10 +282,12 @@
 
                 if (!profileData.error) {
                     // Populate forms
-                    const names = profileData.name.split(" ");
-                    document.getElementById("firstName").value = names[0] || "";
+                    document.getElementById("firstName").value =
+                        profileData.firstName || "";
+                    document.getElementById("middleName").value =
+                        profileData.middleName || "";
                     document.getElementById("lastName").value =
-                        names[names.length - 1] || "";
+                        profileData.lastName || "";
                     document.getElementById("email").value =
                         profileData.email || "";
                     document.getElementById("profilePic").value =
@@ -404,7 +421,10 @@
                                 ? "/admin"
                                 : "/homepage";
                     } else {
-                        showToast(result.error || "Failed to update profile", "error");
+                        showToast(
+                            result.error || "Failed to update profile",
+                            "error",
+                        );
                     }
                 } catch (err) {
                     console.error(err);

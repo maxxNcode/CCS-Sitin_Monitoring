@@ -30,7 +30,6 @@
         <div class="drawer">
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
-
                 <!-- Navbar -->
                 <div
                     class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
@@ -74,15 +73,11 @@
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex flex-none items-center gap-1">
                         <a href="homepage" class="btn btn-ghost btn-sm">Home</a>
-                        <a href="/student-history" class="btn btn-ghost btn-sm active"
-                            ><i
-                                class="fa-solid fa-clock-rotate-left mr-2"
-                            ></i
+                        <a
+                            href="/student-history"
+                            class="btn btn-primary btn-sm"
+                            ><i class="fa-solid fa-clock-rotate-left mr-2"></i
                             >History</a
-                        >
-                        <a href="/edit-profile" class="btn btn-ghost btn-sm"
-                            ><i class="fa-solid fa-user-pen mr-2 opacity-50"></i
-                            >Edit Profile</a
                         >
 
                         <div class="dropdown dropdown-end ml-4">
@@ -436,7 +431,7 @@
                                 Your past sit-in sessions
                             </p>
                         </div>
-                        
+
                         <div class="flex justify-end items-center mt-4">
                             <div class="flex gap-2 w-full md:w-auto">
                                 <input
@@ -473,34 +468,88 @@
 
                 <!-- Feedback Modal -->
                 <dialog id="feedback_modal" class="modal">
-                    <div class="modal-box bg-base-100 shadow-2xl border border-base-content/5">
+                    <div
+                        class="modal-box bg-base-100 shadow-2xl border border-base-content/5"
+                    >
                         <form method="dialog">
-                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                            <button
+                                class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                            >
+                                ✕
+                            </button>
                         </form>
-                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-comment-dots text-primary"></i> Leave Feedback
+                        <h3
+                            class="font-bold text-lg mb-4 flex items-center gap-2"
+                        >
+                            <i
+                                class="fa-solid fa-comment-dots text-primary"
+                            ></i>
+                            Leave Feedback
                         </h3>
-                        
-                        <input type="hidden" id="feedbackHistoryId">
-                        
+
+                        <input type="hidden" id="feedbackHistoryId" />
+
                         <div class="form-control w-full">
-                            <label class="label"><span class="label-text font-bold">Rating</span></label>
+                            <label class="label"
+                                ><span class="label-text font-bold"
+                                    >Rating</span
+                                ></label
+                            >
                             <div class="rating rating-lg" id="ratingDisplay">
-                                <input type="radio" name="rating-7" class="mask mask-star-2 bg-warning" value="1" />
-                                <input type="radio" name="rating-7" class="mask mask-star-2 bg-warning" value="2" />
-                                <input type="radio" name="rating-7" class="mask mask-star-2 bg-warning" value="3" />
-                                <input type="radio" name="rating-7" class="mask mask-star-2 bg-warning" value="4" />
-                                <input type="radio" name="rating-7" class="mask mask-star-2 bg-warning" value="5" checked />
+                                <input
+                                    type="radio"
+                                    name="rating-7"
+                                    class="mask mask-star-2 bg-warning"
+                                    value="1"
+                                />
+                                <input
+                                    type="radio"
+                                    name="rating-7"
+                                    class="mask mask-star-2 bg-warning"
+                                    value="2"
+                                />
+                                <input
+                                    type="radio"
+                                    name="rating-7"
+                                    class="mask mask-star-2 bg-warning"
+                                    value="3"
+                                />
+                                <input
+                                    type="radio"
+                                    name="rating-7"
+                                    class="mask mask-star-2 bg-warning"
+                                    value="4"
+                                />
+                                <input
+                                    type="radio"
+                                    name="rating-7"
+                                    class="mask mask-star-2 bg-warning"
+                                    value="5"
+                                    checked
+                                />
                             </div>
                         </div>
-                        
+
                         <div class="form-control w-full mt-4">
-                            <label class="label"><span class="label-text font-bold">Comments</span></label>
-                            <textarea id="feedbackComments" class="textarea textarea-bordered h-24 bg-base-200" placeholder="How was your lab session?"></textarea>
+                            <label class="label"
+                                ><span class="label-text font-bold"
+                                    >Comments</span
+                                ></label
+                            >
+                            <textarea
+                                id="feedbackComments"
+                                class="textarea textarea-bordered h-24 bg-base-200"
+                                placeholder="How was your lab session?"
+                            ></textarea>
                         </div>
-                        
+
                         <div class="modal-action">
-                            <button class="btn btn-primary w-full" onclick="submitFeedback()">Submit Feedback</button>
+                            <button
+                                class="btn btn-primary w-full"
+                                onclick="submitFeedback()"
+                            >
+                                Submit Feedback
+                            </button>
                         </div>
                     </div>
                 </dialog>
@@ -567,24 +616,34 @@
 
                 // Initial Theme Setup
                 const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute("data-theme", currentTheme);
+                document.documentElement.setAttribute(
+                    "data-theme",
+                    currentTheme,
+                );
 
                 // Theme Switcher Logic
-                document.querySelectorAll(".theme-controller").forEach((btn) => {
-                    btn.addEventListener("click", () => {
-                        const theme = btn.getAttribute("data-set-theme");
-                        document.documentElement.setAttribute("data-theme", theme);
-                        localStorage.setItem("theme", theme);
+                document
+                    .querySelectorAll(".theme-controller")
+                    .forEach((btn) => {
+                        btn.addEventListener("click", () => {
+                            const theme = btn.getAttribute("data-set-theme");
+                            document.documentElement.setAttribute(
+                                "data-theme",
+                                theme,
+                            );
+                            localStorage.setItem("theme", theme);
+                        });
                     });
-                });
-                
+
                 // Fetch History Records Search Event Listener
-                document.getElementById('searchInput').addEventListener('input', renderTable);
-                
+                document
+                    .getElementById("searchInput")
+                    .addEventListener("input", renderTable);
+
                 // Load history on page load
                 fetchHistory();
             });
-            
+
             let allRecords = [];
 
             // History Records Fetching
@@ -601,14 +660,17 @@
             }
 
             function renderTable() {
-                const query = document.getElementById("searchInput").value.toLowerCase();
+                const query = document
+                    .getElementById("searchInput")
+                    .value.toLowerCase();
                 const tbody = document.getElementById("historyTableBody");
                 tbody.innerHTML = "";
-                
-                const filtered = allRecords.filter(r => 
-                    r.purpose.toLowerCase().includes(query) ||
-                    r.lab.toLowerCase().includes(query) ||
-                    r.date.includes(query)
+
+                const filtered = allRecords.filter(
+                    (r) =>
+                        r.purpose.toLowerCase().includes(query) ||
+                        r.lab.toLowerCase().includes(query) ||
+                        r.date.includes(query),
                 );
 
                 if (filtered.length === 0) {
@@ -616,14 +678,23 @@
                     return;
                 }
 
-                filtered.forEach(r => {
-                    const loginTime = new Date(r.loginTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const logoutTime = new Date(r.logoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                filtered.forEach((r) => {
+                    const loginTime = new Date(r.loginTime).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" },
+                    );
+                    const logoutTime = new Date(
+                        r.logoutTime,
+                    ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
 
-                    const statusBadge = r.feedbackStatus === 'Pending' 
-                        ? `<button onclick="openFeedbackModal('${r.id}')" class="btn btn-xs btn-outline btn-warning">Share Feedback</button>` 
-                        : `<div class="badge badge-success badge-sm gap-1 uppercase text-[9px] font-black"><i class="fa-solid fa-check"></i> Completed</div>`;
-                    
+                    const statusBadge =
+                        r.feedbackStatus === "Pending"
+                            ? `<button onclick="openFeedbackModal('${r.id}')" class="btn btn-xs btn-outline btn-warning">Share Feedback</button>`
+                            : `<div class="badge badge-success badge-sm gap-1 uppercase text-[9px] font-black"><i class="fa-solid fa-check"></i> Completed</div>`;
+
                     tbody.innerHTML += `
                         <tr class="hover">
                             <td class="font-mono text-xs opacity-70">${r.date}</td>
@@ -638,38 +709,48 @@
             }
 
             function openFeedbackModal(historyId) {
-                document.getElementById('feedbackHistoryId').value = historyId;
-                document.getElementById('feedbackComments').value = '';
+                document.getElementById("feedbackHistoryId").value = historyId;
+                document.getElementById("feedbackComments").value = "";
                 // Reset rating to 5
-                document.querySelector('input[name="rating-7"][value="5"]').checked = true;
-                
-                document.getElementById('feedback_modal').showModal();
+                document.querySelector(
+                    'input[name="rating-7"][value="5"]',
+                ).checked = true;
+
+                document.getElementById("feedback_modal").showModal();
             }
 
             async function submitFeedback() {
-                const historyId = document.getElementById('feedbackHistoryId').value;
-                const comments = document.getElementById('feedbackComments').value;
-                const rating = document.querySelector('input[name="rating-7"]:checked').value;
-                
-                if (!comments.trim()) return showToast("Please leave a comment", "warning");
+                const historyId =
+                    document.getElementById("feedbackHistoryId").value;
+                const comments =
+                    document.getElementById("feedbackComments").value;
+                const rating = document.querySelector(
+                    'input[name="rating-7"]:checked',
+                ).value;
+
+                if (!comments.trim())
+                    return showToast("Please leave a comment", "warning");
 
                 try {
                     const res = await fetch("/api/student/feedback", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ historyId, rating, comments })
+                        body: JSON.stringify({ historyId, rating, comments }),
                     });
-                    
+
                     const result = await res.json();
-                    
-                    if(res.ok) {
+
+                    if (res.ok) {
                         showToast(result.message, "success");
-                        document.getElementById('feedback_modal').close();
+                        document.getElementById("feedback_modal").close();
                         fetchHistory();
                     } else {
-                        showToast(result.error || "Failed to submit feedback", "error");
+                        showToast(
+                            result.error || "Failed to submit feedback",
+                            "error",
+                        );
                     }
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
                     showToast("An error occurred", "error");
                 }

@@ -401,8 +401,6 @@
                 <main
                     class="flex-1 flex items-center justify-center p-4 md:p-8 relative overflow-hidden"
                 >
-
-
                     <div
                         class="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom duration-700"
                     >
@@ -897,7 +895,11 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            showSuccessModal("Registration Successful", "Your account has been created. You can now log in.", data.redirectUrl);
+                            showSuccessModal(
+                                "Registration Successful",
+                                "Your account has been created. You can now log in.",
+                                data.redirectUrl,
+                            );
                         } else {
                             errorText.textContent =
                                 data.error ||

@@ -213,6 +213,7 @@ app.post('/login', (req, res) => {
                 req.session.idNumber = admin.idNumber;
                 req.session.firstName = admin.firstName;
                 req.session.lastName = admin.lastName;
+                req.session.middleName = admin.middleName;
                 req.session.role = 'admin';
 
                 return res.json({ 
@@ -239,6 +240,7 @@ app.post('/login', (req, res) => {
                     req.session.idNumber = user.idNumber;
                     req.session.firstName = user.firstName;
                     req.session.lastName = user.lastName;
+                    req.session.middleName = user.middleName;
                     req.session.role = 'student';
 
                     return res.json({ 
@@ -272,7 +274,9 @@ app.get('/api/studentinfo', (req, res) => {
     const table = role === 'admin' ? 'admins' : 'users';
 
     db.get(`
-        SELECT firstName || ' ' || lastName AS name, email, profilePic, 
+        SELECT firstName, middleName, lastName,
+        firstName || ' ' || (CASE WHEN middleName IS NOT NULL AND middleName != '' THEN middleName || ' ' ELSE '' END) || lastName AS name,
+        email, profilePic, 
         ${role === 'student' ? 'course, courseLevel, address' : '"" as course, "" as courseLevel, "" as address'}
         FROM ${table}
         WHERE id = ?
@@ -525,6 +529,7 @@ app.get('/check-session', (req, res) => {
             idNumber: req.session.idNumber, 
             firstName: req.session.firstName, 
             lastName: req.session.lastName,
+            middleName: req.session.middleName,
             role: req.session.role 
         });
     } else {
@@ -640,6 +645,7 @@ function ensureProfilePicColumn() {
     });
 }
 ensureProfilePicColumn();
+ensureMiddleNameColumn();
 
 // Ensure sessionLeft column exists (Migration)
 function ensureSessionLeftColumn() {
@@ -660,6 +666,25 @@ function ensureSessionLeftColumn() {
     });
 }
 ensureSessionLeftColumn();
+
+
+function ensureMiddleNameColumn() {
+    db.all("PRAGMA table_info(users)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'middleName')) {
+            db.run("ALTER TABLE users ADD COLUMN middleName TEXT", (err) => {
+                if (!err) console.log('Added middleName column to users table');
+            });
+        }
+    });
+    db.all("PRAGMA table_info(admins)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'middleName')) {
+            db.run("ALTER TABLE admins ADD COLUMN middleName TEXT", (err) => {
+                if (!err) console.log('Added middleName column to admins table');
+            });
+        }
+    });
+}
+ensureMiddleNameColumn();
 
 
 // Seed dummy announcement if empty

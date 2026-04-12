@@ -29,7 +29,6 @@
         <div class="drawer">
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
-
                 <!-- Navbar -->
                 <div
                     class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
@@ -72,16 +71,14 @@
 
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex flex-none items-center gap-1">
-                        <a href="homepage" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="homepage" class="btn btn-primary btn-sm"
+                            >Home</a
+                        >
                         <a href="/student-history" class="btn btn-ghost btn-sm"
                             ><i
                                 class="fa-solid fa-clock-rotate-left mr-2 opacity-50"
                             ></i
                             >History</a
-                        >
-                        <a href="/edit-profile" class="btn btn-ghost btn-sm"
-                            ><i class="fa-solid fa-user-pen mr-2 opacity-50"></i
-                            >Edit Profile</a
                         >
 
                         <div class="dropdown dropdown-end ml-4">
@@ -476,6 +473,18 @@
                                         <div
                                             class="skeleton h-8 w-full opacity-10"
                                         ></div>
+                                    </div>
+
+                                    <div class="mt-6">
+                                        <a
+                                            href="/edit-profile"
+                                            class="btn btn-outline btn-primary btn-sm w-full rounded-xl gap-2 font-bold"
+                                        >
+                                            <i
+                                                class="fa-solid fa-user-pen text-xs"
+                                            ></i>
+                                            Edit Profile
+                                        </a>
                                     </div>
                                 </div>
                             </div>

@@ -163,14 +163,23 @@
                         const result = await response.json();
 
                         if (response.ok) {
-                            showToast("Admin registration successful!", "success");
+                            showToast(
+                                "Admin registration successful!",
+                                "success",
+                            );
                             window.location.href = "/login";
                         } else {
-                            showToast(result.error || "Registration failed", "error");
+                            showToast(
+                                result.error || "Registration failed",
+                                "error",
+                            );
                         }
                     } catch (error) {
                         console.error("Registration error:", error);
-                        showToast("An error occurred. Please try again.", "error");
+                        showToast(
+                            "An error occurred. Please try again.",
+                            "error",
+                        );
                     }
                 });
         </script>

@@ -653,7 +653,11 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            showSuccessModal("Login Successful", "Welcome back! Redirecting to your dashboard...", data.redirectUrl);
+                            showSuccessModal(
+                                "Login Successful",
+                                "Welcome back! Redirecting to your dashboard...",
+                                data.redirectUrl,
+                            );
                         } else {
                             errorText.textContent =
                                 data.error || "Identity verification failed";

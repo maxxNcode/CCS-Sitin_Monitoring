@@ -900,7 +900,8 @@
             async function searchStudent() {
                 const idNumber =
                     document.getElementById("searchIdNumber").value;
-                if (!idNumber) return showToast("Please enter an ID Number", "warning");
+                if (!idNumber)
+                    return showToast("Please enter an ID Number", "warning");
 
                 try {
                     const res = await fetch(
@@ -937,7 +938,10 @@
                 };
 
                 if (!payload.purpose || !payload.lab) {
-                    return showToast("Please select a purpose and a lab", "warning");
+                    return showToast(
+                        "Please select a purpose and a lab",
+                        "warning",
+                    );
                 }
 
                 try {
@@ -953,7 +957,10 @@
                         document.getElementById("my_modal_2").close();
                         fetchActiveSitins();
                     } else {
-                        showToast(data.error || "Failed to record sit-in", "error");
+                        showToast(
+                            data.error || "Failed to record sit-in",
+                            "error",
+                        );
                     }
                 } catch (err) {
                     console.error(err);
@@ -962,27 +969,37 @@
             }
 
             async function logoutSitin(recordId) {
-                showConfirm("End Session", "Are you sure you want to end this sit-in session?", async () => {
-                    try {
-                        const res = await fetch(
-                            `/api/admin/sit-in/logout/${recordId}`,
-                            {
-                                method: "POST",
-                            },
-                        );
-                        const data = await res.json();
+                showConfirm(
+                    "End Session",
+                    "Are you sure you want to end this sit-in session?",
+                    async () => {
+                        try {
+                            const res = await fetch(
+                                `/api/admin/sit-in/logout/${recordId}`,
+                                {
+                                    method: "POST",
+                                },
+                            );
+                            const data = await res.json();
 
-                        if (res.ok) {
-                            showToast("Session ended successfully!", "success");
-                            fetchActiveSitins();
-                        } else {
-                            showToast(data.error || "Failed to end session", "error");
+                            if (res.ok) {
+                                showToast(
+                                    "Session ended successfully!",
+                                    "success",
+                                );
+                                fetchActiveSitins();
+                            } else {
+                                showToast(
+                                    data.error || "Failed to end session",
+                                    "error",
+                                );
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showToast("An error occurred", "error");
                         }
-                    } catch (err) {
-                        console.error(err);
-                        showToast("An error occurred", "error");
-                    }
-                });
+                    },
+                );
             }
 
             function logout() {

@@ -148,7 +148,6 @@
                             </form>
                         </dialog>
 
-
                         <dialog id="my_modal_2" class="modal">
                             <div class="modal-box p-8 max-w-md">
                                 <h3
@@ -790,7 +789,6 @@
                             window.location.href = "/login";
                         else {
                             fetchStudents();
-                            fetchProfileInfo();
                         }
                     })
                     .catch(() => (window.location.href = "/login"));
@@ -816,33 +814,6 @@
                         });
                     });
             });
-
-            function fetchProfileInfo() {
-                fetch("/api/studentinfo")
-                    .then((res) => res.json())
-                    .then((data) => {
-                        if (data.error) return;
-                        const headerName = document.getElementById(
-                            "student-name-header",
-                        );
-                        if (headerName) headerName.innerText = data.name;
-
-                        if (data.profilePic) {
-                            const avatars =
-                                document.querySelectorAll(".avatar img");
-                            avatars.forEach((img) => {
-                                if (!img.src.includes("ccslogo")) {
-                                    img.src = data.profilePic;
-                                    img.classList.add(
-                                        "w-full",
-                                        "h-full",
-                                        "object-cover",
-                                    );
-                                }
-                            });
-                        }
-                    });
-            }
 
             async function fetchStudents() {
                 try {
@@ -905,7 +876,8 @@
             async function searchStudent() {
                 const idNumber =
                     document.getElementById("searchIdNumber").value;
-                if (!idNumber) return showToast("Please enter an ID Number", "warning");
+                if (!idNumber)
+                    return showToast("Please enter an ID Number", "warning");
 
                 try {
                     const res = await fetch(
@@ -944,7 +916,10 @@
                 };
 
                 if (!payload.purpose || !payload.lab) {
-                    return showToast("Please select a purpose and a lab", "warning");
+                    return showToast(
+                        "Please select a purpose and a lab",
+                        "warning",
+                    );
                 }
 
                 try {
@@ -960,7 +935,10 @@
                         document.getElementById("my_modal_2").close();
                         fetchStudents(); // Refresh table
                     } else {
-                        showToast(data.error || "Failed to record sit-in", "error");
+                        showToast(
+                            data.error || "Failed to record sit-in",
+                            "error",
+                        );
                     }
                 } catch (err) {
                     console.error(err);

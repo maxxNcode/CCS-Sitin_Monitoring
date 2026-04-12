@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-theme="dark">
+<html>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -773,7 +773,6 @@
                             window.location.href = "/login";
                         else {
                             fetchRecords();
-                            fetchProfileInfo();
                         }
                     })
                     .catch(() => (window.location.href = "/login"));
@@ -799,33 +798,6 @@
                         });
                     });
             });
-
-            function fetchProfileInfo() {
-                fetch("/api/studentinfo")
-                    .then((res) => res.json())
-                    .then((data) => {
-                        if (data.error) return;
-                        const headerName = document.getElementById(
-                            "student-name-header",
-                        );
-                        if (headerName) headerName.innerText = data.name;
-
-                        if (data.profilePic) {
-                            const avatars =
-                                document.querySelectorAll(".avatar img");
-                            avatars.forEach((img) => {
-                                if (!img.src.includes("ccslogo")) {
-                                    img.src = data.profilePic;
-                                    img.classList.add(
-                                        "w-full",
-                                        "h-full",
-                                        "object-cover",
-                                    );
-                                }
-                            });
-                        }
-                    });
-            }
 
             async function fetchRecords() {
                 try {
@@ -881,7 +853,8 @@
             async function searchStudent() {
                 const idNumber =
                     document.getElementById("searchIdNumber").value;
-                if (!idNumber) return showToast("Please enter an ID Number", "warning");
+                if (!idNumber)
+                    return showToast("Please enter an ID Number", "warning");
 
                 try {
                     const res = await fetch(
@@ -920,7 +893,10 @@
                 };
 
                 if (!payload.purpose || !payload.lab) {
-                    return showToast("Please select a purpose and a lab", "warning");
+                    return showToast(
+                        "Please select a purpose and a lab",
+                        "warning",
+                    );
                 }
 
                 try {
@@ -936,7 +912,10 @@
                         document.getElementById("my_modal_2").close();
                         fetchRecords(); // Refresh table
                     } else {
-                        showToast(data.error || "Failed to record sit-in", "error");
+                        showToast(
+                            data.error || "Failed to record sit-in",
+                            "error",
+                        );
                     }
                 } catch (err) {
                     console.error(err);
@@ -945,46 +924,69 @@
             }
 
             async function logoutSitin(recordId) {
-                showConfirm("End Session", "Are you sure you want to end this sit-in session?", async () => {
-                    try {
-                        const res = await fetch(
-                            `/api/admin/sit-in/logout/${recordId}`,
-                            { method: "POST" },
-                        );
-                        const data = await res.json();
+                showConfirm(
+                    "End Session",
+                    "Are you sure you want to end this sit-in session?",
+                    async () => {
+                        try {
+                            const res = await fetch(
+                                `/api/admin/sit-in/logout/${recordId}`,
+                                { method: "POST" },
+                            );
+                            const data = await res.json();
 
-                        if (res.ok) {
-                            showToast("Session ended successfully!", "success");
-                            fetchRecords();
-                        } else {
-                            showToast(data.error || "Failed to end session", "error");
+                            if (res.ok) {
+                                showToast(
+                                    "Session ended successfully!",
+                                    "success",
+                                );
+                                fetchRecords();
+                            } else {
+                                showToast(
+                                    data.error || "Failed to end session",
+                                    "error",
+                                );
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showToast("An error occurred", "error");
                         }
-                    } catch (err) {
-                        console.error(err);
-                        showToast("An error occurred", "error");
-                    }
-                });
+                    },
+                );
             }
 
             async function deleteRecord(recordId) {
-                showConfirm("Delete Record", "Are you sure you want to permanently delete this sit-in record?", async () => {
-                    try {
-                        const res = await fetch(`/api/admin/sit-in/${recordId}`, {
-                            method: "DELETE",
-                        });
-                        const data = await res.json();
+                showConfirm(
+                    "Delete Record",
+                    "Are you sure you want to permanently delete this sit-in record?",
+                    async () => {
+                        try {
+                            const res = await fetch(
+                                `/api/admin/sit-in/${recordId}`,
+                                {
+                                    method: "DELETE",
+                                },
+                            );
+                            const data = await res.json();
 
-                        if (res.ok) {
-                            showToast("Record deleted successfully!", "success");
-                            fetchRecords();
-                        } else {
-                            showToast(data.error || "Failed to delete record", "error");
+                            if (res.ok) {
+                                showToast(
+                                    "Record deleted successfully!",
+                                    "success",
+                                );
+                                fetchRecords();
+                            } else {
+                                showToast(
+                                    data.error || "Failed to delete record",
+                                    "error",
+                                );
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showToast("An error occurred", "error");
                         }
-                    } catch (err) {
-                        console.error(err);
-                        showToast("An error occurred", "error");
-                    }
-                });
+                    },
+                );
             }
 
             function logout() {

@@ -436,43 +436,6 @@
                 });
             });
 
-        // Student Info
-        fetch('/api/studentinfo')
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) return;
-
-                document.getElementById('student-name-header').innerText = data.name;
-                if (data.profilePic) {
-                    const avatars = document.querySelectorAll('.avatar img');
-                    avatars.forEach(img => {
-                        if (!img.src.includes('ccslogo')) {
-                            img.src = data.profilePic;
-                            img.classList.add('w-full', 'h-full', 'object-cover');
-                        }
-                    });
-                }
-
-                const container = document.getElementById('student-infos');
-                const fields = [
-                    { icon: 'fa-at', label: 'Email', value: data.email },
-                    { icon: 'fa-book-open', label: 'Course', value: data.course },
-                    { icon: 'fa-graduation-cap', label: 'Year', value: data.courseLevel },
-                    { icon: 'fa-location-dot', label: 'Address', value: data.address }
-                ];
-
-                container.innerHTML = fields.map(f => `
-                    <div class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-base-200 transition-all duration-300">
-                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs shrink-0">
-                            <i class="fa-solid ${f.icon}"></i>
-                        </div>
-                        <div>
-                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40">${f.label}</p>
-                            <p class="text-sm font-bold truncate max-w-[180px]">${f.value}</p>
-                        </div>
-                    </div>
-                `).join('');
-            });
 
         function logout() {
             fetch('/logout', { method: 'POST' })

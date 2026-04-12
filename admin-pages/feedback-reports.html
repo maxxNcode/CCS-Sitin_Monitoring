@@ -775,7 +775,8 @@
             async function searchStudent() {
                 const idNumber =
                     document.getElementById("searchIdNumber").value;
-                if (!idNumber) return showToast("Please enter an ID Number", "warning");
+                if (!idNumber)
+                    return showToast("Please enter an ID Number", "warning");
 
                 try {
                     const res = await fetch(
@@ -814,7 +815,10 @@
                 };
 
                 if (!payload.purpose || !payload.lab) {
-                    return showToast("Please select a purpose and a lab", "warning");
+                    return showToast(
+                        "Please select a purpose and a lab",
+                        "warning",
+                    );
                 }
 
                 try {
@@ -830,7 +834,10 @@
                         document.getElementById("my_modal_2").close();
                         location.reload();
                     } else {
-                        showToast(data.error || "Failed to record sit-in", "error");
+                        showToast(
+                            data.error || "Failed to record sit-in",
+                            "error",
+                        );
                     }
                 } catch (err) {
                     console.error(err);
