@@ -304,7 +304,7 @@ app.get('/api/studentinfo', (req, res) => {
         SELECT firstName, middleName, lastName,
         firstName || ' ' || (CASE WHEN middleName IS NOT NULL AND middleName != '' THEN middleName || ' ' ELSE '' END) || lastName AS name,
         email, profilePic, 
-        ${role === 'student' ? 'course, courseLevel, address' : '"" as course, "" as courseLevel, "" as address'}
+        ${role === 'student' ? 'course, courseLevel, address, sessionLeft' : '"" as course, "" as courseLevel, "" as address, 0 as sessionLeft'}
         FROM ${table}
         WHERE id = ?
     `, [userId], (err, row) => {
@@ -361,7 +361,7 @@ app.post('/register', (req, res) => {
 
         db.run(
             `INSERT INTO users (idNumber, email, password, firstName, lastName, middleName, courseLevel, course, address, sessionLeft)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 40)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 30)`,
             [idNumber, email, hashedPassword, firstName, lastName, middleName, courseLevel, course, address],
             (err) => {
                 if (err) {
@@ -521,7 +521,7 @@ app.post('/api/admin/students', checkAdminAuth, (req, res) => {
 
         db.run(
             `INSERT INTO users (idNumber, firstName, lastName, middleName, email, course, courseLevel, password, sessionLeft)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 40)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 30)`,
             [idNumber, firstName, lastName, middleName, email, course, courseLevel, hashedPassword],
             (err) => {
                 if (err) {
@@ -563,7 +563,7 @@ app.delete('/api/admin/students/:idNumber', checkAdminAuth, (req, res) => {
 // Admin API: Reset Single Student Sessions
 app.post('/api/admin/students/reset/:idNumber', checkAdminAuth, (req, res) => {
     const idNumber = req.params.idNumber;
-    db.run('UPDATE users SET sessionLeft = 40 WHERE idNumber = ?', [idNumber], (err) => {
+    db.run('UPDATE users SET sessionLeft = 30 WHERE idNumber = ?', [idNumber], (err) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         res.json({ success: true });
     });
@@ -573,7 +573,7 @@ app.post('/api/admin/students/reset/:idNumber', checkAdminAuth, (req, res) => {
 app.post('/api/admin/students/reset-all-juniors', checkAdminAuth, (req, res) => {
     const juniors = ['1st Year', '2nd Year', '3rd Year'];
     const placeholders = juniors.map(() => '?').join(',');
-    db.run(`UPDATE users SET sessionLeft = 40 WHERE courseLevel IN (${placeholders})`, juniors, (err) => {
+    db.run(`UPDATE users SET sessionLeft = 30 WHERE courseLevel IN (${placeholders})`, juniors, (err) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         res.json({ success: true });
     });
@@ -599,6 +599,53 @@ app.get('/api/admin/dashboard-stats', checkAdminAuth, (req, res) => {
         });
     });
 });
+
+// Admin API: Fetch Sit-in Reports (Paginated & Filtered)
+app.get('/api/admin/reports/sit-in', checkAdminAuth, (req, res) => {
+    const { search, date, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = `
+        SELECT h.*, u.profilePic 
+        FROM student_history h
+        LEFT JOIN users u ON h.idNumber = u.idNumber
+        WHERE 1=1
+    `;
+    let countQuery = `SELECT COUNT(*) as total FROM student_history h LEFT JOIN users u ON h.idNumber = u.idNumber WHERE 1=1`;
+    const params = [];
+
+    if (search) {
+        const searchPattern = `%${search}%`;
+        query += ` AND (h.idNumber LIKE ? OR h.studentName LIKE ?)`;
+        countQuery += ` AND (h.idNumber LIKE ? OR h.studentName LIKE ?)`;
+        params.push(searchPattern, searchPattern);
+    }
+
+    if (date) {
+        query += ` AND h.date = ?`;
+        countQuery += ` AND h.date = ?`;
+        params.push(date);
+    }
+
+    query += ` ORDER BY h.loginTime DESC LIMIT ? OFFSET ?`;
+    const finalParams = [...params, parseInt(limit), parseInt(offset)];
+
+    db.get(countQuery, params, (err, countRow) => {
+        if (err) return res.status(500).json({ error: 'Database error fetching count' });
+        
+        db.all(query, finalParams, (err, rows) => {
+            if (err) return res.status(500).json({ error: 'Database error fetching reports' });
+            res.json({
+                data: rows,
+                total: countRow.total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(countRow.total / limit)
+            });
+        });
+    });
+});
+
 
 // Admin Register route
 app.post('/api/admin/register', (req, res) => {
@@ -768,15 +815,15 @@ ensureMiddleNameColumn();
 function ensureSessionLeftColumn() {
     db.all("PRAGMA table_info(users)", (err, columns) => {
         if (!err && !columns.some(c => c.name === 'sessionLeft')) {
-            db.run("ALTER TABLE users ADD COLUMN sessionLeft INTEGER DEFAULT 40", (err) => {
+            db.run("ALTER TABLE users ADD COLUMN sessionLeft INTEGER DEFAULT 30", (err) => {
                 if (!err) {
                     console.log('Added sessionLeft column to users table');
-                    db.run('UPDATE users SET sessionLeft = 40 WHERE sessionLeft IS NULL');
+                    db.run('UPDATE users SET sessionLeft = 30 WHERE sessionLeft IS NULL');
                 }
             });
         } else {
             // Column exists, just fix any NULLs
-            db.run('UPDATE users SET sessionLeft = 40 WHERE sessionLeft IS NULL', (err) => {
+            db.run('UPDATE users SET sessionLeft = 30 WHERE sessionLeft IS NULL', (err) => {
                 if (!err) console.log('Ensured all students have sessionLeft set');
             });
         }

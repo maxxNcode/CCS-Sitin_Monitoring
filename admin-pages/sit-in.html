@@ -656,43 +656,64 @@
                 </div>
 
                 <!-- Page Content -->
-                <main
-                    class="p-4 md:p-8 max-w-7xl mx-auto w-[100vw] animate-in fade-in duration-700 flex justify-center items-center"
-                >
-                    <div class="flex flex-col w-full">
-                        <div class="flex flex-col items-center justify-center">
-                            <h1 class="text-3xl font-black">
-                                Current Sit-in Students
-                            </h1>
-                            <p class="text-center opacity-60">
-                                Students currently sitting in the laboratories
-                            </p>
+                <!-- Page Content -->
+                <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
+                    <div class="flex flex-col gap-8">
+                        <!-- Header -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 class="text-3xl font-black tracking-tight">Current Sit-in Students</h1>
+                                <p class="opacity-60 font-medium">Manage and monitor students currently active in laboratories</p>
+                            </div>
+                            <button class="btn btn-primary rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase" 
+                                onclick="my_modal_1.showModal()">
+                                <i class="fa-solid fa-plus mr-1"></i> New Sit-in
+                            </button>
                         </div>
 
-                        <div class="flex justify-between items-center mt-6">
-                            <div class="flex gap-2 items-center">
-                                <div
-                                    class="badge badge-primary badge-lg font-black gap-2"
-                                >
-                                    <i class="fa-solid fa-users"></i>
-                                    <span id="activeCount">0</span> Active
+                        <!-- Filters Section -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100 p-6 rounded-3xl border border-base-content/5 shadow-sm">
+                            <!-- Search -->
+                            <div class="form-control w-full">
+                                <label class="label pt-0 pb-1">
+                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Active</span>
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </div>
+                                    <input type="text" id="searchInput" placeholder="Name or ID Number..." 
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" 
+                                        oninput="filterTable()" />
                                 </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button
-                                    class="btn btn-primary btn-sm"
-                                    onclick="my_modal_1.showModal()"
-                                >
-                                    <i class="fa-solid fa-plus mr-1"></i>New
-                                    Sit-in
-                                </button>
-                                <input
-                                    type="text"
-                                    id="searchInput"
-                                    placeholder="Search..."
-                                    class="input input-bordered bg-base-200 w-52 input-sm"
-                                    oninput="filterTable()"
-                                />
+
+                            <!-- Lab Filter -->
+                            <div class="form-control w-full">
+                                <label class="label pt-0 pb-1">
+                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Filter by Lab</span>
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
+                                        <i class="fa-solid fa-flask"></i>
+                                    </div>
+                                    <select id="labFilter" class="select select-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                        onchange="filterTable()">
+                                        <option value="All">All Laboratories</option>
+                                        <option value="Lab 524">Lab 524</option>
+                                        <option value="Lab 526">Lab 526</option>
+                                        <option value="Lab 542">Lab 542</option>
+                                        <option value="Mac Lab">Mac Lab</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Results Summary -->
+                            <div class="flex items-end justify-end">
+                                <div class="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex flex-col items-center">
+                                    <span class="text-[10px] uppercase font-black tracking-widest opacity-40">Active Students</span>
+                                    <span class="text-2xl font-black text-primary" id="activeCount">0</span>
+                                </div>
                             </div>
                         </div>
 
@@ -825,9 +846,7 @@
                     const res = await fetch("/api/admin/active-sitins");
                     if (res.ok) {
                         allActiveRecords = await res.json();
-                        document.getElementById("activeCount").textContent =
-                            allActiveRecords.length;
-                        renderTable(allActiveRecords);
+                        filterTable(); // Initial render with filters
                     }
                 } catch (err) {
                     console.error("Error fetching active sit-ins:", err);
@@ -887,13 +906,16 @@
                 const query = document
                     .getElementById("searchInput")
                     .value.toLowerCase();
-                const filtered = allActiveRecords.filter(
-                    (r) =>
-                        r.studentName.toLowerCase().includes(query) ||
-                        r.idNumber.toLowerCase().includes(query) ||
-                        r.purpose.toLowerCase().includes(query) ||
-                        r.lab.toLowerCase().includes(query),
-                );
+                const lab = document.getElementById("labFilter").value;
+
+                const filtered = allActiveRecords.filter((r) => {
+                    const matchesSearch = r.studentName.toLowerCase().includes(query) ||
+                                         r.idNumber.toLowerCase().includes(query);
+                    const matchesLab = lab === "All" || r.lab === lab;
+                    return matchesSearch && matchesLab;
+                });
+                
+                document.getElementById("activeCount").textContent = filtered.length;
                 renderTable(filtered);
             }
 

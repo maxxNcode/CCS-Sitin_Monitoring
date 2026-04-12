@@ -937,9 +937,9 @@
                             <div class="flex flex-col gap-1 w-32">
                                 <div class="flex justify-between text-[10px] font-black opacity-50">
                                     <span>SESSIONS</span>
-                                    <span>${student.sessionLeft}/40</span>
+                                    <span>${student.sessionLeft}/30</span>
                                 </div>
-                                <progress class="progress progress-primary w-full h-1.5" value="${student.sessionLeft}" max="40"></progress>
+                                <progress class="progress progress-primary w-full h-1.5" value="${student.sessionLeft}" max="30"></progress>
                             </div>
                         </td>
                         <td class="text-center">
@@ -1045,11 +1045,11 @@
             }
 
             function resetSessions(idNumber) {
-                showConfirm('Reset Sessions?', 'This will reset the students remaining sessions to 40. Continue?', async () => {
+                showConfirm('Reset Sessions?', 'This will reset the students remaining sessions to 30. Continue?', async () => {
                     try {
                         const res = await fetch(`/api/admin/students/reset/${idNumber}`, { method: 'POST' });
                         if (res.ok) {
-                            showSuccessModal('Reset Successful', 'Student sessions have been restored to 40.');
+                            showSuccessModal('Reset Successful', 'Student sessions have been restored to 30.');
                             fetchStudents();
                         } else {
                             showErrorModal('Error', 'Failed to reset sessions');
@@ -1061,11 +1061,11 @@
             }
 
             function resetAllJuniors() {
-                showConfirm('Mass Reset?', 'This will reset sessions for ALL 1st, 2nd, and 3rd year students to 40. Proceed?', async () => {
+                showConfirm('Mass Reset?', 'This will reset sessions for ALL 1st, 2nd, and 3rd year students to 30. Proceed?', async () => {
                     try {
                         const res = await fetch('/api/admin/students/reset-all-juniors', { method: 'POST' });
                         if (res.ok) {
-                            showSuccessModal('Mass Reset Done', 'All eligible students have been reset to 40 sessions.');
+                            showSuccessModal('Mass Reset Done', 'All eligible students have been reset to 30 sessions.');
                             fetchStudents();
                         } else {
                             showErrorModal('Error', 'Failed to perform mass reset');

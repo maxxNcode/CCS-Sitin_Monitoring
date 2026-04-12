@@ -510,20 +510,22 @@
                                             </p>
                                             <h3
                                                 class="text-5xl font-black mt-1"
+                                                id="remaining-sessions"
                                             >
-                                                24
+                                                --
                                             </h3>
                                         </div>
                                         <div
                                             class="radial-progress bg-primary-content/10"
+                                            id="sessions-radial"
                                             style="
-                                                --value: 70;
+                                                --value: 0;
                                                 --size: 3rem;
                                                 --thickness: 4px;
                                             "
                                             role="progressbar"
                                         >
-                                            70%
+                                            0%
                                         </div>
                                     </div>
                                     <div class="card-actions justify-end mt-4">
@@ -872,6 +874,21 @@
                             }
                         });
                     }
+ 
+                     if (data.sessionLeft !== undefined) {
+                         const maxSessions = 30;
+                         const remaining = data.sessionLeft;
+                         const percent = Math.round((remaining / maxSessions) * 100);
+                         
+                         const sessionsEl = document.getElementById("remaining-sessions");
+                         const radialEl = document.getElementById("sessions-radial");
+                         
+                         if (sessionsEl) sessionsEl.innerText = remaining;
+                         if (radialEl) {
+                             radialEl.style.setProperty("--value", percent);
+                             radialEl.innerText = percent + "%";
+                         }
+                     }
 
                     const container = document.getElementById("student-infos");
                     const fields = [
