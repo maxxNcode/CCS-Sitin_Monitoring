@@ -1,4 +1,5 @@
 const express = require('express');
+const http = require('http');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
@@ -6,9 +7,11 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-const { error } = require('console');
+const { Server } = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 const PORT = 3000;
 
 // Initialize Database
@@ -217,6 +220,20 @@ app.post('/api/announcements', (req, res) => {
                 console.error(err.message);
                 return res.status(500).json({ error: 'Failed to create announcement' })
             }
+
+            // Notify ALL students about new announcement
+            const notifMsg = `New announcement: "${title}"`;
+            db.all('SELECT idNumber FROM users', [], (err, students) => {
+                if (!err && students) {
+                    students.forEach(s => {
+                        db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)',
+                            [s.idNumber, notifMsg, 'info']);
+                    });
+                    // Push via Socket.IO to all connected students
+                    io.emit('notification:student', { message: notifMsg, type: 'info' });
+                }
+            });
+
             res.json({ success: true, message: 'Announcement created successfully' });
         });
 });
@@ -370,6 +387,13 @@ app.post('/api/update-profile', upload.single('profileImage'), (req, res) => {
                 if (err) return res.status(500).json({ error: 'Update failed' });
                 req.session.firstName = firstName;
                 req.session.lastName = lastName;
+
+                // Notify admin that a student updated their profile
+                const adminMsg = `${firstName} ${lastName} (${req.session.idNumber}) has updated their profile.`;
+                db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)',
+                    ['ADMIN', adminMsg, 'info']);
+                io.emit('notification:admin', { message: adminMsg, type: 'info' });
+
                 res.json({ success: true, profilePic: finalProfilePic });
             });
     }
@@ -400,6 +424,12 @@ app.post('/register', (req, res) => {
                     }
                     return res.status(500).json({ error: 'Server error' });
                 }
+
+                // Notify admin about new student registration
+                const adminMsg = `New student registered: ${firstName} ${lastName} (${idNumber})`;
+                db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)',
+                    ['ADMIN', adminMsg, 'info']);
+                io.emit('notification:admin', { message: adminMsg, type: 'info' });
 
                 res.json({ success: true, message: 'Registration successful', redirectUrl: '/login.html' });
             }
@@ -629,6 +659,42 @@ app.get('/api/admin/dashboard-stats', checkAdminAuth, (req, res) => {
     });
 });
 
+// Admin API: Fetch Weekly Activity
+app.get('/api/admin/weekly-activity', checkAdminAuth, (req, res) => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]); // YYYY-MM-DD
+    }
+
+    db.all(`
+        SELECT date(created_at) as log_date, COUNT(*) as count 
+        FROM sitin_records 
+        WHERE date(created_at) >= ? 
+        GROUP BY log_date
+    `, [days[0]], (err, rows) => {
+        if (err) {
+            console.error('Error fetching weekly activity:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        const data = days.map(dateStr => {
+            const row = rows.find(r => r.log_date === dateStr);
+            const dateObj = new Date(dateStr);
+            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+            return {
+                date: dateStr,
+                day: dayName,
+                count: row ? row.count : 0
+            };
+        });
+        
+        res.json(data);
+    });
+});
+
+
 // Admin API: Fetch Sit-in Reports (Paginated & Filtered)
 app.get('/api/admin/reports/sit-in', checkAdminAuth, (req, res) => {
     const { search, date, page = 1, limit = 20 } = req.query;
@@ -689,6 +755,14 @@ app.post('/api/student/reserve', checkAuth, (req, res) => {
         [idNumber, studentName, lab, purpose, date, time],
         function (err) {
             if (err) return res.status(500).json({ error: 'Failed to create reservation' });
+            
+            // Notify ADMIN about new reservation
+            const adminMessage = `${studentName} has requested a reservation for ${lab} on ${date}.`;
+            db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', 
+                ['ADMIN', adminMessage, 'info']);
+            // Push via Socket.IO
+            io.emit('notification:admin', { message: adminMessage, type: 'info' });
+
             res.json({ success: true, message: 'Reservation submitted successfully' });
         }
     );
@@ -736,6 +810,8 @@ app.post('/api/admin/reservations/action', checkAdminAuth, (req, res) => {
             
             db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', 
                 [reservation.idNumber, message, type]);
+            // Push via Socket.IO to student
+            io.emit('notification:student', { idNumber: reservation.idNumber, message, type });
 
             res.json({ success: true, message: `Reservation ${action.toLowerCase()} successfully` });
         });
@@ -755,6 +831,15 @@ app.post('/api/admin/reservations/check-in', checkAdminAuth, (req, res) => {
         db.get('SELECT sessionLeft FROM users WHERE idNumber = ?', [reservation.idNumber], (err, user) => {
             if (err || !user) return res.status(404).json({ error: 'Student not found' });
             if (user.sessionLeft <= 0) return res.status(400).json({ error: 'Student has no sessions remaining' });
+
+            // Ensure check-in is not before reservation time
+            const now = new Date();
+            const resDateTime = new Date(`${reservation.reservationDate}T${reservation.reservationTime}`);
+            if (resDateTime > now) {
+                return res.status(400).json({ 
+                    error: `Check-in is not yet allowed. Scheduled for ${reservation.reservationDate} at ${reservation.reservationTime}` 
+                });
+            }
 
             db.serialize(() => {
                 db.run('BEGIN TRANSACTION');
@@ -789,7 +874,7 @@ app.post('/api/admin/reservations/check-in', checkAdminAuth, (req, res) => {
 
 // Generic API: Fetch Notifications
 app.get('/api/notifications', checkAuth, (req, res) => {
-    const idNumber = req.session.idNumber;
+    const idNumber = req.session.role === 'admin' ? 'ADMIN' : req.session.idNumber;
     db.all(`SELECT * FROM notifications WHERE idNumber = ? ORDER BY created_at DESC LIMIT 20`, [idNumber], (err, rows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         res.json(rows);
@@ -798,7 +883,7 @@ app.get('/api/notifications', checkAuth, (req, res) => {
 
 // Generic API: Mark Notifications as Read
 app.post('/api/notifications/mark-read', checkAuth, (req, res) => {
-    const idNumber = req.session.idNumber;
+    const idNumber = req.session.role === 'admin' ? 'ADMIN' : req.session.idNumber;
     db.run(`UPDATE notifications SET isRead = 1 WHERE idNumber = ?`, [idNumber], (err) => {
         if (err) return res.status(500).json({ error: 'Failed to mark notifications as read' });
         res.json({ success: true });
@@ -1034,8 +1119,16 @@ db.get('SELECT COUNT(*) as count FROM Annoucements', (err, row) => {
     }
 });
 
+// Socket.IO connection handler
+io.on('connection', (socket) => {
+    console.log('Socket connected:', socket.id);
+    socket.on('disconnect', () => {
+        console.log('Socket disconnected:', socket.id);
+    });
+});
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
 

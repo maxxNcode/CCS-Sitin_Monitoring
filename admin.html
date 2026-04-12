@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="/notify.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/notification-client.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -235,7 +237,7 @@
                         <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
                             <div class="indicator">
                                 <i class="fa-solid fa-bell text-lg"></i>
-                                <span class="badge badge-xs badge-primary indicator-item"></span>
+                                <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
                             </div>
                         </div>
                         <ul tabindex="0"
@@ -243,7 +245,9 @@
                             <li
                                 class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">
                                 Notifications</li>
-                            <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                            <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                            </div>
                         </ul>
                     </div>
 
@@ -552,8 +556,8 @@
         const chartConfig = {
             series: [
                 {
-                    name: "Sales",
-                    data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
+                    name: "Sit-ins",
+                    data: [],
                 },
             ],
             chart: {
@@ -591,17 +595,7 @@
                         fontWeight: 400,
                     },
                 },
-                categories: [
-                    "Apr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Aug",
-                    "Sep",
-                    "Oct",
-                    "Nov",
-                    "Dec",
-                ],
+                categories: [],
             },
             yaxis: {
                 labels: {
@@ -638,6 +632,21 @@
         const chart = new ApexCharts(document.querySelector("#bar-chart"), chartConfig);
 
         chart.render();
+
+        function fetchWeeklyActivity() {
+            fetch('/api/admin/weekly-activity')
+                .then(res => res.json())
+                .then(data => {
+                    const categories = data.map(d => d.day);
+                    const seriesData = data.map(d => d.count);
+                    chart.updateSeries([{ name: "Sit-ins", data: seriesData }]);
+                    chart.updateOptions({ xaxis: { categories: categories } });
+                })
+                .catch(err => console.error('Error fetching weekly activity:', err));
+        }
+
+        // Fetch the activity on load
+        fetchWeeklyActivity();
 
         function getPrimaryColor() {
             // Create a temporary element to get the computed primary color

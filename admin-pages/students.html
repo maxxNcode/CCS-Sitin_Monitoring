@@ -24,6 +24,8 @@
         />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="/notify.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/notification-client.js"></script>
         <link rel="stylesheet" href="style.css" />
     </head>
 
@@ -395,6 +397,21 @@
                             Reservations
                         </a>
 
+                        <div class="dropdown dropdown-end ml-2">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-sm"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
                         <div class="dropdown dropdown-end ml-4">
                             <div
                                 tabindex="0"
@@ -694,36 +711,7 @@
                             </ul>
                         </div>
 
-                        <div class="dropdown dropdown-end">
-                            <div
-                                tabindex="0"
-                                role="button"
-                                class="btn btn-ghost btn-circle"
-                            >
-                                <div class="indicator">
-                                    <i class="fa-solid fa-bell text-lg"></i>
-                                    <span
-                                        class="badge badge-xs badge-primary indicator-item"
-                                    ></span>
-                                </div>
-                            </div>
-                            <ul
-                                tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2"
-                            >
-                                <li
-                                    class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0"
-                                >
-                                    Notifications
-                                </li>
-                                <li>
-                                    <a
-                                        class="text-sm py-3 opacity-60 italic justify-center"
-                                        >No new notifications</a
-                                    >
-                                </li>
-                            </ul>
-                        </div>
+
 
                         <button
                             onclick="logout()"
@@ -1187,6 +1175,56 @@
                     showToast("An error occurred", "error");
                 }
             }
+
+            // Notifications Logic
+            function updateNotifications() {
+                fetch("/api/notifications")
+                    .then((r) => r.json())
+                    .then((data) => {
+                        const list = document.getElementById("notificationList");
+                        const badge = document.querySelector(".indicator .badge");
+
+                        const unreadCount = data.filter((n) => !n.isRead).length;
+                        if (unreadCount > 0) {
+                            badge.innerText = unreadCount;
+                            badge.classList.remove("hidden");
+                        } else {
+                            badge.classList.add("hidden");
+                        }
+
+                        if (data.length === 0) {
+                            list.innerHTML = `<li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>`;
+                        } else {
+                            list.innerHTML = data.map(n => `
+                                <li>
+                                    <a class="flex flex-col items-start gap-1 py-3 ${!n.isRead ? "bg-primary/5" : ""}">
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-xs ${n.type === "success" ? "badge-success" : n.type === "error" ? "badge-error" : "badge-info"}"></span>
+                                            <span class="text-xs font-bold">${n.message}</span>
+                                        </div>
+                                        <span class="text-[10px] opacity-40">${new Date(n.created_at).toLocaleString()}</span>
+                                    </a>
+                                </li>
+                            `).join('');
+
+                            if (unreadCount > 0) {
+                                const markBtn = document.createElement("button");
+                                markBtn.className = "btn btn-ghost btn-xs w-full text-[10px] uppercase tracking-tighter mt-2 pt-2 border-t border-base-content/5";
+                                markBtn.innerText = "Mark all as read";
+                                markBtn.onclick = markNotificationsAsRead;
+                                list.appendChild(markBtn);
+                            }
+                        }
+                    });
+            }
+
+            function markNotificationsAsRead() {
+                fetch("/api/notifications/mark-read", { method: "POST" }).then(() => updateNotifications());
+            }
+
+            // Initial call
+            updateNotifications();
+            setInterval(updateNotifications, 30000);
 
             function logout() {
                 fetch("/logout", { method: "POST" })
