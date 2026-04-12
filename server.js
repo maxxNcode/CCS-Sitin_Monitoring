@@ -106,6 +106,35 @@ function createTableStudentHistory() {
     `)
 }
 
+function createTableReservations() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS reservations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            idNumber TEXT NOT NULL,
+            studentName TEXT NOT NULL,
+            lab TEXT NOT NULL,
+            purpose TEXT NOT NULL,
+            reservationDate DATE NOT NULL,
+            reservationTime TEXT NOT NULL,
+            status TEXT DEFAULT 'Pending',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+}
+
+function createTableNotifications() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            idNumber TEXT NOT NULL,
+            message TEXT NOT NULL,
+            type TEXT DEFAULT 'info',
+            isRead INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+}
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -628,11 +657,10 @@ app.get('/api/admin/reports/sit-in', checkAdminAuth, (req, res) => {
     }
 
     query += ` ORDER BY h.loginTime DESC LIMIT ? OFFSET ?`;
-    const finalParams = [...params, parseInt(limit), parseInt(offset)];
-
     db.get(countQuery, params, (err, countRow) => {
         if (err) return res.status(500).json({ error: 'Database error fetching count' });
         
+        const finalParams = [...params, parseInt(limit), parseInt(offset)];
         db.all(query, finalParams, (err, rows) => {
             if (err) return res.status(500).json({ error: 'Database error fetching reports' });
             res.json({
@@ -643,6 +671,137 @@ app.get('/api/admin/reports/sit-in', checkAdminAuth, (req, res) => {
                 totalPages: Math.ceil(countRow.total / limit)
             });
         });
+    });
+});
+
+// Student API: Create Reservation
+app.post('/api/student/reserve', checkAuth, (req, res) => {
+    const { lab, purpose, date, time } = req.body;
+    const { idNumber, firstName, lastName } = req.session;
+    const studentName = `${firstName} ${lastName}`;
+
+    if (!lab || !purpose || !date || !time) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    db.run(
+        `INSERT INTO reservations (idNumber, studentName, lab, purpose, reservationDate, reservationTime) VALUES (?, ?, ?, ?, ?, ?)`,
+        [idNumber, studentName, lab, purpose, date, time],
+        function (err) {
+            if (err) return res.status(500).json({ error: 'Failed to create reservation' });
+            res.json({ success: true, message: 'Reservation submitted successfully' });
+        }
+    );
+});
+
+// Student API: Fetch Reservations
+app.get('/api/student/reservations', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+    db.all(`SELECT * FROM reservations WHERE idNumber = ? ORDER BY created_at DESC`, [idNumber], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin API: Fetch All Reservations
+app.get('/api/admin/reservations', checkAdminAuth, (req, res) => {
+    db.all(`
+        SELECT r.*, u.profilePic 
+        FROM reservations r 
+        LEFT JOIN users u ON r.idNumber = u.idNumber 
+        ORDER BY r.created_at DESC
+    `, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin API: Reservation Action (Approve/Reject)
+app.post('/api/admin/reservations/action', checkAdminAuth, (req, res) => {
+    const { id, action } = req.body; // action: 'Approved' or 'Rejected'
+
+    if (!id || !['Approved', 'Rejected'].includes(action)) {
+        return res.status(400).json({ error: 'Invalid ID or action' });
+    }
+
+    db.get('SELECT * FROM reservations WHERE id = ?', [id], (err, reservation) => {
+        if (err || !reservation) return res.status(404).json({ error: 'Reservation not found' });
+
+        db.run('UPDATE reservations SET status = ? WHERE id = ?', [action, id], function (err) {
+            if (err) return res.status(500).json({ error: 'Failed to update reservation' });
+
+            // Create notification for student
+            const message = `Your reservation for ${reservation.lab} on ${reservation.reservationDate} has been ${action.toLowerCase()}.`;
+            const type = action === 'Approved' ? 'success' : 'error';
+            
+            db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', 
+                [reservation.idNumber, message, type]);
+
+            res.json({ success: true, message: `Reservation ${action.toLowerCase()} successfully` });
+        });
+    });
+});
+
+// Admin API: Reservation Check-in
+app.post('/api/admin/reservations/check-in', checkAdminAuth, (req, res) => {
+    const { id } = req.body;
+
+    if (!id) return res.status(400).json({ error: 'Reservation ID is required' });
+
+    db.get('SELECT * FROM reservations WHERE id = ?', [id], (err, reservation) => {
+        if (err || !reservation) return res.status(404).json({ error: 'Reservation not found' });
+        if (reservation.status !== 'Approved') return res.status(400).json({ error: 'Only approved reservations can be checked in' });
+
+        db.get('SELECT sessionLeft FROM users WHERE idNumber = ?', [reservation.idNumber], (err, user) => {
+            if (err || !user) return res.status(404).json({ error: 'Student not found' });
+            if (user.sessionLeft <= 0) return res.status(400).json({ error: 'Student has no sessions remaining' });
+
+            db.serialize(() => {
+                db.run('BEGIN TRANSACTION');
+
+                // 1. Create active sit-in record
+                db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
+                    [reservation.studentName, reservation.idNumber, reservation.purpose, reservation.lab, user.sessionLeft.toString(), 'Active'],
+                    (err) => {
+                        if (err) {
+                            db.run('ROLLBACK');
+                            return res.status(500).json({ error: 'Failed to create sit-in record' });
+                        }
+
+                        // 2. Update reservation status
+                        db.run('UPDATE reservations SET status = ? WHERE id = ?', ['Checked In', id], (err) => {
+                            if (err) {
+                                db.run('ROLLBACK');
+                                return res.status(500).json({ error: 'Failed to update reservation status' });
+                            }
+
+                            db.run('COMMIT', (err) => {
+                                if (err) return res.status(500).json({ error: 'Transaction failed' });
+                                res.json({ success: true, message: 'Student checked in successfully' });
+                            });
+                        });
+                    }
+                );
+            });
+        });
+    });
+});
+
+// Generic API: Fetch Notifications
+app.get('/api/notifications', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+    db.all(`SELECT * FROM notifications WHERE idNumber = ? ORDER BY created_at DESC LIMIT 20`, [idNumber], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Generic API: Mark Notifications as Read
+app.post('/api/notifications/mark-read', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+    db.run(`UPDATE notifications SET isRead = 1 WHERE idNumber = ?`, [idNumber], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to mark notifications as read' });
+        res.json({ success: true });
     });
 });
 
@@ -794,6 +953,8 @@ createTableAnnouncements();
 createTableSitInRecords();
 createTableAdmins();
 createTableStudentHistory();
+createTableReservations();
+createTableNotifications();
 
 // Ensure profilePic column exists (Migration)
 function ensureProfilePicColumn() {

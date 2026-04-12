@@ -737,50 +737,71 @@
 
                 <!-- Page Content -->
                 <main
-                    class="p-4 md:p-8 max-w-7xl mx-auto w-[100vw] animate-in fade-in duration-700 flex justify-center items-center"
+                    class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700"
                 >
                     <div class="flex flex-col w-full">
-                        <div class="flex flex-col items-center justify-center">
-                            <h1 class="text-3xl font-black">
-                                Students Information
-                            </h1>
-                            <p class="text-center">
-                                View and manage students information
-                            </p>
+                    <div class="flex flex-col gap-8">
+                        <!-- Header -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 class="text-3xl font-black tracking-tight">Students Information</h1>
+                                <p class="opacity-60 font-medium">View and manage students information and session balances</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="btn btn-primary rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase" 
+                                    onclick="openStudentModal()">
+                                    <i class="fa-solid fa-user-plus mr-1"></i> Add Student
+                                </button>
+                                <button class="btn btn-warning rounded-2xl shadow-xl shadow-warning/20 font-black italic uppercase" 
+                                    onclick="resetAllJuniors()">
+                                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset All
+                                </button>
+                            </div>
                         </div>
 
-                        <div
-                            class="w-full flex justify-start items-center mt-4"
-                        >
-                            <button class="btn btn-primary btn-sm" onclick="openStudentModal()">
-                                Add Student
-                            </button>
-                            <button class="btn btn-warning btn-sm ml-2" onclick="resetAllJuniors()">
-                                Reset All Sessions
-                            </button>
-                        </div>
+                        <!-- Filters Section -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100 p-6 rounded-3xl border border-base-content/5 shadow-sm">
+                            <!-- Search -->
+                            <div class="form-control w-full">
+                                <label class="label pt-0 pb-1">
+                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Students</span>
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </div>
+                                    <input type="text" id="studentSearchInput" placeholder="Name or ID Number..." 
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" 
+                                        oninput="filterStudents()" />
+                                </div>
+                            </div>
 
-                        <div class="flex justify-end items-center mt-4">
-                            <!-- add filtering and search -->
+                            <!-- Year Filter -->
+                            <div class="form-control w-full">
+                                <label class="label pt-0 pb-1">
+                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Filter by Year</span>
+                                </label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                    </div>
+                                    <select id="yearFilter" class="select select-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                        onchange="filterStudents()">
+                                        <option value="All">All Years</option>
+                                        <option value="1st Year">1st Year</option>
+                                        <option value="2nd Year">2nd Year</option>
+                                        <option value="3rd Year">3rd Year</option>
+                                        <option value="4th Year">4th Year</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                            <div class="flex gap-2">
-                                <select
-                                    class="select select-bordered bg-base-200 flex-1 w-52"
-                                >
-                                    <!-- filter by page -->
-                                    <option disabled selected>
-                                        Filter by Page
-                                    </option>
-                                    <option>All</option>
-                                    <option>Page 1</option>
-                                    <option>Page 2</option>
-                                    <option>Page 3</option>
-                                </select>
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    class="input input-bordered bg-base-200 flex-3 w-52"
-                                />
+                            <!-- Results Summary -->
+                            <div class="flex items-end justify-end">
+                                <div class="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex flex-col items-center">
+                                    <span class="text-[10px] uppercase font-black tracking-widest opacity-40">Total Students</span>
+                                    <span class="text-2xl font-black text-primary" id="totalStudentsCount">0</span>
+                                </div>
                             </div>
                         </div>
 
@@ -899,6 +920,7 @@
                     const data = await res.json();
                     if (res.ok) {
                         studentsData = data;
+                        document.getElementById("totalStudentsCount").innerText = data.length;
                         renderStudents(data);
                     }
                 } catch (err) {
@@ -953,6 +975,23 @@
                 `,
                     )
                     .join("");
+            }
+
+            function filterStudents() {
+                const search = document.getElementById("studentSearchInput").value.toLowerCase();
+                const year = document.getElementById("yearFilter").value;
+
+                const filtered = studentsData.filter(student => {
+                    const fullName = `${student.firstName} ${student.lastName}`.toLowerCase();
+                    const matchesSearch = fullName.includes(search) || 
+                                         student.idNumber.toLowerCase().includes(search) ||
+                                         student.course.toLowerCase().includes(search);
+                    const matchesYear = year === "All" || student.courseLevel === year;
+                    return matchesSearch && matchesYear;
+                });
+
+                document.getElementById("totalStudentsCount").innerText = filtered.length;
+                renderStudents(filtered);
             }
 
             let editMode = false;
