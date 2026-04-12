@@ -10,8 +10,10 @@ function showToast(message, type = "info", duration = 3000) {
     if (!container) {
         container = document.createElement("div");
         container.id = "toast-container";
-        container.className = "toast toast-top toast-end z-[9999]";
+        container.setAttribute("popover", "manual");
+        container.className = "toast toast-top toast-end bg-transparent border-none p-0 overflow-visible";
         document.body.appendChild(container);
+        container.showPopover();
     }
 
     const typeClasses = {
@@ -68,7 +70,7 @@ function _showModal(title, message, type, redirectUrl = null) {
 
     const modal = document.createElement("dialog");
     modal.id = "notify-modal";
-    modal.className = "modal modal-open";
+    modal.className = "modal";
     modal.innerHTML = `
         <div class="modal-box max-w-sm text-center">
             ${iconMap[type] || iconMap.info}
@@ -82,9 +84,10 @@ function _showModal(title, message, type, redirectUrl = null) {
     `;
 
     document.body.appendChild(modal);
+    modal.showModal();
 
     const closeModal = () => {
-        modal.classList.remove("modal-open");
+        modal.close();
         setTimeout(() => {
             modal.remove();
             if (redirectUrl) window.location.href = redirectUrl;
@@ -102,7 +105,7 @@ function showConfirm(title, message, onConfirm) {
 
     const modal = document.createElement("dialog");
     modal.id = "confirm-modal";
-    modal.className = "modal modal-open";
+    modal.className = "modal";
     modal.innerHTML = `
         <div class="modal-box max-w-sm text-center">
             <div class="w-16 h-16 rounded-full bg-warning/20 flex items-center justify-center mx-auto mb-4">
@@ -119,9 +122,10 @@ function showConfirm(title, message, onConfirm) {
     `;
 
     document.body.appendChild(modal);
+    modal.showModal();
 
     const closeModal = () => {
-        modal.classList.remove("modal-open");
+        modal.close();
         setTimeout(() => modal.remove(), 200);
     };
 

@@ -257,11 +257,38 @@ app.post('/login', (req, res) => {
 
 
 app.get('/api/announcements', (req, res) => {
-    db.all('SELECT title, description, created_at FROM Annoucements ORDER BY created_at DESC', [], (err, rows) => {
+    // Determine if user is admin
+    const isAdmin = req.session.userId && req.session.role === 'admin';
+    
+    // If not admin, we only show items specifically marked as NOT hidden (isHidden = 0)
+    // We also handle cases where isHidden might be NULL
+    const query = isAdmin 
+        ? 'SELECT id, title, description, created_at, isHidden FROM Annoucements ORDER BY created_at DESC'
+        : 'SELECT title, description, created_at FROM Annoucements WHERE isHidden = 0 OR isHidden IS NULL ORDER BY created_at DESC';
+
+    db.all(query, [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: 'Error' });
+            console.error('Error fetching announcements:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
         }
+        
+        // Debugging log to verify filtering
+        console.log(`Announcements fetched for ${isAdmin ? 'ADMIN' : 'STUDENT'}. Returning ${rows.length} items.`);
         res.json(rows);
+    });
+});
+
+// Admin API: Toggle Announcement Visibility
+app.post('/api/announcements/toggle-hide/:id', checkAdminAuth, (req, res) => {
+    const id = req.params.id;
+    db.get('SELECT isHidden FROM Annoucements WHERE id = ?', [id], (err, row) => {
+        if (err || !row) return res.status(404).json({ error: 'Announcement not found' });
+        
+        const newStatus = row.isHidden === 1 ? 0 : 1;
+        db.run('UPDATE Annoucements SET isHidden = ? WHERE id = ?', [newStatus, id], (err) => {
+            if (err) return res.status(500).json({ error: 'Failed to update' });
+            res.json({ success: true, isHidden: newStatus });
+        });
     });
 });
 
@@ -483,6 +510,96 @@ app.get('/api/admin/students', (req, res) => {
     });
 });
 
+// Admin API: Add Student
+app.post('/api/admin/students', checkAdminAuth, (req, res) => {
+    const { idNumber, firstName, lastName, middleName, email, course, courseLevel, password } = req.body;
+    // For admins adding students, we can default the password to their idNumber if not provided
+    const studentPassword = password || idNumber;
+
+    bcrypt.hash(studentPassword, 10, (err, hashedPassword) => {
+        if (err) return res.status(500).json({ error: 'Server error' });
+
+        db.run(
+            `INSERT INTO users (idNumber, firstName, lastName, middleName, email, course, courseLevel, password, sessionLeft)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 40)`,
+            [idNumber, firstName, lastName, middleName, email, course, courseLevel, hashedPassword],
+            (err) => {
+                if (err) {
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(400).json({ error: 'ID Number or Email already exists' });
+                    }
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                res.json({ success: true });
+            }
+        );
+    });
+});
+
+// Admin API: Update Student
+app.put('/api/admin/students/:idNumber', checkAdminAuth, (req, res) => {
+    const idNumber = req.params.idNumber;
+    const { firstName, lastName, middleName, email, course, courseLevel } = req.body;
+
+    db.run(
+        `UPDATE users SET firstName = ?, lastName = ?, middleName = ?, email = ?, course = ?, courseLevel = ? WHERE idNumber = ?`,
+        [firstName, lastName, middleName, email, course, courseLevel, idNumber],
+        (err) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            res.json({ success: true });
+        }
+    );
+});
+
+// Admin API: Delete Student
+app.delete('/api/admin/students/:idNumber', checkAdminAuth, (req, res) => {
+    const idNumber = req.params.idNumber;
+    db.run('DELETE FROM users WHERE idNumber = ?', [idNumber], (err) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json({ success: true });
+    });
+});
+
+// Admin API: Reset Single Student Sessions
+app.post('/api/admin/students/reset/:idNumber', checkAdminAuth, (req, res) => {
+    const idNumber = req.params.idNumber;
+    db.run('UPDATE users SET sessionLeft = 40 WHERE idNumber = ?', [idNumber], (err) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json({ success: true });
+    });
+});
+
+// Admin API: Reset All Juniors (3rd Year and below)
+app.post('/api/admin/students/reset-all-juniors', checkAdminAuth, (req, res) => {
+    const juniors = ['1st Year', '2nd Year', '3rd Year'];
+    const placeholders = juniors.map(() => '?').join(',');
+    db.run(`UPDATE users SET sessionLeft = 40 WHERE courseLevel IN (${placeholders})`, juniors, (err) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json({ success: true });
+    });
+});
+
+// Admin API: Fetch Dashboard Statistics
+app.get('/api/admin/dashboard-stats', checkAdminAuth, (req, res) => {
+    const stats = {};
+    
+    db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        stats.totalStudents = row.count;
+        
+        db.get('SELECT COUNT(*) as count FROM sitin_records WHERE status = "Active"', (err, row) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            stats.activeSitIn = row.count;
+            
+            db.get('SELECT COUNT(*) as count FROM sitin_records', (err, row) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                stats.totalSitIn = row.count;
+                res.json(stats);
+            });
+        });
+    });
+});
+
 // Admin Register route
 app.post('/api/admin/register', (req, res) => {
     const { idNumber, email, password, firstName, lastName, middleName } = req.body;
@@ -685,6 +802,21 @@ function ensureMiddleNameColumn() {
     });
 }
 ensureMiddleNameColumn();
+ensureAnnouncementHiddenColumn();
+
+function ensureAnnouncementHiddenColumn() {
+    db.all("PRAGMA table_info(Annoucements)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'isHidden')) {
+            db.run("ALTER TABLE Annoucements ADD COLUMN isHidden INTEGER DEFAULT 0", (err) => {
+                if (!err) {
+                    console.log('Added isHidden column to Annoucements table');
+                    // Explicitly update existing rows to 0
+                    db.run("UPDATE Annoucements SET isHidden = 0 WHERE isHidden IS NULL");
+                }
+            });
+        }
+    });
+}
 
 
 // Seed dummy announcement if empty

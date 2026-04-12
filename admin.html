@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
     <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="/notify.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -256,7 +256,7 @@
             <!-- Page Content -->
             <main
                 class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700 flex justify-center items-center">
-                <div class="admin-container flex gap-[200px]">
+                <div class="admin-container flex flex-col lg:flex-row gap-6">
                     <!--  -->
                     <div class=" flex gap-6">
 
@@ -282,7 +282,7 @@
                                             <div
                                                 class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">
                                                 Students Registered</div>
-                                            <div class="stat-value text-primary text-4xl">100</div>
+                                            <div class="stat-value text-primary text-4xl" id="stat-registered-students">0</div>
                                             <div class="stat-desc font-bold opacity-40"></div>
                                         </div>
 
@@ -297,7 +297,7 @@
                                             <div
                                                 class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">
                                                 Currently Sit-In</div>
-                                            <div class="stat-value text-secondary text-4xl">42</div>
+                                            <div class="stat-value text-secondary text-4xl" id="stat-active-sitins">0</div>
                                         </div>
 
                                         <!-- All-time Records -->
@@ -308,7 +308,7 @@
                                             <div
                                                 class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">
                                                 Total Sit-In</div>
-                                            <div class="stat-value text-accent text-4xl">1,280</div>
+                                            <div class="stat-value text-accent text-4xl" id="stat-total-sitins">0</div>
                                         </div>
                                     </div>
 
@@ -330,21 +330,36 @@
                         <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10 w-[600px] min-h-[500px]">
                             <div class="card-body">
                                 <h2
-                                    class="text-[20px] font-bold mb-6 flex items-center gap-3 text-center w-full justify-center lg:justify-start">
+                                    class="text-[20px] font-bold mb-6 flex items-center gap-3 w-full justify-start">
                                     <i class="fa-solid fa-bullhorn text-primary"></i>
                                     Announcements
                                 </h2>
                                 <!-- Create Announcements -->
                                 <div id="" class="space-y-6 max-h-[550px] overflow-y-auto custom-scrollbar">
 
-                                    <div class="create-announcements">
+                                    <div class="create-announcements pb-6 border-b border-base-content/5">
+                                        <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40 mb-4">Create New</h3>
                                         <input type="text" placeholder="Title" id="announcementTitle"
                                             class="input input-bordered w-full mb-2" />
                                         <textarea class="textarea textarea-bordered resize-y w-full"
                                             placeholder="Announcement..." id="announcementDescription"></textarea>
 
-                                        <button class="btn btn-primary mt-4" onclick="addAnnouncement()">Add
-                                            Announcement</button>
+                                        <button class="btn btn-primary mt-4 w-full" onclick="addAnnouncement()">
+                                            <i class="fa-solid fa-plus mr-2"></i>
+                                            Add Announcement
+                                        </button>
+                                    </div>
+
+                                    <div class="announcement-filters space-y-3">
+                                        <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40">Manage & Filter</h3>
+                                        <div class="flex items-center gap-3">
+                                            <div class="input input-bordered flex items-center gap-3 flex-1 px-4">
+                                                <i class="fa-solid fa-magnifying-glass opacity-30 text-xs"></i>
+                                                <input type="text" id="announcementSearch" placeholder="Search announcements..." 
+                                                    class="grow bg-transparent outline-none !text-left" oninput="applyAnnouncementFilters()" />
+                                            </div>
+                                            <input type="date" id="announcementDateFilter" class="input input-bordered px-4" onchange="applyAnnouncementFilters()" />
+                                        </div>
                                     </div>
 
                                     <div class="announcements flex flex-col gap-4" id="announcements">
@@ -385,6 +400,7 @@
                 .then(r => r.json())
                 .then(d => { 
                     if (!d.loggedIn || d.role !== 'admin') window.location.href = '/login'; 
+                    else fetchDashboardStats();
                 })
                 .catch(() => window.location.href = '/login');
 
@@ -403,38 +419,125 @@
                     });
                 });
         });
-        
-        // Announcements (Premium Activity Feed V4)
-        fetch('/api/announcements')
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('announcements');
-                container.innerHTML = '';
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'relative group';
-                    div.innerHTML = `
-                        <div class="p-5 rounded-box bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
-                            <!-- Header Area -->
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 opacity-70">
-                                    <i class="fa-solid fa-circle-check"></i>
-                                    Official Announcement
-                                </span>
-                                <time class="text-xs font-black text-primary uppercase tracking-wider">${new Date(item.created_at).toLocaleDateString()}</time>
-                            </div>
-                            
-                            <!-- Content Area -->
-                            <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
-                            <div class="rounded-btn border-base-content/5 group-hover:border-primary/10 transition-colors">
-                                <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
-                            </div>
-                            
-                        </div>
-                    `;
-                    container.appendChild(div);
+
+        function fetchDashboardStats() {
+            fetch('/api/admin/dashboard-stats')
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    document.getElementById('stat-registered-students').innerText = data.totalStudents || 0;
+                    document.getElementById('stat-active-sitins').innerText = data.activeSitIn || 0;
+                    document.getElementById('stat-total-sitins').innerText = data.totalSitIn ? data.totalSitIn.toLocaleString() : 0;
+                })
+                .catch(err => {
+                    console.error('Error fetching stats:', err);
+                    // Use fallback values if fetch fails
+                    document.getElementById('stat-registered-students').innerText = '--';
+                    document.getElementById('stat-active-sitins').innerText = '--';
+                    document.getElementById('stat-total-sitins').innerText = '--';
                 });
+        }
+        
+        let announcementsData = [];
+
+        function fetchAnnouncements() {
+            fetch('/api/announcements')
+                .then(res => res.json())
+                .then(data => {
+                    announcementsData = data;
+                    renderAnnouncements(data);
+                })
+                .catch(err => console.error('Error fetching announcements:', err));
+        }
+
+        function renderAnnouncements(data) {
+            const container = document.getElementById('announcements');
+            container.innerHTML = '';
+            
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 opacity-40">
+                        <i class="fa-solid fa-inbox text-4xl mb-3"></i>
+                        <p class="font-medium text-sm">No announcements found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(item => {
+                const isHidden = item.isHidden === 1;
+                const div = document.createElement('div');
+                div.className = `relative group ${isHidden ? 'opacity-60' : ''}`;
+                div.innerHTML = `
+                    <div class="p-5 rounded-box bg-base-200/50 border ${isHidden ? 'border-dashed border-base-content/20' : 'border-base-content/5'} group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                        <!-- Header Area -->
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-[10px] font-black uppercase tracking-widest ${isHidden ? 'text-base-content/50' : 'text-primary'} flex items-center gap-1 opacity-70">
+                                <i class="fa-solid ${isHidden ? 'fa-eye-slash' : 'fa-circle-check'}"></i>
+                                ${isHidden ? 'Hidden Announcement' : 'Official Announcement'}
+                            </span>
+                            <div class="flex items-center gap-3">
+                                <time class="text-xs font-black text-primary uppercase tracking-wider">${new Date(item.created_at).toLocaleDateString()}</time>
+                                <button onclick="toggleHideAnnouncement(${item.id})" class="btn btn-ghost btn-xs btn-circle hover:bg-primary hover:text-white transition-all relative z-20" title="${isHidden ? 'Show' : 'Hide'}">
+                                    <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Area -->
+                        <h3 class="text-lg font-black text-base-content leading-tight mb-3 group-hover:text-primary transition-colors">${item.title}</h3>
+                        <div class="rounded-btn border-base-content/5 group-hover:border-primary/10 transition-colors">
+                            <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
             });
+        }
+
+        function applyAnnouncementFilters() {
+            const searchTerm = document.getElementById('announcementSearch').value.toLowerCase();
+            const dateFilter = document.getElementById('announcementDateFilter').value;
+
+            const filtered = announcementsData.filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(searchTerm) || 
+                                    item.description.toLowerCase().includes(searchTerm);
+                
+                let matchesDate = true;
+                if (dateFilter) {
+                    const itemDate = new Date(item.created_at).toISOString().split('T')[0];
+                    matchesDate = itemDate === dateFilter;
+                }
+
+                return matchesSearch && matchesDate;
+            });
+
+            renderAnnouncements(filtered);
+        }
+
+        function toggleHideAnnouncement(id) {
+            showConfirm('Change Visibility?', 'Are you sure you want to toggle the visibility of this announcement?', () => {
+                fetch(`/api/announcements/toggle-hide/${id}`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccessModal('Status Updated', 'Announcement visibility has been changed.');
+                            fetchAnnouncements();
+                        } else {
+                            showErrorModal('Error', data.error || 'Failed to toggle visibility');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error toggling visibility:', err);
+                        showErrorModal('Error', 'Connection failed');
+                    });
+            });
+        }
+
+        // Initial fetch
+        fetchAnnouncements();
 
 
         function logout() {
