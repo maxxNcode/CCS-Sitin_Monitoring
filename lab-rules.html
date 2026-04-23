@@ -1,0 +1,259 @@
+<!doctype html>
+<html data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lab Rules - CCS Sit-In Monitoring</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+        <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/notification-client.js"></script>
+    </head>
+
+    <body class="bg-base-200 min-h-screen">
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Navbar -->
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5">
+                    <div class="flex-none md:hidden">
+                        <label for="my-drawer" class="btn btn-ghost btn-square">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </label>
+                    </div>
+
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                                <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-1">
+                        <a href="/homepage" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="/student-history" class="btn btn-ghost btn-sm"><i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History</a>
+                        <a href="/leaderboard" class="btn btn-ghost btn-sm"><i class="fa-solid fa-trophy mr-2 opacity-50"></i>Leaderboard</a>
+                        <a href="/ai-recommendations" class="btn btn-ghost btn-sm"><i class="fa-solid fa-robot mr-2 opacity-50"></i>AI Recs</a>
+                        <a href="/lab-rules" class="btn btn-primary btn-sm"><i class="fa-solid fa-gavel mr-2"></i>Rules</a>
+
+                        <div class="dropdown dropdown-end ml-4">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                                <i class="fa-solid fa-palette opacity-50"></i>Theme<i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                                <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                                <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                                <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                                <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                                <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                                <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                                <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                                <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                                <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                                <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                                <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                                <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                                <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                                <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                                <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                                <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                                <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                                <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                                <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                                <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                                <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                                <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                                <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                                <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                                <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                                <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                                <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                                <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                                <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                                <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                                <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                                <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                                <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                                <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                                <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                            </ul>
+                        </div>
+
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-lg"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
+                        <button onclick="logout()" class="btn btn-primary btn-sm ml-4"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</button>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <main class="p-4 md:p-8 max-w-4xl mx-auto w-full animate-in fade-in duration-700">
+                    <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10 mb-6">
+                        <div class="card-body text-center">
+                            <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-gavel text-primary text-2xl"></i>
+                            </div>
+                            <h1 class="text-3xl font-black">Laboratory Rules & Regulations</h1>
+                            <p class="opacity-60 mt-2">Please observe the following guidelines to maintain a safe and productive learning environment.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="collapse collapse-arrow bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                            <input type="radio" name="rules-accordion" checked="checked" />
+                            <div class="collapse-title font-black text-lg flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-sm shrink-0"><i class="fa-solid fa-handshake"></i></div>
+                                Camaraderie & Decorum
+                            </div>
+                            <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                <ul class="list-disc pl-6 space-y-2">
+                                    <li>To avoid embarrassment and maintain camaraderie with your friends and superiors at our laboratories, please observe proper decorum at all times.</li>
+                                    <li>Treat fellow students, instructors, and lab personnel with respect and professionalism.</li>
+                                    <li>Help others when appropriate, but do not disrupt their work.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="collapse collapse-arrow bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                            <input type="radio" name="rules-accordion" />
+                            <div class="collapse-title font-black text-lg flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm shrink-0"><i class="fa-solid fa-volume-xmark"></i></div>
+                                Silence & Discipline
+                            </div>
+                            <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                <ul class="list-disc pl-6 space-y-2">
+                                    <li>Maintain silence, proper decorum, and discipline inside the laboratory.</li>
+                                    <li>Mobile phones, walkmans, and other personal pieces of equipment must be switched off or set to silent mode.</li>
+                                    <li>Conversations should be kept to a minimum and at a low volume.</li>
+                                    <li>Any disruptive behavior may result in removal from the lab.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="collapse collapse-arrow bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                            <input type="radio" name="rules-accordion" />
+                            <div class="collapse-title font-black text-lg flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-sm shrink-0"><i class="fa-solid fa-gamepad"></i></div>
+                                Game Restrictions
+                            </div>
+                            <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                <ul class="list-disc pl-6 space-y-2">
+                                    <li>Games are not allowed inside the lab. This includes computer-related games, card games, and other games that may disturb the operation of the lab.</li>
+                                    <li>Social media and entertainment browsing should be limited to academic purposes only.</li>
+                                    <li>Violators will be asked to leave the laboratory immediately.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="collapse collapse-arrow bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                            <input type="radio" name="rules-accordion" />
+                            <div class="collapse-title font-black text-lg flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-info/10 text-info flex items-center justify-center text-sm shrink-0"><i class="fa-solid fa-globe"></i></div>
+                                Internet Usage Policy
+                            </div>
+                            <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                <ul class="list-disc pl-6 space-y-2">
+                                    <li>Surfing the Internet is allowed only with the permission of the instructor.</li>
+                                    <li>Downloading and installing of software are strictly prohibited.</li>
+                                    <li>Accessing inappropriate content is strictly forbidden and may result in disciplinary action.</li>
+                                    <li>Use the internet responsibly for research and academic purposes only.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="collapse collapse-arrow bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                            <input type="radio" name="rules-accordion" />
+                            <div class="collapse-title font-black text-lg flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-success/10 text-success flex items-center justify-center text-sm shrink-0"><i class="fa-solid fa-computer"></i></div>
+                                Equipment Care
+                            </div>
+                            <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                <ul class="list-disc pl-6 space-y-2">
+                                    <li>Handle all computer equipment with care. Do not move or disconnect any hardware without permission.</li>
+                                    <li>Report any malfunctioning equipment immediately to the lab attendant.</li>
+                                    <li>Do not bring food or drinks near the computers.</li>
+                                    <li>Log off properly and ensure your workstation is clean before leaving.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="collapse collapse-arrow bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                            <input type="radio" name="rules-accordion" />
+                            <div class="collapse-title font-black text-lg flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-warning/10 text-warning flex items-center justify-center text-sm shrink-0"><i class="fa-solid fa-user-shield"></i></div>
+                                Security & Privacy
+                            </div>
+                            <div class="collapse-content text-sm opacity-80 leading-relaxed">
+                                <ul class="list-disc pl-6 space-y-2">
+                                    <li>Do not share your login credentials with anyone.</li>
+                                    <li>Log out of all accounts before leaving the lab.</li>
+                                    <li>Do not attempt to access restricted systems or networks.</li>
+                                    <li>Respect the privacy of others using the laboratory.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-center opacity-40 uppercase text-[10px] font-black tracking-[4px]">
+                        University of Cebu - College of Computer Studies
+                    </div>
+                </main>
+            </div>
+
+            <!-- Sidebar (Mobile drawer) -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                    <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"><i class="fa-solid fa-desktop"></i></div>
+                        <span class="text-xl font-black">CCS SIT-IN</span>
+                    </li>
+                    <li><a href="/homepage"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
+                    <li><a href="/student-history"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
+                    <li><a href="/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/ai-recommendations"><i class="fa-solid fa-robot mr-2"></i>AI Recs</a></li>
+                    <li><a href="/lab-rules" class="active"><i class="fa-solid fa-gavel mr-2"></i>Lab Rules</a></li>
+                    <li><a href="/edit-profile"><i class="fa-solid fa-user-pen mr-2"></i>Edit Profile</a></li>
+                    <li><a href="#" onclick="logout()" class="text-error"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            window.addEventListener("DOMContentLoaded", () => {
+                fetch("/check-session")
+                    .then(r => r.json())
+                    .then(data => { if (!data.loggedIn) window.location.href = "/login"; })
+                    .catch(() => window.location.href = "/login");
+            });
+
+            function logout() {
+                fetch("/logout", { method: "POST" })
+                    .then(r => r.json())
+                    .then(data => { if (data.success) window.location.href = data.redirectUrl; })
+                    .catch(err => console.error("Logout error:", err));
+            }
+        </script>
+    </body>
+</html>

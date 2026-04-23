@@ -1,0 +1,359 @@
+<!doctype html>
+<html data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Leaderboard - CCS Sit-In Monitoring</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+        <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/notification-client.js"></script>
+    </head>
+
+    <body class="bg-base-200 min-h-screen">
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Navbar -->
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5">
+                    <div class="flex-none md:hidden">
+                        <label for="my-drawer" class="btn btn-ghost btn-square">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </label>
+                    </div>
+
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                                <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-1">
+                        <a href="/homepage" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="/student-history" class="btn btn-ghost btn-sm"><i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History</a>
+                        <a href="/leaderboard" class="btn btn-primary btn-sm"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a>
+                        <a href="/ai-recommendations" class="btn btn-ghost btn-sm"><i class="fa-solid fa-robot mr-2 opacity-50"></i>AI Recs</a>
+                        <a href="/lab-rules" class="btn btn-ghost btn-sm"><i class="fa-solid fa-gavel mr-2 opacity-50"></i>Rules</a>
+
+                        <div class="dropdown dropdown-end ml-4">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                                <i class="fa-solid fa-palette opacity-50"></i>Theme<i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                                <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                                <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                                <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                                <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                                <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                                <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                                <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                                <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                                <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                                <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                                <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                                <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                                <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                                <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                                <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                                <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                                <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                                <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                                <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                                <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                                <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                                <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                                <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                                <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                                <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                                <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                                <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                                <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                                <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                                <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                                <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                                <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                                <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                                <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                                <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                            </ul>
+                        </div>
+
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-lg"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
+                        <button onclick="logout()" class="btn btn-primary btn-sm ml-4"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</button>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <!-- Left: My Stats (3 cols) -->
+                        <div class="lg:w-1/3 space-y-6">
+                            <!-- My Rank Card -->
+                            <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                                <div class="card-body">
+                                    <h2 class="text-xl font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-primary"></i>My Performance</h2>
+                                    <div id="my-stats" class="space-y-4">
+                                        <div class="skeleton h-20 w-full opacity-10"></div>
+                                        <div class="skeleton h-20 w-full opacity-10"></div>
+                                        <div class="skeleton h-20 w-full opacity-10"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- How Scoring Works -->
+                            <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                                <div class="card-body">
+                                    <h2 class="text-xl font-black mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-info text-primary"></i>Scoring Breakdown</h2>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                                            <div class="radial-progress text-primary" style="--value:50;--size:3rem;--thickness:4px">50%</div>
+                                            <div>
+                                                <p class="font-bold text-sm">Points Earned</p>
+                                                <p class="text-xs opacity-60">+10 per sit-in, +5 per feedback</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 p-3 rounded-xl bg-secondary/5 border border-secondary/10">
+                                            <div class="radial-progress text-secondary" style="--value:30;--size:3rem;--thickness:4px">30%</div>
+                                            <div>
+                                                <p class="font-bold text-sm">Total Hours</p>
+                                                <p class="text-xs opacity-60">Time spent in lab sessions</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10">
+                                            <div class="radial-progress text-accent" style="--value:20;--size:3rem;--thickness:4px">20%</div>
+                                            <div>
+                                                <p class="font-bold text-sm">Tasks Completed</p>
+                                                <p class="text-xs opacity-60">Number of finished sessions</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Leaderboard (2/3) -->
+                        <div class="lg:w-2/3 space-y-6">
+                            <!-- Top 3 Podium -->
+                            <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                                <div class="card-body">
+                                    <h2 class="text-xl font-black mb-6 flex items-center gap-2"><i class="fa-solid fa-trophy text-primary"></i>Top Performers</h2>
+                                    <div id="podium" class="flex items-end justify-center gap-4 md:gap-8 min-h-[180px]">
+                                        <div class="skeleton h-32 w-24 opacity-10"></div>
+                                        <div class="skeleton h-40 w-24 opacity-10"></div>
+                                        <div class="skeleton h-28 w-24 opacity-10"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Full Leaderboard Table -->
+                            <div class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10">
+                                <div class="card-body p-0">
+                                    <div class="p-6 pb-0 flex justify-between items-center">
+                                        <h2 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-list-ol text-primary"></i>Full Leaderboard</h2>
+                                        <span id="total-participants" class="badge badge-soft badge-primary">0 students</span>
+                                    </div>
+                                    <div class="overflow-x-auto p-6">
+                                        <table class="table table-zebra w-full">
+                                            <thead>
+                                                <tr class="text-[10px] uppercase tracking-widest opacity-60">
+                                                    <th class="w-16">Rank</th>
+                                                    <th>Student</th>
+                                                    <th class="text-right">Points</th>
+                                                    <th class="text-right">Hours</th>
+                                                    <th class="text-right">Tasks</th>
+                                                    <th class="text-right">Score</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="leaderboard-body">
+                                                <tr><td colspan="6" class="text-center py-8 opacity-50 italic">Loading leaderboard...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Sidebar (Mobile drawer) -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                    <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"><i class="fa-solid fa-desktop"></i></div>
+                        <span class="text-xl font-black">CCS SIT-IN</span>
+                    </li>
+                    <li><a href="/homepage"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
+                    <li><a href="/student-history"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
+                    <li><a href="/leaderboard" class="active"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/ai-recommendations"><i class="fa-solid fa-robot mr-2"></i>AI Recs</a></li>
+                    <li><a href="/lab-rules"><i class="fa-solid fa-gavel mr-2"></i>Lab Rules</a></li>
+                    <li><a href="/edit-profile"><i class="fa-solid fa-user-pen mr-2"></i>Edit Profile</a></li>
+                    <li><a href="#" onclick="logout()" class="text-error"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            window.addEventListener("DOMContentLoaded", () => {
+                fetch("/check-session")
+                    .then(r => r.json())
+                    .then(data => { if (!data.loggedIn) window.location.href = "/login"; })
+                    .catch(() => window.location.href = "/login");
+                loadLeaderboard();
+                loadMyStats();
+            });
+
+            function logout() {
+                fetch("/logout", { method: "POST" })
+                    .then(r => r.json())
+                    .then(data => { if (data.success) window.location.href = data.redirectUrl; })
+                    .catch(err => console.error("Logout error:", err));
+            }
+
+            async function loadLeaderboard() {
+                try {
+                    const res = await fetch("/api/leaderboard");
+                    const data = await res.json();
+
+                    document.getElementById("total-participants").textContent = data.length + " students";
+                    renderPodium(data.slice(0, 3));
+                    renderTable(data);
+                } catch (e) {
+                    console.error("Leaderboard load error:", e);
+                }
+            }
+
+            function renderPodium(top3) {
+                const podium = document.getElementById("podium");
+                const colors = ["text-yellow-400", "text-gray-300", "text-amber-600"];
+                const bgColors = ["bg-yellow-400/10 border-yellow-400/20", "bg-gray-300/10 border-gray-300/20", "bg-amber-600/10 border-amber-600/20"];
+                const heights = ["h-28", "h-36", "h-24"];
+                const orders = [1, 0, 2]; // 2nd, 1st, 3rd for visual layout
+
+                podium.innerHTML = orders.map((idx, orderIdx) => {
+                    const student = top3[idx];
+                    if (!student) return `<div class="w-24 ${heights[orderIdx]} opacity-0"></div>`;
+                    const rank = idx + 1;
+                    const medal = rank === 1 ? "fa-crown" : rank === 2 ? "fa-medal" : "fa-award";
+                    return `
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="avatar">
+                                <div class="w-14 h-14 rounded-full ring-2 ${colors[idx]}">
+                                    <img src="${student.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(student.name)}" />
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <p class="font-bold text-sm truncate max-w-[100px]">${student.name}</p>
+                                <p class="text-xs opacity-60">${student.score} pts</p>
+                            </div>
+                            <div class="w-20 ${heights[orderIdx]} rounded-t-xl ${bgColors[idx]} border flex items-center justify-center">
+                                <i class="fa-solid ${medal} ${colors[idx]} text-2xl"></i>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            }
+
+            function renderTable(data) {
+                const tbody = document.getElementById("leaderboard-body");
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 opacity-50 italic">No students on the leaderboard yet</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = data.map(row => {
+                    const rankBadge = row.rank === 1
+                        ? `<div class="badge badge-warning badge-lg gap-1"><i class="fa-solid fa-crown text-xs"></i> ${row.rank}</div>`
+                        : row.rank === 2
+                            ? `<div class="badge badge-ghost badge-lg gap-1"><i class="fa-solid fa-medal text-xs"></i> ${row.rank}</div>`
+                            : row.rank === 3
+                                ? `<div class="badge badge-accent badge-lg gap-1"><i class="fa-solid fa-award text-xs"></i> ${row.rank}</div>`
+                                : `<span class="badge badge-soft badge-sm">${row.rank}</span>`;
+                    return `
+                        <tr class="hover">
+                            <td>${rankBadge}</td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="avatar">
+                                        <div class="w-8 h-8 rounded-lg"><img src="${row.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(row.name)}" /></div>
+                                    </div>
+                                    <span class="font-bold text-sm">${row.name}</span>
+                                </div>
+                            </td>
+                            <td class="text-right font-bold">${row.points || 0}</td>
+                            <td class="text-right">${row.totalHours || 0}h</td>
+                            <td class="text-right">${row.tasksCompleted || 0}</td>
+                            <td class="text-right">
+                                <div class="badge badge-soft badge-primary font-bold">${row.score}</div>
+                            </td>
+                        </tr>
+                    `;
+                }).join("");
+            }
+
+            async function loadMyStats() {
+                try {
+                    const res = await fetch("/api/leaderboard/me");
+                    if (!res.ok) return;
+                    const me = await res.json();
+
+                    const container = document.getElementById("my-stats");
+                    container.innerHTML = `
+                        <div class="stat bg-primary/5 rounded-xl p-4 border border-primary/10">
+                            <div class="stat-title text-[10px] uppercase font-black tracking-widest opacity-60">My Rank</div>
+                            <div class="stat-value text-3xl text-primary">#${me.rank}</div>
+                            <div class="stat-desc text-xs">out of ${me.totalStudents} students</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="stat bg-base-200/50 rounded-xl p-3">
+                                <div class="stat-title text-[10px] uppercase font-black tracking-widest opacity-60">Points</div>
+                                <div class="stat-value text-xl">${me.points || 0}</div>
+                            </div>
+                            <div class="stat bg-base-200/50 rounded-xl p-3">
+                                <div class="stat-title text-[10px] uppercase font-black tracking-widest opacity-60">Hours</div>
+                                <div class="stat-value text-xl">${me.totalHours || 0}</div>
+                            </div>
+                            <div class="stat bg-base-200/50 rounded-xl p-3">
+                                <div class="stat-title text-[10px] uppercase font-black tracking-widest opacity-60">Tasks</div>
+                                <div class="stat-value text-xl">${me.tasksCompleted || 0}</div>
+                            </div>
+                        </div>
+                        <div class="bg-base-200/50 rounded-xl p-4">
+                            <div class="flex justify-between text-xs font-bold uppercase tracking-widest opacity-60 mb-2">
+                                <span>Score</span><span>${me.score}/100</span>
+                            </div>
+                            <progress class="progress progress-primary w-full" value="${me.score}" max="100"></progress>
+                        </div>
+                    `;
+                } catch (e) {
+                    console.error("My stats load error:", e);
+                }
+            }
+        </script>
+    </body>
+</html>

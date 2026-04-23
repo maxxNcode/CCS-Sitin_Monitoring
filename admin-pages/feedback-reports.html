@@ -317,6 +317,9 @@
                         <a href="/reservations" class="btn btn-ghost btn-sm">
                             Reservations
                         </a>
+                        <a href="/admin/leaderboard" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-trophy mr-2"></i>Leaderboard
+                        </a>
 
                         <div class="dropdown dropdown-end ml-4">
                             <div
@@ -657,17 +660,43 @@
                 </div>
 
                 <!-- Page Content -->
-                <main
-                    class="p-4 md:p-8 max-w-7xl mx-auto w-[100vw] animate-in fade-in duration-700 flex justify-center items-center"
-                >
-                    <div class="flex flex-col w-full">
-                        <div class="flex flex-col items-center justify-center">
-                            <h1 class="text-3xl font-black">
-                                Feedback Reports
-                            </h1>
-                            <p class="text-center">
-                                View and manage feedback reports
-                            </p>
+                <main class="p-4 md:p-8 max-w-7xl mx-auto animate-in fade-in duration-700">
+                    <div class="flex flex-col gap-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h1 class="text-3xl font-black">Feedback Reports</h1>
+                                <p class="text-sm opacity-60">View and manage student feedback submissions</p>
+                            </div>
+                            <div class="stats shadow bg-base-100 border border-base-content/5">
+                                <div class="stat">
+                                    <div class="stat-title text-xs font-black uppercase opacity-40">Total Feedbacks</div>
+                                    <div class="stat-value text-2xl" id="total-feedbacks">0</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-title text-xs font-black uppercase opacity-40">Avg Rating</div>
+                                    <div class="stat-value text-2xl text-primary" id="avg-rating">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card bg-base-100 border border-base-content/5 shadow-sm">
+                            <div class="card-body p-0 overflow-x-auto">
+                                <table class="table table-zebra">
+                                    <thead>
+                                        <tr class="bg-base-200/50">
+                                            <th class="font-black text-xs uppercase tracking-wider">Student</th>
+                                            <th class="font-black text-xs uppercase tracking-wider">Lab</th>
+                                            <th class="font-black text-xs uppercase tracking-wider">Purpose</th>
+                                            <th class="font-black text-xs uppercase tracking-wider">Rating</th>
+                                            <th class="font-black text-xs uppercase tracking-wider">Comments</th>
+                                            <th class="font-black text-xs uppercase tracking-wider">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="feedbacks-table-body">
+                                        <tr><td colspan="6" class="text-center py-8 opacity-60">Loading feedbacks...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -689,25 +718,17 @@
                         </div>
                         <span class="text-xl font-black">CCS SIT-IN</span>
                     </li>
-                    <li>
-                        <a href="/homepage" class="active"
-                            ><i class="fa-solid fa-house mr-2"></i>Home</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            ><i class="fa-solid fa-clock-rotate-left mr-2"></i
-                            >History</a
-                        >
-                    </li>
-
+                    <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
+                    <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
+                    <li><a href="/sit-in"><i class="fa-solid fa-clipboard-user mr-2"></i>Sit-in Session</a></li>
+                    <li><a href="/sit-in-records"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Sit-in Records</a></li>
+                    <li><a href="/sit-in-reports"><i class="fa-solid fa-chart-line mr-2"></i>Sit-in Reports</a></li>
+                    <li><a href="/feedback-reports" class="active"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
+                    <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
+                    <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
                     <li class="mt-auto">
-                        <button
-                            onclick="logout()"
-                            class="btn btn-error btn-outline mt-4"
-                        >
-                            <i class="fa-solid fa-right-from-bracket mr-2"></i
-                            >Logout
+                        <button onclick="logout()" class="btn btn-error btn-outline mt-4">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
                         </button>
                     </li>
                 </ul>
@@ -770,7 +791,43 @@
                             });
                         }
                     });
+
+                loadFeedbacks();
             });
+
+            async function loadFeedbacks() {
+                try {
+                    const res = await fetch("/api/admin/feedbacks");
+                    if (!res.ok) throw new Error("Failed to fetch");
+                    const data = await res.json();
+
+                    document.getElementById("total-feedbacks").textContent = data.length;
+                    const avg = data.length ? (data.reduce((s, f) => s + f.rating, 0) / data.length).toFixed(1) : "0.0";
+                    document.getElementById("avg-rating").textContent = avg;
+
+                    const tbody = document.getElementById("feedbacks-table-body");
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 opacity-60">No feedbacks submitted yet</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = data.map(f => {
+                        const stars = "★".repeat(f.rating) + "☆".repeat(5 - f.rating);
+                        const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString() : (f.date || "N/A");
+                        return `<tr>
+                            <td><div class="font-bold">${f.studentName || f.idNumber}</div><div class="text-xs opacity-50">${f.idNumber}</div></td>
+                            <td>${f.lab}</td>
+                            <td>${f.purpose}</td>
+                            <td><span class="badge badge-primary">${stars}</span></td>
+                            <td class="max-w-xs"><div class="text-sm">${f.comments}</div></td>
+                            <td class="text-sm opacity-70">${dateStr}</td>
+                        </tr>`;
+                    }).join("");
+                } catch (err) {
+                    console.error("Feedbacks load error:", err);
+                    document.getElementById("feedbacks-table-body").innerHTML = `<tr><td colspan="6" class="text-center py-8 text-error">Failed to load feedbacks</td></tr>`;
+                }
+            }
 
             async function searchStudent() {
                 const idNumber =

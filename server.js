@@ -53,7 +53,7 @@ function initializeDatabase() {
 
 function createTableAnnouncements() {
     db.run(`
-        CREATE TABLE IF NOT EXISTS Annoucements (
+        CREATE TABLE IF NOT EXISTS Announcements (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
             description TEXT NOT NULL,
@@ -105,6 +105,23 @@ function createTableStudentHistory() {
             logoutTime DATETIME NOT NULL,
             date DATE NOT NULL,
             feedbackStatus TEXT DEFAULT 'Pending'
+        )
+    `)
+}
+
+function createTableFeedbacks() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS feedbacks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            historyId INTEGER NOT NULL,
+            idNumber TEXT NOT NULL,
+            studentName TEXT NOT NULL,
+            lab TEXT NOT NULL,
+            purpose TEXT NOT NULL,
+            rating INTEGER NOT NULL,
+            comments TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (historyId) REFERENCES student_history(id)
         )
     `)
 }
@@ -204,7 +221,7 @@ function checkAdminAuth(req, res, next) {
 // Routes
 
 // Route to create a new announcement
-app.post('/api/announcements', (req, res) => {
+app.post('/api/announcements', checkAdminAuth, (req, res) => {
     const { title, description } = req.body;
 
 
@@ -212,7 +229,7 @@ app.post('/api/announcements', (req, res) => {
         return res.status(400).json({ error: 'Title and description are required' });
     }
 
-    const query = `INSERT INTO Annoucements (title, description) VALUES (?, ?)`
+    const query = `INSERT INTO Announcements (title, description) VALUES (?, ?)`
 
     db.run(query, [title, description],
         function (err) {
@@ -309,8 +326,8 @@ app.get('/api/announcements', (req, res) => {
     // If not admin, we only show items specifically marked as NOT hidden (isHidden = 0)
     // We also handle cases where isHidden might be NULL
     const query = isAdmin 
-        ? 'SELECT id, title, description, created_at, isHidden FROM Annoucements ORDER BY created_at DESC'
-        : 'SELECT title, description, created_at FROM Annoucements WHERE isHidden = 0 OR isHidden IS NULL ORDER BY created_at DESC';
+        ? 'SELECT id, title, description, created_at, isHidden FROM Announcements ORDER BY created_at DESC'
+        : 'SELECT title, description, created_at FROM Announcements WHERE isHidden = 0 OR isHidden IS NULL ORDER BY created_at DESC';
 
     db.all(query, [], (err, rows) => {
         if (err) {
@@ -327,11 +344,11 @@ app.get('/api/announcements', (req, res) => {
 // Admin API: Toggle Announcement Visibility
 app.post('/api/announcements/toggle-hide/:id', checkAdminAuth, (req, res) => {
     const id = req.params.id;
-    db.get('SELECT isHidden FROM Annoucements WHERE id = ?', [id], (err, row) => {
+    db.get('SELECT isHidden FROM Announcements WHERE id = ?', [id], (err, row) => {
         if (err || !row) return res.status(404).json({ error: 'Announcement not found' });
         
         const newStatus = row.isHidden === 1 ? 0 : 1;
-        db.run('UPDATE Annoucements SET isHidden = ? WHERE id = ?', [newStatus, id], (err) => {
+        db.run('UPDATE Announcements SET isHidden = ? WHERE id = ?', [newStatus, id], (err) => {
             if (err) return res.status(500).json({ error: 'Failed to update' });
             res.json({ success: true, isHidden: newStatus });
         });
@@ -527,8 +544,8 @@ app.post('/api/admin/sit-in/logout/:id', (req, res) => {
             // Set status to Inactive
             db.run('UPDATE sitin_records SET status = ? WHERE id = ?', ['Inactive', recordId]);
 
-            // Decrement sessionLeft on logout
-            db.run('UPDATE users SET sessionLeft = sessionLeft - 1 WHERE idNumber = ?', [record.idNumber]);
+            // Decrement sessionLeft on logout and award points
+            db.run('UPDATE users SET sessionLeft = sessionLeft - 1, points = points + 10 WHERE idNumber = ?', [record.idNumber]);
 
             // Add record to student_history table
             const loginTime = record.created_at;
@@ -981,26 +998,6 @@ app.get('/api/student/history', checkAuth, (req, res) => {
     });
 });
 
-// Student API: Submit Feedback
-app.post('/api/student/feedback', checkAuth, (req, res) => {
-    const { historyId, rating, comments } = req.body;
-    const idNumber = req.session.idNumber;
-
-    if (!historyId || !rating || !comments) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    db.get('SELECT * FROM student_history WHERE id = ? AND idNumber = ?', [historyId, idNumber], (err, record) => {
-        if (err || !record) return res.status(404).json({ error: 'Record not found' });
-        if (record.feedbackStatus === 'Completed') return res.status(400).json({ error: 'Feedback already submitted' });
-
-        db.run('UPDATE student_history SET feedbackStatus = ? WHERE id = ?', ['Completed', historyId], function (err) {
-            if (err) return res.status(500).json({ error: 'Failed to submit feedback' });
-            res.json({ success: true, message: 'Feedback submitted successfully' });
-        });
-    });
-});
-
 app.get('/student-history', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'student-history.html'));
 });
@@ -1033,11 +1030,293 @@ app.get('/edit-profile', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'edit-profile.html'));
 });
 
+// ─── Leaderboard & Analytics Routes ───────────────────────────────
+
+app.get('/leaderboard', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'leaderboard.html'));
+});
+
+app.get('/lab-rules', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'lab-rules.html'));
+});
+
+app.get('/ai-recommendations', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'ai-recommendations.html'));
+});
+
+app.get('/admin/leaderboard', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/leaderboard.html'));
+});
+
+// Leaderboard API: Calculate weighted scores
+// Weight: Points 50%, Hours 30%, Tasks 20%
+app.get('/api/leaderboard', checkAuth, (req, res) => {
+    db.all(`
+        SELECT
+            u.idNumber,
+            u.firstName || ' ' || u.lastName AS name,
+            u.profilePic,
+            u.points,
+            COALESCE(h.totalHours, 0) AS totalHours,
+            COALESCE(h.tasksCompleted, 0) AS tasksCompleted
+        FROM users u
+        LEFT JOIN (
+            SELECT
+                idNumber,
+                COUNT(*) AS tasksCompleted,
+                ROUND(SUM(
+                    (julianday(logoutTime) - julianday(loginTime)) * 24
+                ), 2) AS totalHours
+            FROM student_history
+            GROUP BY idNumber
+        ) h ON u.idNumber = h.idNumber
+        ORDER BY u.points DESC
+    `, [], (err, rows) => {
+        if (err) {
+            console.error('Leaderboard error:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        // Find max values for normalization
+        const maxPoints = Math.max(...rows.map(r => r.points || 0), 1);
+        const maxHours = Math.max(...rows.map(r => r.totalHours || 0), 1);
+        const maxTasks = Math.max(...rows.map(r => r.tasksCompleted || 0), 1);
+
+        // Calculate weighted score and add rank
+        const leaderboard = rows.map((r, index) => {
+            const normPoints = (r.points || 0) / maxPoints;
+            const normHours = (r.totalHours || 0) / maxHours;
+            const normTasks = (r.tasksCompleted || 0) / maxTasks;
+            const score = (normPoints * 0.5) + (normHours * 0.3) + (normTasks * 0.2);
+            return {
+                ...r,
+                rank: index + 1,
+                score: Math.round(score * 1000) / 10 // 0-100 scale with 1 decimal
+            };
+        }).sort((a, b) => b.score - a.score); // Re-sort by composite score
+
+        // Re-assign ranks after score sort
+        leaderboard.forEach((r, i) => r.rank = i + 1);
+
+        res.json(leaderboard);
+    });
+});
+
+// Student API: Get current user's leaderboard position
+app.get('/api/leaderboard/me', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+    db.all(`
+        SELECT
+            u.idNumber,
+            u.firstName || ' ' || u.lastName AS name,
+            u.profilePic,
+            u.points,
+            COALESCE(h.totalHours, 0) AS totalHours,
+            COALESCE(h.tasksCompleted, 0) AS tasksCompleted
+        FROM users u
+        LEFT JOIN (
+            SELECT
+                idNumber,
+                COUNT(*) AS tasksCompleted,
+                ROUND(SUM(
+                    (julianday(logoutTime) - julianday(loginTime)) * 24
+                ), 2) AS totalHours
+            FROM student_history
+            GROUP BY idNumber
+        ) h ON u.idNumber = h.idNumber
+        ORDER BY u.points DESC
+    `, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+
+        const maxPoints = Math.max(...rows.map(r => r.points || 0), 1);
+        const maxHours = Math.max(...rows.map(r => r.totalHours || 0), 1);
+        const maxTasks = Math.max(...rows.map(r => r.tasksCompleted || 0), 1);
+
+        const leaderboard = rows.map((r) => {
+            const normPoints = (r.points || 0) / maxPoints;
+            const normHours = (r.totalHours || 0) / maxHours;
+            const normTasks = (r.tasksCompleted || 0) / maxTasks;
+            const score = (normPoints * 0.5) + (normHours * 0.3) + (normTasks * 0.2);
+            return { ...r, score: Math.round(score * 1000) / 10 };
+        }).sort((a, b) => b.score - a.score);
+
+        const myIndex = leaderboard.findIndex(r => r.idNumber === idNumber);
+        if (myIndex === -1) return res.status(404).json({ error: 'Student not found' });
+
+        const me = leaderboard[myIndex];
+        res.json({
+            rank: myIndex + 1,
+            totalStudents: leaderboard.length,
+            name: me.name,
+            points: me.points,
+            totalHours: me.totalHours,
+            tasksCompleted: me.tasksCompleted,
+            score: me.score
+        });
+    });
+});
+
+// Most Visited Laboratory Analytics
+app.get('/api/analytics/most-visited-lab', checkAdminAuth, (req, res) => {
+    db.all(`
+        SELECT lab, COUNT(*) as visits
+        FROM student_history
+        GROUP BY lab
+        ORDER BY visits DESC
+    `, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// AI Recommendations API (rule-based)
+app.get('/api/ai-recommendations', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+
+    db.all(`
+        SELECT lab, purpose, COUNT(*) as frequency
+        FROM student_history
+        WHERE idNumber = ?
+        GROUP BY lab, purpose
+        ORDER BY frequency DESC
+        LIMIT 5
+    `, [idNumber], (err, history) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+
+        db.all(`
+            SELECT lab, COUNT(*) as current_count
+            FROM sitin_records
+            WHERE status = 'Active'
+            GROUP BY lab
+        `, [], (err, activeLabs) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+
+            const recommendations = [];
+            const labCapacity = { 'Lab 524': 30, 'Lab 526': 30, 'Lab 542': 25, 'Mac Lab': 20 };
+
+            // Find least busy lab
+            const allLabs = ['Lab 524', 'Lab 526', 'Lab 542', 'Mac Lab'];
+            let leastBusy = allLabs[0];
+            let minCount = Infinity;
+            allLabs.forEach(lab => {
+                const count = (activeLabs.find(a => a.lab === lab) || {}).current_count || 0;
+                if (count < minCount) {
+                    minCount = count;
+                    leastBusy = lab;
+                }
+            });
+
+            if (minCount < (labCapacity[leastBusy] || 30)) {
+                recommendations.push({
+                    type: 'lab',
+                    title: `Try ${leastBusy}`,
+                    description: `This lab currently has ${minCount} active users out of ${labCapacity[leastBusy] || 30} capacity. Great availability right now!`,
+                    icon: 'fa-computer'
+                });
+            }
+
+            // Suggest based on history
+            if (history.length > 0) {
+                const topPurpose = history[0];
+                recommendations.push({
+                    type: 'purpose',
+                    title: `Continue ${topPurpose.purpose}`,
+                    description: `You've worked on "${topPurpose.purpose}" ${topPurpose.frequency} times. Keep up the momentum!`,
+                    icon: 'fa-code'
+                });
+
+                const topLab = history.reduce((acc, curr) => curr.frequency > acc.frequency ? curr : acc, history[0]);
+                recommendations.push({
+                    type: 'lab_habit',
+                    title: `Your Favorite Lab`,
+                    description: `You most frequently use ${topLab.lab}. It's your optimal workspace!`,
+                    icon: 'fa-star'
+                });
+            } else {
+                recommendations.push({
+                    type: 'welcome',
+                    title: 'Welcome!',
+                    description: 'Start using the labs to get personalized recommendations based on your usage patterns.',
+                    icon: 'fa-hand-sparkles'
+                });
+            }
+
+            // Time-based recommendation
+            const hour = new Date().getHours();
+            let timeLabel = 'afternoon';
+            if (hour < 12) timeLabel = 'morning';
+            else if (hour >= 17) timeLabel = 'evening';
+
+            recommendations.push({
+                type: 'time',
+                title: `Good ${timeLabel}!`,
+                description: hour >= 8 && hour <= 17
+                    ? 'Lab hours are active. Perfect time for focused work!'
+                    : 'Labs may be closing soon. Consider an early session tomorrow!',
+                icon: 'fa-clock'
+            });
+
+            res.json(recommendations);
+        });
+    });
+});
+
+// Award points on feedback submission (5 bonus points)
+app.post('/api/student/feedback', checkAuth, (req, res) => {
+    const { historyId, rating, comments } = req.body;
+    const idNumber = req.session.idNumber;
+
+    if (!historyId || !rating || !comments) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    db.get('SELECT * FROM student_history WHERE id = ? AND idNumber = ?', [historyId, idNumber], (err, record) => {
+        if (err || !record) return res.status(404).json({ error: 'Record not found' });
+        if (record.feedbackStatus === 'Completed') return res.status(400).json({ error: 'Feedback already submitted' });
+
+        db.run('UPDATE student_history SET feedbackStatus = ? WHERE id = ?', ['Completed', historyId], function(err) {
+            if (err) return res.status(500).json({ error: 'Failed to submit feedback' });
+
+            // Save actual feedback data
+            db.run(
+                'INSERT INTO feedbacks (historyId, idNumber, studentName, lab, purpose, rating, comments) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [historyId, idNumber, record.studentName, record.lab, record.purpose, rating, comments],
+                (err) => {
+                    if (err) console.error('Failed to save feedback:', err);
+                }
+            );
+
+            // Award 5 bonus points for feedback
+            db.run('UPDATE users SET points = points + 5 WHERE idNumber = ?', [idNumber], (err) => {
+                if (err) console.error('Failed to award feedback points:', err);
+            });
+
+            res.json({ success: true, message: 'Feedback submitted successfully (+5 points!)' });
+        });
+    });
+});
+
+// Admin API: Fetch all feedbacks
+app.get('/api/admin/feedbacks', checkAdminAuth, (req, res) => {
+    db.all(`
+        SELECT f.*, h.date, h.loginTime, h.logoutTime
+        FROM feedbacks f
+        LEFT JOIN student_history h ON f.historyId = h.id
+        ORDER BY f.created_at DESC
+    `, [], (err, rows) => {
+        if (err) {
+            console.error('Error fetching feedbacks:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(rows);
+    });
+});
 
 createTableAnnouncements();
 createTableSitInRecords();
 createTableAdmins();
 createTableStudentHistory();
+createTableFeedbacks();
 createTableReservations();
 createTableNotifications();
 
@@ -1055,7 +1334,6 @@ function ensureProfilePicColumn() {
     });
 }
 ensureProfilePicColumn();
-ensureMiddleNameColumn();
 
 // Ensure sessionLeft column exists (Migration)
 function ensureSessionLeftColumn() {
@@ -1077,6 +1355,17 @@ function ensureSessionLeftColumn() {
 }
 ensureSessionLeftColumn();
 
+// Ensure points column exists (Migration)
+function ensurePointsColumn() {
+    db.all("PRAGMA table_info(users)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'points')) {
+            db.run("ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0", (err) => {
+                if (!err) console.log('Added points column to users table');
+            });
+        }
+    });
+}
+ensurePointsColumn();
 
 function ensureMiddleNameColumn() {
     db.all("PRAGMA table_info(users)", (err, columns) => {
@@ -1095,27 +1384,45 @@ function ensureMiddleNameColumn() {
     });
 }
 ensureMiddleNameColumn();
+renameAnnouncementsTable();
 ensureAnnouncementHiddenColumn();
 
-function ensureAnnouncementHiddenColumn() {
-    db.all("PRAGMA table_info(Annoucements)", (err, columns) => {
-        if (!err && !columns.some(c => c.name === 'isHidden')) {
-            db.run("ALTER TABLE Annoucements ADD COLUMN isHidden INTEGER DEFAULT 0", (err) => {
-                if (!err) {
-                    console.log('Added isHidden column to Annoucements table');
-                    // Explicitly update existing rows to 0
-                    db.run("UPDATE Annoucements SET isHidden = 0 WHERE isHidden IS NULL");
+function renameAnnouncementsTable() {
+    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='Annoucements'", (err, oldRow) => {
+        if (oldRow) {
+            db.get("SELECT COUNT(*) as count FROM Announcements", (err, newRow) => {
+                if (!err && newRow && newRow.count === 0) {
+                    db.run("DROP TABLE Announcements", () => {
+                        db.run("ALTER TABLE Annoucements RENAME TO Announcements", (err) => {
+                            if (!err) console.log('Renamed Annoucements table to Announcements');
+                            else console.error('Failed to rename Annoucements:', err);
+                        });
+                    });
+                } else if (!err && newRow && newRow.count > 0) {
+                    console.log('Announcements table already has data, skipping rename');
                 }
             });
         }
     });
 }
 
+function ensureAnnouncementHiddenColumn() {
+    db.all("PRAGMA table_info(Announcements)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'isHidden')) {
+            db.run("ALTER TABLE Announcements ADD COLUMN isHidden INTEGER DEFAULT 0", (err) => {
+                if (!err) {
+                    console.log('Added isHidden column to Announcements table');
+                    db.run("UPDATE Announcements SET isHidden = 0 WHERE isHidden IS NULL");
+                }
+            });
+        }
+    });
+}
 
 // Seed dummy announcement if empty
-db.get('SELECT COUNT(*) as count FROM Annoucements', (err, row) => {
+db.get('SELECT COUNT(*) as count FROM Announcements', (err, row) => {
     if (!err && row.count === 0) {
-        db.run('INSERT INTO Annoucements (title, description) VALUES (?, ?)', ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
+        db.run('INSERT INTO Announcements (title, description) VALUES (?, ?)', ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
     }
 });
 
