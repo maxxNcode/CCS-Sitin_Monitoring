@@ -34,7 +34,7 @@
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
                 <div
-                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
+                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm"
                 >
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
@@ -106,7 +106,7 @@
                             </div>
                             <ul
                                 tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-2xl border border-base-content/10 mt-2 max-h-96 overflow-y-auto"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto"
                             >
                                 <li>
                                     <button
@@ -407,7 +407,7 @@
                             </div>
                             <ul
                                 tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow-2xl border border-base-content/10 mt-2"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow border border-base-content/10 mt-2"
                             >
                                 <li
                                     class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0"
@@ -441,13 +441,13 @@
                         <div class="lg:col-span-4 space-y-6">
                             <!-- Profile Card -->
                             <div
-                                class="card bg-base-100/80 backdrop-blur-xl shadow-xl shadow-base-content/5 border border-base-content/10 overflow-hidden hover:shadow-primary/5 transition-all duration-300"
+                                class="card bg-base-100/80 backdrop-blur-xl  border border-base-content/10 overflow-hidden hover:shadow-primary/5 transition-all duration-300"
                             >
                                 <div class="h-24 bg-primary relative">
                                     <div class="absolute -bottom-12 left-6">
                                         <div class="avatar online">
                                             <div
-                                                class="w-24 rounded-2xl ring ring-base-100 ring-offset-base-100 ring-offset-2 bg-base-100 shadow-lg"
+                                                class="w-24 rounded-2xl ring ring-base-100 ring-offset-base-100 ring-offset-2 bg-base-100 "
                                             >
                                                 <img
                                                     src="/assets/student/student-image.png"
@@ -500,7 +500,7 @@
 
                             <!-- Quick Stats Card -->
                             <div
-                                class="card bg-primary text-primary-content shadow-xl shadow-primary/30 overflow-hidden relative group hover:-translate-y-1 transition-transform duration-500"
+                                class="card bg-primary text-primary-content  overflow-hidden relative group hover:-translate-y-1 transition-transform duration-500"
                             >
                                 <div
                                     class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
@@ -555,7 +555,7 @@
                         <div class="lg:col-span-8 space-y-6">
                             <!-- Announcements Section -->
                             <div
-                                class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10"
+                                class="card bg-base-100/80 backdrop-blur-xl  border border-base-content/10"
                             >
                                 <div class="card-body">
                                     <div
@@ -597,7 +597,7 @@
 
                             <!-- Rules Section with Accordions -->
                             <div
-                                class="card bg-base-100/80 backdrop-blur-xl shadow-xl border border-base-content/10"
+                                class="card bg-base-100/80 backdrop-blur-xl  border border-base-content/10"
                             >
                                 <div class="card-body">
                                     <h2
@@ -839,7 +839,7 @@
                             </button>
                             <button
                                 type="submit"
-                                class="btn btn-primary flex-1 rounded-2xl shadow-xl shadow-primary/20 font-black italic uppercase"
+                                class="btn btn-primary flex-1 rounded-2xl  font-black italic uppercase"
                             >
                                 Submit Request
                             </button>
@@ -953,7 +953,7 @@
                         const div = document.createElement("div");
                         div.className = "relative group";
                         div.innerHTML = `
-                        <div class="p-5 rounded-box bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                        <div class="p-5 rounded-box bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
                             <!-- Header Area -->
                             <div class="flex justify-between items-center mb-3">
                                 <span class="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 opacity-70">

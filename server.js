@@ -558,6 +558,21 @@ app.post('/api/admin/sit-in/logout/:id', (req, res) => {
 
             db.run('COMMIT', (err) => {
                 if (err) return res.status(500).json({ error: 'Failed to end session' });
+
+                // Notify student about session end and remaining sessions
+                db.get('SELECT sessionLeft, points FROM users WHERE idNumber = ?', [record.idNumber], (err, student) => {
+                    if (!err && student) {
+                        const message = `Sit-in session ended! You earned +10 points. Remaining sessions: ${student.sessionLeft}`;
+                        db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)',
+                            [record.idNumber, message, 'success']);
+                        io.emit('notification:student', {
+                            idNumber: record.idNumber,
+                            message,
+                            type: 'success'
+                        });
+                    }
+                });
+
                 res.json({ success: true, message: 'Session ended successfully' });
             });
         });
