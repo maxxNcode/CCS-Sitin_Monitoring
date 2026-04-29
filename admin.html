@@ -165,7 +165,7 @@
                         </form>
                     </dialog>
 
-                    <a href="/admin" class="btn btn-ghost btn-sm bg-primary text-primary-content">Home</a>
+                    <a href="/admin" class="btn btn-primary btn-sm">Home</a>
                     <a href="/students" class="btn btn-ghost btn-sm">
                         Students
                     </a>
@@ -262,12 +262,12 @@
             <!-- Page Content -->
             <main
                 class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700 flex justify-center items-center">
-                <div class="admin-container flex flex-col lg:flex-row gap-6">
+                <div class="admin-container flex flex-col lg:flex-row gap-6 w-full">
                     <!--  -->
-                    <div class=" flex gap-6">
+                    <div class="flex flex-col lg:flex-row gap-6 w-full">
 
                         <!-- Statistics Section -->
-                        <div class="card bg-base-100/80 backdrop-blur-md border border-base-content/10 w-[600px] h-[auto]">
+                        <div class="card bg-base-100/80 backdrop-blur-md border border-base-content/10 flex-1 min-w-0">
                             <div class="card-body">
                                 <div class="flex justify-between items-center mb-6">
                                     <h2 class="text-[20px] font-bold flex items-center gap-3">
@@ -333,7 +333,7 @@
                         </div>
 
                         <!-- Announcements Section -->
-                        <div class="card bg-base-100/80 backdrop-blur-md border border-base-content/10 w-[600px] min-h-[500px]">
+                        <div class="card bg-base-100/80 backdrop-blur-md border border-base-content/10 flex-1 min-w-0 min-h-[500px]">
                             <div class="card-body">
                                 <h2
                                     class="text-[20px] font-bold mb-6 flex items-center gap-3 w-full justify-start">
@@ -346,11 +346,11 @@
                                     <div class="create-announcements pb-6 border-b border-base-content/5">
                                         <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40 mb-4">Create New</h3>
                                         <input type="text" placeholder="Title" id="announcementTitle"
-                                            class="input input-bordered w-full mb-2" />
-                                        <textarea class="textarea textarea-bordered resize-y w-full"
+                                            class="input input-bordered w-full mb-2 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        <textarea class="textarea textarea-bordered resize-y w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
                                             placeholder="Announcement..." id="announcementDescription"></textarea>
 
-                                        <button class="btn btn-primary mt-4 w-full" onclick="addAnnouncement()">
+                                        <button class="btn btn-primary mt-4 w-full rounded-2xl font-black italic uppercase" onclick="addAnnouncement()">
                                             <i class="fa-solid fa-plus mr-2"></i>
                                             Add Announcement
                                         </button>
@@ -359,12 +359,14 @@
                                     <div class="announcement-filters space-y-3">
                                         <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40">Manage & Filter</h3>
                                         <div class="flex items-center gap-3">
-                                            <div class="input input-bordered flex items-center gap-3 flex-1 px-4">
-                                                <i class="fa-solid fa-magnifying-glass opacity-30 text-xs"></i>
+                                            <div class="relative group flex-1">
+                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                                </div>
                                                 <input type="text" id="announcementSearch" placeholder="Search announcements..." 
-                                                    class="grow bg-transparent outline-none !text-left" oninput="applyAnnouncementFilters()" />
+                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" oninput="applyAnnouncementFilters()" />
                                             </div>
-                                            <input type="date" id="announcementDateFilter" class="input input-bordered px-4" onchange="applyAnnouncementFilters()" />
+                                            <input type="date" id="announcementDateFilter" class="input input-bordered rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" onchange="applyAnnouncementFilters()" />
                                         </div>
                                     </div>
 
