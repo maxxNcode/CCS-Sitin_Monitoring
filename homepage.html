@@ -74,23 +74,22 @@
 
                     <!-- Desktop Menu -->
                     <div class="hidden md:flex flex-none items-center gap-1">
-                        <a href="homepage" class="btn btn-primary btn-sm"
-                            >Home</a
-                        >
-                        <a href="/student-history" class="btn btn-ghost btn-sm"
-                            ><i
-                                class="fa-solid fa-clock-rotate-left mr-2 opacity-50"
-                            ></i
-                            >History</a
-                        >
-                        <a href="/leaderboard" class="btn btn-ghost btn-sm"
-                            ><i class="fa-solid fa-trophy mr-2 opacity-50"></i
-                            >Leaderboard</a
-                        >
-                        <a href="/ai-recommendations" class="btn btn-ghost btn-sm"
-                            ><i class="fa-solid fa-robot mr-2 opacity-50"></i
-                            >AI Recs</a
-                        >
+                        <a href="/homepage" class="btn btn-primary btn-sm">Home</a>
+                        <a href="/sessions" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-clock mr-2 opacity-50"></i>Sessions
+                        </a>
+                        <a href="/student-history" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History
+                        </a>
+                        <a href="/leaderboard" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-trophy mr-2 opacity-50"></i>Leaderboard
+                        </a>
+                        <a href="/ai-recommendations" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-robot mr-2 opacity-50"></i>AI Recs
+                        </a>
+                        <a href="/reservation" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-calendar-check mr-2 opacity-50"></i>Reservation
+                        </a>
 
                         <div class="dropdown dropdown-end ml-4">
                             <div
@@ -911,6 +910,16 @@
                         >
                     </li>
                     <li>
+                        <a href="/sessions"
+                            ><i class="fa-solid fa-clock mr-2"></i>Sessions</a
+                        >
+                    </li>
+                    <li>
+                        <a href="/reservation">
+                            <i class="fa-solid fa-calendar-check mr-2"></i>Reservation
+                        </a>
+                    </li>
+                    <li>
                         <a href="/student-history"
                             ><i class="fa-solid fa-clock-rotate-left mr-2"></i
                             >History</a
@@ -939,8 +948,7 @@
                             onclick="logout()"
                             class="btn btn-error btn-outline mt-4"
                         >
-                            <i class="fa-solid fa-right-from-bracket mr-2"></i
-                            >Logout
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
                         </button>
                     </li>
                 </ul>

@@ -147,6 +147,18 @@
                                         <option value="" disabled selected>Select Lab Room</option>
                                     </select>
                                 </div>
+
+                                <div class="form-control">
+                                    <label class="label pt-0 pb-1">
+                                        <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">PC Number</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="formPcNumber"
+                                        placeholder="e.g. PC-01"
+                                        class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
+                                    />
+                                </div>
                             </div>
 
                             <div class="modal-action mt-8">
@@ -782,7 +794,8 @@
                 idNumber: document.getElementById('formIdNumber').value,
                 studentName: document.getElementById('formStudentName').value,
                 purpose: document.getElementById('formPurpose').value,
-                lab: document.getElementById('formLab').value
+                lab: document.getElementById('formLab').value,
+                pcNumber: document.getElementById('formPcNumber').value
             };
 
             if (!payload.purpose || !payload.lab) {

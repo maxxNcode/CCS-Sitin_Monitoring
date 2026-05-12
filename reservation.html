@@ -31,6 +31,75 @@
                         </div>
                         <a href="/homepage" class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN</a>
                     </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-1">
+                        <a href="/homepage" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="/sessions" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-clock mr-2 opacity-50"></i>Sessions
+                        </a>
+                        <a href="/reservation" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-calendar-check mr-2 opacity-50"></i>Reservation
+                        </a>
+                        <a href="/student-history" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History
+                        </a>
+                        <a href="/leaderboard" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-trophy mr-2 opacity-50"></i>Leaderboard
+                        </a>
+                        <a href="/ai-recommendations" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-robot mr-2 opacity-50"></i>AI Recs
+                        </a>
+
+                        <div class="dropdown dropdown-end ml-4">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                                <i class="fa-solid fa-palette opacity-50"></i>
+                                Theme
+                                <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                                <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                                <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                                <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                                <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                                <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                                <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                                <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                                <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                                <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                                <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                                <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                                <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                                <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                                <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                                <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                                <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                                <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                                <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                                <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                                <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                                <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                                <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                                <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                                <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                                <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                                <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                                <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                                <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                                <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                                <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                                <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                                <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                                <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                                <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                                <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                            </ul>
+                        </div>
+
+                        <button onclick="logout()" class="btn btn-primary btn-sm ml-4">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                        </button>
+                    </div>
                 </div>
 
                 <main class="flex-1 p-4 md:p-8">
@@ -152,18 +221,6 @@
                             </div>
                         </div>
 
-                        <!-- My Recent Reservations -->
-                        <div class="mt-12">
-                            <h2 class="text-xl font-black italic uppercase mb-6 flex items-center gap-3">
-                                <i class="fa-solid fa-history text-primary"></i>
-                                My <span class="text-primary not-italic">Recent Requests</span>
-                            </h2>
-                            <div id="reservations-list" class="grid gap-4 md:grid-cols-2">
-                                <!-- Populated by JS -->
-                                <div class="skeleton h-32 w-full rounded-3xl opacity-10"></div>
-                                <div class="skeleton h-32 w-full rounded-3xl opacity-10"></div>
-                            </div>
-                        </div>
                     </div>
                 </main>
             </div>
@@ -179,8 +236,12 @@
                         <span class="text-xl font-black">CCS SIT-IN</span>
                     </li>
                     <li><a href="/homepage"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
-                    <li><a href="/reservation" class="active"><i class="fa-solid fa-calendar-check mr-2"></i>Make Reservation</a></li>
+                    <li><a href="/sessions"><i class="fa-solid fa-clock mr-2"></i>Sessions</a></li>
+                    <li><a href="/reservation" class="active"><i class="fa-solid fa-calendar-check mr-2"></i>Reservation</a></li>
                     <li><a href="/student-history"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
+                    <li><a href="/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/ai-recommendations"><i class="fa-solid fa-robot mr-2"></i>AI Recs</a></li>
+                    <li><a href="/edit-profile"><i class="fa-solid fa-user-pen mr-2"></i>Edit Profile</a></li>
                     <li class="mt-auto"><button onclick="logout()" class="btn btn-error btn-outline mt-4"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</button></li>
                 </ul>
             </div>
@@ -190,7 +251,6 @@
             document.addEventListener('DOMContentLoaded', () => {
                 checkStatus();
                 loadDropdowns();
-                loadReservations();
 
                 const currentTheme = localStorage.getItem("theme") || "forest";
                 document.documentElement.setAttribute("data-theme", currentTheme);
@@ -263,54 +323,6 @@
                 });
             }
 
-            function loadReservations() {
-                fetch('/api/student/reservations')
-                    .then(r => r.json())
-                    .then(data => {
-                        const container = document.getElementById('reservations-list');
-                        if (data.length === 0) {
-                            container.innerHTML = `
-                                <div class="col-span-full py-12 text-center opacity-40">
-                                    <i class="fa-solid fa-calendar-day text-4xl mb-4"></i>
-                                    <p class="font-bold italic uppercase">No reservations found</p>
-                                </div>
-                            `;
-                            return;
-                        }
-                        container.innerHTML = data.slice(0, 4).map(r => `
-                            <div class="card bg-base-100 border border-base-content/10 p-5 rounded-3xl hover:border-primary/30 transition-all duration-500 group">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-2xl bg-base-200 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors duration-500">
-                                            <i class="fa-solid fa-building"></i>
-                                        </div>
-                                        <div>
-                                            <h4 class="font-black text-lg">${r.lab}</h4>
-                                            <p class="text-[10px] font-black uppercase opacity-40 tracking-widest">${new Date(r.reservationDate).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                    <div class="badge ${getStatusBadgeClass(r.status)} font-black italic uppercase text-[10px] py-3 px-3 rounded-lg">${r.status}</div>
-                                </div>
-                                <div class="bg-base-200/50 rounded-2xl p-3 flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-clock text-xs opacity-40"></i>
-                                        <span class="text-sm font-bold">${r.reservationTime}</span>
-                                    </div>
-                                    <span class="text-[10px] font-black uppercase opacity-30">${r.purpose}</span>
-                                </div>
-                            </div>
-                        `).join('');
-                    });
-            }
-
-            function getStatusBadgeClass(status) {
-                switch(status) {
-                    case 'Approved': return 'badge-success bg-success/10 text-success border-success/20';
-                    case 'Rejected': return 'badge-error bg-error/10 text-error border-error/20';
-                    case 'Checked In': return 'badge-primary bg-primary/10 text-primary border-primary/20';
-                    default: return 'badge-warning bg-warning/10 text-warning border-warning/20';
-                }
-            }
 
             document.getElementById('reservationForm').addEventListener('submit', (e) => {
                 e.preventDefault();

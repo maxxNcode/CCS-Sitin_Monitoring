@@ -251,6 +251,21 @@
                                             </option>
                                         </select>
                                     </div>
+
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1">
+                                            <span
+                                                class="label-text-alt font-black uppercase opacity-40 tracking-widest"
+                                                >PC Number</span
+                                            >
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="formPcNumber"
+                                            placeholder="e.g. PC-01"
+                                            class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div class="modal-action mt-8">
@@ -707,6 +722,7 @@
                                         <th>ID Number</th>
                                         <th>Purpose</th>
                                         <th>Sit Lab</th>
+                                        <th>PC No.</th>
                                         <th class="text-center">Session</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Actions</th>
@@ -874,6 +890,7 @@
                             <td class="font-mono text-xs font-bold">${record.idNumber}</td>
                             <td><span class="text-sm font-medium">${record.purpose}</span></td>
                             <td><div class="badge badge-outline badge-sm opacity-70">${record.lab}</div></td>
+                            <td class="font-mono text-xs font-bold text-primary">${record.pcNumber || 'N/A'}</td>
                             <td class="text-center font-bold">${record.session}</td>
                             <td class="text-center">
                                 <div class="badge badge-success badge-outline badge-xs font-black p-2">ACTIVE</div>
@@ -946,6 +963,7 @@
                         document.getElementById("formStudentName").value,
                     purpose: document.getElementById("formPurpose").value,
                     lab: document.getElementById("formLab").value,
+                    pcNumber: document.getElementById("formPcNumber").value,
                 };
 
                 if (!payload.purpose || !payload.lab) {

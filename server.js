@@ -83,6 +83,7 @@ function createTableSitInRecords() {
             idNumber TEXT NOT NULL,
             purpose TEXT NOT NULL,
             lab TEXT NOT NULL,
+            pcNumber TEXT,
             session TEXT NOT NULL,
             status TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -114,6 +115,7 @@ function createTableStudentHistory() {
             idNumber TEXT NOT NULL,
             purpose TEXT NOT NULL,
             lab TEXT NOT NULL,
+            pcNumber TEXT,
             loginTime DATETIME NOT NULL,
             logoutTime DATETIME NOT NULL,
             date DATE NOT NULL,
@@ -578,9 +580,11 @@ app.post('/api/admin/sit-in', (req, res) => {
             return res.status(400).json({ error: 'No sessions remaining' });
         }
 
+        const { pcNumber } = req.body;
+
         // Only insert the record — do NOT decrement sessionLeft yet
-        db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
-            [studentName, idNumber, purpose, lab, user.sessionLeft.toString(), 'Active'],
+        db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, pcNumber, session, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [studentName, idNumber, purpose, lab, pcNumber || 'N/A', user.sessionLeft.toString(), 'Active'],
             (err) => {
                 if (err) return res.status(500).json({ error: 'Failed to record sit-in' });
                 res.json({ success: true, message: 'Sit-in recorded successfully' });
@@ -651,8 +655,8 @@ app.post('/api/admin/sit-in/logout/:id', (req, res) => {
             const logoutTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
             const date = logoutTime.split(' ')[0]; // Extract YYYY-MM-DD
             db.run(
-                'INSERT INTO student_history (studentName, idNumber, purpose, lab, loginTime, logoutTime, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [record.studentName, record.idNumber, record.purpose, record.lab, loginTime, logoutTime, date]
+                'INSERT INTO student_history (studentName, idNumber, purpose, lab, pcNumber, loginTime, logoutTime, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [record.studentName, record.idNumber, record.purpose, record.lab, record.pcNumber || 'N/A', loginTime, logoutTime, date]
             );
 
             db.run('COMMIT', (err) => {
@@ -1186,6 +1190,10 @@ app.get('/student-history', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'student-history.html'));
 });
 
+app.get('/sessions', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'sessions.html'));
+});
+
 app.get('/students', checkAdminAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-pages/students.html'));
 });
@@ -1672,15 +1680,25 @@ function ensureSessionLeftColumn() {
                     db.run('UPDATE users SET sessionLeft = 30 WHERE sessionLeft IS NULL');
                 }
             });
-        } else {
-            // Column exists, just fix any NULLs
-            db.run('UPDATE users SET sessionLeft = 30 WHERE sessionLeft IS NULL', (err) => {
-                if (!err) console.log('Ensured all students have sessionLeft set');
-            });
         }
     });
 }
 ensureSessionLeftColumn();
+
+// Ensure pcNumber column exists (Migration)
+function ensurePcNumberColumn() {
+    db.all("PRAGMA table_info(sitin_records)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'pcNumber')) {
+            db.run("ALTER TABLE sitin_records ADD COLUMN pcNumber TEXT DEFAULT 'N/A'");
+        }
+    });
+    db.all("PRAGMA table_info(student_history)", (err, columns) => {
+        if (!err && !columns.some(c => c.name === 'pcNumber')) {
+            db.run("ALTER TABLE student_history ADD COLUMN pcNumber TEXT DEFAULT 'N/A'");
+        }
+    });
+}
+ensurePcNumberColumn();
 
 // Ensure points column exists (Migration)
 function ensurePointsColumn() {
