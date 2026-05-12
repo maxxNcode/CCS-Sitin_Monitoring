@@ -117,7 +117,7 @@
                                             type="text"
                                             id="searchIdNumber"
                                             placeholder="e.g. 21-1234-567"
-                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                         />
                                     </div>
                                 </div>
@@ -162,49 +162,51 @@
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student ID Number</span>
                                         </label>
-                                        <input type="text" id="studIdNumber" placeholder="e.g. 21-1234-567" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                        <input type="text" id="studIdNumber" placeholder="e.g. 21-1234-567" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
                                     </div>
 
                                     <div class="form-control">
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Email Address</span>
                                         </label>
-                                        <input type="email" id="studEmail" placeholder="email@example.com" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                        <input type="email" id="studEmail" placeholder="email@example.com" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
                                     </div>
 
                                     <div class="form-control">
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">First Name</span>
                                         </label>
-                                        <input type="text" id="studFirstName" placeholder="First Name" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                        <input type="text" id="studFirstName" placeholder="First Name" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
                                     </div>
 
                                     <div class="form-control">
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Last Name</span>
                                         </label>
-                                        <input type="text" id="studLastName" placeholder="Last Name" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                        <input type="text" id="studLastName" placeholder="Last Name" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
                                     </div>
 
                                     <div class="form-control">
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Middle Name</span>
                                         </label>
-                                        <input type="text" id="studMiddleName" placeholder="Middle Name" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        <input type="text" id="studMiddleName" placeholder="Middle Name" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
 
                                     <div class="form-control">
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Course</span>
                                         </label>
-                                        <input type="text" id="studCourse" placeholder="e.g. BSIT" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                        <select id="studCourse" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold" required>
+                                            <option value="" disabled selected>Select Course</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-control md:col-span-2">
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Year Level</span>
                                         </label>
-                                        <select id="studLevel" class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold" required>
+                                        <select id="studLevel" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold" required>
                                             <option value="" disabled selected>Select Level</option>
                                             <option value="1st Year">1st Year</option>
                                             <option value="2nd Year">2nd Year</option>
@@ -255,7 +257,7 @@
                                                 type="text"
                                                 id="formIdNumber"
                                                 placeholder="Enter ID"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
 
@@ -288,7 +290,7 @@
                                                 type="text"
                                                 id="formStudentName"
                                                 placeholder="Enter Name"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
                                     </div>
@@ -307,12 +309,12 @@
                                                 >Purpose</span
                                             >
                                         </label>
-                                        <input
-                                            type="text"
+                                        <select
                                             id="formPurpose"
-                                            placeholder="e.g. Java Programming, Assignment"
-                                            class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                        />
+                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
+                                        >
+                                            <option value="" disabled selected>Select Purpose</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-control">
@@ -324,22 +326,10 @@
                                         </label>
                                         <select
                                             id="formLab"
-                                            class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                         >
                                             <option value="" disabled selected>
                                                 Select Lab Room
-                                            </option>
-                                            <option value="Lab 524">
-                                                Lab 524
-                                            </option>
-                                            <option value="Lab 526">
-                                                Lab 526
-                                            </option>
-                                            <option value="Lab 542">
-                                                Lab 542
-                                            </option>
-                                            <option value="Mac Lab">
-                                                Mac Lab
                                             </option>
                                         </select>
                                     </div>
@@ -398,6 +388,9 @@
                         </a>
                         <a href="/admin/leaderboard" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-trophy mr-2"></i>Leaderboard
+                        </a>
+                        <a href="/admin/manage-dropdowns" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-sliders mr-2"></i>Manage
                         </a>
 
                         <div class="dropdown dropdown-end ml-2">
@@ -730,7 +723,6 @@
                 <main
                     class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700"
                 >
-                    <div class="flex flex-col w-full">
                     <div class="flex flex-col gap-8">
                         <!-- Header -->
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -758,11 +750,11 @@
                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Students</span>
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </div>
                                     <input type="text" id="studentSearchInput" placeholder="Name or ID Number..." 
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" 
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" 
                                         oninput="filterStudents()" />
                                 </div>
                             </div>
@@ -776,7 +768,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-graduation-cap"></i>
                                     </div>
-                                    <select id="yearFilter" class="select select-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                    <select id="yearFilter" class="select select-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                         onchange="filterStudents()">
                                         <option value="All">All Years</option>
                                         <option value="1st Year">1st Year</option>
@@ -798,11 +790,12 @@
 
                         <!-- Student Table -->
                         <div
-                            class="overflow-x-auto lg:overflow-x-hidden card bg-base-100 border border-base-content/5"
+                            class="overflow-hidden card bg-base-100 border border-base-content/5 rounded-3xl"
                         >
+                            <div class="overflow-x-auto lg:overflow-x-hidden">
                             <table class="table table-md">
                                 <!-- head -->
-                                <thead class="bg-base-200/50">
+                                <thead class="bg-base-200">
                                     <tr>
                                         <th class="w-12">
                                             <input
@@ -822,6 +815,7 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
                     </div>
                 </main>
             </div>
@@ -850,6 +844,7 @@
                     <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
                     <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
                     <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/admin/manage-dropdowns"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
                     <li class="mt-auto">
                         <button
                             onclick="logout()"
@@ -873,6 +868,14 @@
                             window.location.href = "/login";
                         else {
                             fetchStudents();
+                            fetch('/api/dropdown-options').then(r=>r.json()).then(data=>{
+                                const cs = document.getElementById('studCourse');
+                                if(cs && data.course) data.course.forEach(o => cs.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                                const ps = document.getElementById('formPurpose');
+                                if(ps && data.purpose) data.purpose.forEach(o => ps.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                                const ls = document.getElementById('formLab');
+                                if(ls && data.lab) data.lab.forEach(o => ls.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                            });
                         }
                     })
                     .catch(() => (window.location.href = "/login"));

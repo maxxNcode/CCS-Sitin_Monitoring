@@ -1,38 +1,79 @@
-/* Add this to your <style> block in admin.html */
+/* ─────────────────────────────────────────
+   Custom Scrollbar
+───────────────────────────────────────── */
 .custom-scrollbar {
     scrollbar-width: thin;
-    /* For Firefox */
     scrollbar-color: oklch(var(--p) / 0.3) transparent;
-    /* For Firefox */
+    overflow-y: auto;
+    scrollbar-gutter: stable;
 }
 
-/* For Chrome, Edge, and Safari */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
-    /* Very thin scrollbar */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
-    /* No background for the track */
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: oklch(var(--p) / 0.2);
-    /* Subtle thumb color */
     border-radius: 20px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: oklch(var(--p) / 0.5);
-    /* Brightens on hover */
 }
 
-.custom-scrollbar {
-    overflow-y: overlay;
-    /* Replaces overflow-y: auto */
+/* ─────────────────────────────────────────
+   DROPDOWN MENUS — Force solid DaisyUI bg
+   
+   DaisyUI v5 defines --color-base-100 etc.
+   as FULL color values (e.g. oklch(1 0 0))
+   that can be used directly in background-color.
+   
+   Using the DaisyUI semantic class approach:
+   .bg-base-100 is the correct solid token.
+   We force it with high-specificity selectors.
+───────────────────────────────────────── */
+
+/* Force solid background on ALL dropdown menus */
+:where(.dropdown) > .dropdown-content,
+.dropdown .dropdown-content,
+.dropdown-content {
+    background-color: var(--color-base-100) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
-.custom-scrollbar {
-    scrollbar-gutter: stable;
+/* ─────────────────────────────────────────
+   SELECT ELEMENTS — Force solid DaisyUI bg
+   
+   Tailwind bg-base-200/50 generates:
+     color-mix(in oklab, var(--color-base-200) 50%, transparent)
+   which is semi-transparent. Override it.
+───────────────────────────────────────── */
+select,
+.select {
+    background-color: var(--color-base-200) !important;
+    background-image: none !important;
+    color: var(--color-base-content) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Selects inside modals */
+.modal select,
+.modal-box select,
+.form-control select {
+    background-color: var(--color-base-200) !important;
+    color: var(--color-base-content) !important;
+}
+
+/* Native <option> dropdown items */
+select option,
+.select option {
+    background-color: var(--color-base-100) !important;
+    color: var(--color-base-content) !important;
 }

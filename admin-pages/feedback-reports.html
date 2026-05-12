@@ -117,7 +117,7 @@
                                             type="text"
                                             id="searchIdNumber"
                                             placeholder="e.g. 21-1234-567"
-                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                         />
                                     </div>
                                 </div>
@@ -179,7 +179,7 @@
                                                 type="text"
                                                 id="formIdNumber"
                                                 placeholder="Enter ID"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
 
@@ -212,7 +212,7 @@
                                                 type="text"
                                                 id="formStudentName"
                                                 placeholder="Enter Name"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
                                     </div>
@@ -231,12 +231,12 @@
                                                 >Purpose</span
                                             >
                                         </label>
-                                        <input
-                                            type="text"
+                                        <select
                                             id="formPurpose"
-                                            placeholder="e.g. Java Programming, Assignment"
-                                            class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                        />
+                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
+                                        >
+                                            <option value="" disabled selected>Select Purpose</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-control">
@@ -248,22 +248,10 @@
                                         </label>
                                         <select
                                             id="formLab"
-                                            class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                         >
                                             <option value="" disabled selected>
                                                 Select Lab Room
-                                            </option>
-                                            <option value="Lab 524">
-                                                Lab 524
-                                            </option>
-                                            <option value="Lab 526">
-                                                Lab 526
-                                            </option>
-                                            <option value="Lab 542">
-                                                Lab 542
-                                            </option>
-                                            <option value="Mac Lab">
-                                                Mac Lab
                                             </option>
                                         </select>
                                     </div>
@@ -679,11 +667,11 @@
                             </div>
                         </div>
 
-                        <div class="card bg-base-100 border border-base-content/5 shadow-sm">
+                        <div class="card bg-base-100 border border-base-content/5 shadow-sm overflow-hidden rounded-3xl">
                             <div class="card-body p-0 overflow-x-auto">
                                 <table class="table table-zebra">
                                     <thead>
-                                        <tr class="bg-base-200/50">
+                                        <tr class="bg-base-200">
                                             <th class="font-black text-xs uppercase tracking-wider">Student</th>
                                             <th class="font-black text-xs uppercase tracking-wider">Lab</th>
                                             <th class="font-black text-xs uppercase tracking-wider">Purpose</th>
@@ -743,6 +731,15 @@
                     .then((d) => {
                         if (!d.loggedIn || d.role !== "admin")
                             window.location.href = "/login";
+                        else {
+                            // Populate dynamic dropdowns from API
+                            fetch('/api/dropdown-options').then(r=>r.json()).then(data=>{
+                                const formLab = document.getElementById('formLab');
+                                if(formLab && data.lab) data.lab.forEach(o => formLab.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                                const formPurpose = document.getElementById('formPurpose');
+                                if(formPurpose && data.purpose) data.purpose.forEach(o => formPurpose.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                            });
+                        }
                     })
                     .catch(() => (window.location.href = "/login"));
 

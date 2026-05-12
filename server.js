@@ -11,7 +11,12 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 const PORT = 3000;
 
 // Initialize Database
@@ -21,6 +26,14 @@ const db = new sqlite3.Database('./database.db', (err) => {
     } else {
         console.log('Connected to SQLite database');
         initializeDatabase();
+        createTableAnnouncements();
+        createTableSitInRecords();
+        createTableAdmins();
+        createTableStudentHistory();
+        createTableFeedbacks();
+        createTableReservations();
+        createTableNotifications();
+        createTableSystemSettings();
     }
 });
 
@@ -148,16 +161,102 @@ function createTableNotifications() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             idNumber TEXT NOT NULL,
             message TEXT NOT NULL,
-            type TEXT DEFAULT 'info',
             isRead INTEGER DEFAULT 0,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
+}
+
+function createTableSystemSettings() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS system_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    `, (err) => {
+        if (!err) {
+            db.run(`INSERT OR IGNORE INTO system_settings (key, value) VALUES ('reservationsEnabled', 'true')`);
+        }
+    });
+}
+
+function createTableDropdownOptions() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS dropdown_options (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            value TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            sort_order INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
 }
 
+function createTableLabSoftwares() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS lab_softwares (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lab_id INTEGER NOT NULL,
+            software_name TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (lab_id) REFERENCES dropdown_options(id) ON DELETE CASCADE
+        )
+    `);
+}
+
+function seedDropdownOptions() {
+    db.get('SELECT COUNT(*) as count FROM dropdown_options', (err, row) => {
+        if (err) return;
+        if (row.count === 0) {
+            const defaults = [
+                // Courses
+                { category: 'course', value: 'BS Computer Science', sort_order: 1 },
+                { category: 'course', value: 'BS Information Technology', sort_order: 2 },
+                { category: 'course', value: 'BS Information Systems', sort_order: 3 },
+                { category: 'course', value: 'BS Computer Engineering', sort_order: 4 },
+                { category: 'course', value: 'Associate in Computer Technology', sort_order: 5 },
+                // Labs
+                { category: 'lab', value: 'Lab 524', sort_order: 1 },
+                { category: 'lab', value: 'Lab 526', sort_order: 2 },
+                { category: 'lab', value: 'Lab 542', sort_order: 3 },
+                { category: 'lab', value: 'Mac Lab', sort_order: 4 },
+                // Purposes
+                { category: 'purpose', value: 'C Programming', sort_order: 1 },
+                { category: 'purpose', value: 'Java Programming', sort_order: 2 },
+                { category: 'purpose', value: 'ASP.NET', sort_order: 3 },
+                { category: 'purpose', value: 'Python', sort_order: 4 },
+                { category: 'purpose', value: 'Database', sort_order: 5 },
+                { category: 'purpose', value: 'Digital Logic & Design', sort_order: 6 },
+                { category: 'purpose', value: 'Embedded Systems & IoT', sort_order: 7 },
+                { category: 'purpose', value: 'System Integration & Architecture', sort_order: 8 },
+                { category: 'purpose', value: 'Computer Application', sort_order: 9 },
+                { category: 'purpose', value: 'Web Development', sort_order: 10 },
+                { category: 'purpose', value: 'Mobile App Development', sort_order: 11 },
+                { category: 'purpose', value: 'Project Development (Thesis/Capstone)', sort_order: 12 },
+            ];
+            const stmt = db.prepare('INSERT INTO dropdown_options (category, value, sort_order) VALUES (?, ?, ?)');
+            defaults.forEach(d => stmt.run(d.category, d.value, d.sort_order));
+            stmt.finalize();
+            console.log('Seeded dropdown_options with default data');
+        }
+    });
+}
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+// manual CORS
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 app.use(express.static(path.join(__dirname)));
 
 // Serve Static
@@ -774,30 +873,38 @@ app.get('/api/admin/reports/sit-in', checkAdminAuth, (req, res) => {
 
 // Student API: Create Reservation
 app.post('/api/student/reserve', checkAuth, (req, res) => {
-    const { lab, purpose, date, time } = req.body;
-    const { idNumber, firstName, lastName } = req.session;
-    const studentName = `${firstName} ${lastName}`;
-
-    if (!lab || !purpose || !date || !time) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    db.run(
-        `INSERT INTO reservations (idNumber, studentName, lab, purpose, reservationDate, reservationTime) VALUES (?, ?, ?, ?, ?, ?)`,
-        [idNumber, studentName, lab, purpose, date, time],
-        function (err) {
-            if (err) return res.status(500).json({ error: 'Failed to create reservation' });
-            
-            // Notify ADMIN about new reservation
-            const adminMessage = `${studentName} has requested a reservation for ${lab} on ${date}.`;
-            db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', 
-                ['ADMIN', adminMessage, 'info']);
-            // Push via Socket.IO
-            io.emit('notification:admin', { message: adminMessage, type: 'info' });
-
-            res.json({ success: true, message: 'Reservation submitted successfully' });
+    // Check if reservations are enabled
+    db.get("SELECT value FROM system_settings WHERE key = 'reservationsEnabled'", [], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (row && row.value !== 'true') {
+            return res.status(403).json({ error: 'Reservations are currently disabled by the administrator.' });
         }
-    );
+
+        const { lab, purpose, date, time } = req.body;
+        const { idNumber, firstName, lastName } = req.session;
+        const studentName = `${firstName} ${lastName}`;
+
+        if (!lab || !purpose || !date || !time) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        db.run(
+            `INSERT INTO reservations (idNumber, studentName, lab, purpose, reservationDate, reservationTime) VALUES (?, ?, ?, ?, ?, ?)`,
+            [idNumber, studentName, lab, purpose, date, time],
+            function (err) {
+                if (err) return res.status(500).json({ error: 'Failed to create reservation' });
+                
+                // Notify ADMIN about new reservation
+                const adminMessage = `${studentName} has requested a reservation for ${lab} on ${date}.`;
+                db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', 
+                    ['ADMIN', adminMessage, 'info']);
+                // Push via Socket.IO
+                io.emit('notification:admin', { message: adminMessage, type: 'info' });
+
+                res.json({ success: true, message: 'Reservation submitted successfully' });
+            }
+        );
+    });
 });
 
 // Student API: Fetch Reservations
@@ -992,6 +1099,10 @@ app.get('/homepage', checkAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'homepage.html'));
 });
 
+app.get('/reservation', checkAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'reservation.html'));
+});
+
 app.get('/admin', checkAdminAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
@@ -1010,6 +1121,64 @@ app.get('/api/student/history', checkAuth, (req, res) => {
     `, [idNumber], (err, rows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         res.json(rows);
+    });
+});
+
+// Student API: Fetch Sit-in Summary
+app.get('/api/student/summary', checkAuth, (req, res) => {
+    const idNumber = req.session.idNumber;
+    
+    db.all('SELECT loginTime, logoutTime FROM student_history WHERE idNumber = ?', [idNumber], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        
+        let totalMinutes = 0;
+        let longestMinutes = 0;
+        let sessionCount = rows.length;
+        
+        rows.forEach(row => {
+            const login = new Date(row.loginTime);
+            const logout = new Date(row.logoutTime);
+            const duration = Math.max(0, (logout - login) / 60000); // Duration in minutes
+            
+            totalMinutes += duration;
+            if (duration > longestMinutes) {
+                longestMinutes = duration;
+            }
+        });
+        
+        const avgMinutes = sessionCount > 0 ? totalMinutes / sessionCount : 0;
+        
+        res.json({
+            totalHours: (totalMinutes / 60).toFixed(1),
+            sessionCount: sessionCount,
+            avgDuration: Math.round(avgMinutes),
+            longestSession: Math.round(longestMinutes)
+        });
+    });
+});
+
+// System Settings API
+app.get('/api/settings/reservations-status', (req, res) => {
+    db.get("SELECT value FROM system_settings WHERE key = 'reservationsEnabled'", [], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json({ enabled: row ? row.value === 'true' : true });
+    });
+});
+
+app.get('/api/admin/settings', checkAdminAuth, (req, res) => {
+    db.all("SELECT * FROM system_settings", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        const settings = {};
+        rows.forEach(row => settings[row.key] = row.value);
+        res.json(settings);
+    });
+});
+
+app.post('/api/admin/settings', checkAdminAuth, (req, res) => {
+    const { key, value } = req.body;
+    db.run("INSERT OR REPLACE INTO system_settings (key, value) VALUES (?, ?)", [key, String(value)], (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to update setting' });
+        res.json({ success: true });
     });
 });
 
@@ -1061,6 +1230,137 @@ app.get('/ai-recommendations', checkAuth, (req, res) => {
 
 app.get('/admin/leaderboard', checkAdminAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-pages/leaderboard.html'));
+});
+
+app.get('/admin/manage-dropdowns', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/manage-dropdowns.html'));
+});
+
+// ─── Dropdown Options API ──────────────────────────────────────────
+
+// Public: Fetch all active dropdown options (used by all pages)
+app.get('/api/dropdown-options', (req, res) => {
+    db.all('SELECT * FROM dropdown_options WHERE is_active = 1 ORDER BY category, sort_order, value', (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        // Group by category
+        const grouped = {};
+        rows.forEach(r => {
+            if (!grouped[r.category]) grouped[r.category] = [];
+            grouped[r.category].push(r);
+        });
+        res.json(grouped);
+    });
+});
+
+// Public: Fetch active options by category
+app.get('/api/dropdown-options/:category', (req, res) => {
+    const { category } = req.params;
+    db.all('SELECT * FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order, value', [category], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin: Fetch ALL options (including inactive) for management
+app.get('/api/admin/dropdown-options', checkAdminAuth, (req, res) => {
+    db.all('SELECT * FROM dropdown_options ORDER BY category, sort_order, value', (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        const grouped = {};
+        rows.forEach(r => {
+            if (!grouped[r.category]) grouped[r.category] = [];
+            grouped[r.category].push(r);
+        });
+        res.json(grouped);
+    });
+});
+
+// Admin: Add new dropdown option
+app.post('/api/admin/dropdown-options', checkAdminAuth, (req, res) => {
+    const { category, value } = req.body;
+    if (!category || !value) return res.status(400).json({ error: 'Category and value are required' });
+    
+    // Check for duplicate
+    db.get('SELECT id FROM dropdown_options WHERE category = ? AND value = ?', [category, value], (err, existing) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (existing) return res.status(400).json({ error: 'This option already exists' });
+        
+        // Get max sort_order for the category
+        db.get('SELECT MAX(sort_order) as maxOrder FROM dropdown_options WHERE category = ?', [category], (err, row) => {
+            const nextOrder = (row && row.maxOrder ? row.maxOrder : 0) + 1;
+            db.run('INSERT INTO dropdown_options (category, value, sort_order) VALUES (?, ?, ?)', [category, value, nextOrder], function(err) {
+                if (err) return res.status(500).json({ error: 'Failed to add option' });
+                res.json({ success: true, id: this.lastID, message: 'Option added successfully' });
+            });
+        });
+    });
+});
+
+// Admin: Update dropdown option
+app.put('/api/admin/dropdown-options/:id', checkAdminAuth, (req, res) => {
+    const { id } = req.params;
+    const { value } = req.body;
+    if (!value) return res.status(400).json({ error: 'Value is required' });
+    
+    db.run('UPDATE dropdown_options SET value = ? WHERE id = ?', [value, id], function(err) {
+        if (err) return res.status(500).json({ error: 'Failed to update option' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Option not found' });
+        res.json({ success: true, message: 'Option updated successfully' });
+    });
+});
+
+// Admin: Delete dropdown option
+app.delete('/api/admin/dropdown-options/:id', checkAdminAuth, (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM dropdown_options WHERE id = ?', [id], function(err) {
+        if (err) return res.status(500).json({ error: 'Failed to delete option' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Option not found' });
+        res.json({ success: true, message: 'Option deleted successfully' });
+    });
+});
+
+// Admin: Toggle active/inactive
+app.put('/api/admin/dropdown-options/:id/toggle', checkAdminAuth, (req, res) => {
+    const { id } = req.params;
+    db.get('SELECT is_active FROM dropdown_options WHERE id = ?', [id], (err, row) => {
+        if (err || !row) return res.status(404).json({ error: 'Option not found' });
+        const newStatus = row.is_active === 1 ? 0 : 1;
+        db.run('UPDATE dropdown_options SET is_active = ? WHERE id = ?', [newStatus, id], (err) => {
+            if (err) return res.status(500).json({ error: 'Failed to toggle option' });
+            res.json({ success: true, is_active: newStatus });
+        });
+    });
+});
+
+// ─── Lab Softwares API ─────────────────────────────────────────────
+
+// Public: Fetch all software for a specific lab
+app.get('/api/lab-softwares/:labId', (req, res) => {
+    const { labId } = req.params;
+    db.all('SELECT * FROM lab_softwares WHERE lab_id = ? ORDER BY software_name', [labId], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin: Add software to a lab
+app.post('/api/admin/lab-softwares', checkAdminAuth, (req, res) => {
+    const { lab_id, software_name } = req.body;
+    if (!lab_id || !software_name) return res.status(400).json({ error: 'Lab ID and Software Name are required' });
+
+    db.run('INSERT INTO lab_softwares (lab_id, software_name) VALUES (?, ?)', [lab_id, software_name], function(err) {
+        if (err) return res.status(500).json({ error: 'Failed to add software' });
+        res.json({ success: true, id: this.lastID, message: 'Software added successfully' });
+    });
+});
+
+// Admin: Delete software from a lab
+app.delete('/api/admin/lab-softwares/:id', checkAdminAuth, (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM lab_softwares WHERE id = ?', [id], function(err) {
+        if (err) return res.status(500).json({ error: 'Failed to delete software' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Software not found' });
+        res.json({ success: true, message: 'Software removed successfully' });
+    });
 });
 
 // Leaderboard API: Calculate weighted scores
@@ -1203,14 +1503,22 @@ app.get('/api/ai-recommendations', checkAuth, (req, res) => {
             FROM sitin_records
             WHERE status = 'Active'
             GROUP BY lab
-        `, [], (err, activeLabs) => {
+        `, [], async (err, activeLabs) => {
             if (err) return res.status(500).json({ error: 'Database error' });
 
             const recommendations = [];
-            const labCapacity = { 'Lab 524': 30, 'Lab 526': 30, 'Lab 542': 25, 'Mac Lab': 20 };
+
+            // Dynamically get labs from dropdown_options
+            const labRows = await new Promise((resolve, reject) => {
+                db.all('SELECT value FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order', ['lab'], (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows || []);
+                });
+            }).catch(() => []);
+            const allLabs = labRows.length > 0 ? labRows.map(r => r.value) : ['Lab 524', 'Lab 526', 'Lab 542', 'Mac Lab'];
+            const defaultCapacity = 30;
 
             // Find least busy lab
-            const allLabs = ['Lab 524', 'Lab 526', 'Lab 542', 'Mac Lab'];
             let leastBusy = allLabs[0];
             let minCount = Infinity;
             allLabs.forEach(lab => {
@@ -1221,11 +1529,11 @@ app.get('/api/ai-recommendations', checkAuth, (req, res) => {
                 }
             });
 
-            if (minCount < (labCapacity[leastBusy] || 30)) {
+            if (minCount < defaultCapacity) {
                 recommendations.push({
                     type: 'lab',
                     title: `Try ${leastBusy}`,
-                    description: `This lab currently has ${minCount} active users out of ${labCapacity[leastBusy] || 30} capacity. Great availability right now!`,
+                    description: `This lab currently has ${minCount} active users out of ${defaultCapacity} capacity. Great availability right now!`,
                     icon: 'fa-computer'
                 });
             }
@@ -1334,6 +1642,10 @@ createTableStudentHistory();
 createTableFeedbacks();
 createTableReservations();
 createTableNotifications();
+createTableDropdownOptions();
+createTableLabSoftwares();
+// Seed dropdown options after a short delay to ensure table is created
+setTimeout(seedDropdownOptions, 500);
 
 // Ensure profilePic column exists (Migration)
 function ensureProfilePicColumn() {

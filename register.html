@@ -471,7 +471,7 @@
                                                     type="text"
                                                     id="lastName"
                                                     placeholder="Required"
-                                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                    class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                                     required
                                                 />
                                             </div>
@@ -486,7 +486,7 @@
                                                     type="text"
                                                     id="firstName"
                                                     placeholder="Required"
-                                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                    class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                                     required
                                                 />
                                             </div>
@@ -501,7 +501,7 @@
                                                     type="text"
                                                     id="middleName"
                                                     placeholder="Optional"
-                                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                    class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                                 />
                                             </div>
                                         </div>
@@ -516,7 +516,7 @@
                                                 type="text"
                                                 id="address"
                                                 placeholder="Barangay, City, Province"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
                                     </div>
@@ -547,7 +547,7 @@
                                                 >
                                                 <select
                                                     id="course"
-                                                    class="select select-bordered w-full rounded-2xl bg-base-200/80 border-base-content/5 focus:border-primary font-bold"
+                                                    class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                                     required
                                                 >
                                                     <option
@@ -556,23 +556,6 @@
                                                         selected
                                                     >
                                                         Select Program
-                                                    </option>
-                                                    <option>
-                                                        BS Computer Science
-                                                    </option>
-                                                    <option>
-                                                        BS Information
-                                                        Technology
-                                                    </option>
-                                                    <option>
-                                                        BS Information Systems
-                                                    </option>
-                                                    <option>
-                                                        BS Computer Engineering
-                                                    </option>
-                                                    <option>
-                                                        Associate in Computer
-                                                        Technology
                                                     </option>
                                                 </select>
                                             </div>
@@ -586,7 +569,7 @@
                                                 >
                                                 <select
                                                     id="courseLevel"
-                                                    class="select select-bordered w-full rounded-2xl bg-base-200/80 border-base-content/5 backdrop-blur-md focus:border-primary font-bold"
+                                                    class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                                     required
                                                 >
                                                     <option
@@ -625,7 +608,7 @@
                                                         type="text"
                                                         id="idNumber"
                                                         placeholder="XX-XXXX-XXX"
-                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                                         required
                                                     />
                                                 </div>
@@ -649,7 +632,7 @@
                                                         type="email"
                                                         id="email"
                                                         placeholder="student@university.edu"
-                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                                         required
                                                     />
                                                 </div>
@@ -693,7 +676,7 @@
                                                         type="password"
                                                         id="password"
                                                         placeholder="••••••••"
-                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                                         required
                                                     />
                                                 </div>
@@ -717,7 +700,7 @@
                                                         type="password"
                                                         id="confirmPassword"
                                                         placeholder="••••••••"
-                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                                         required
                                                     />
                                                 </div>
@@ -844,6 +827,15 @@
                     localStorage.setItem("theme", theme);
                 });
             });
+
+            // Populate course dropdown from API
+            fetch('/api/dropdown-options/course')
+                .then(r => r.json())
+                .then(courses => {
+                    const cs = document.getElementById('course');
+                    if (cs) courses.forEach(o => cs.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                })
+                .catch(err => console.error('Error loading courses:', err));
 
             // Registration Submission Logic
             document

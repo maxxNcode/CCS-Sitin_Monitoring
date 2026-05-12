@@ -1,0 +1,569 @@
+<!doctype html>
+<html data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CCS - Manage Dropdowns</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/notification-client.js"></script>
+        <link rel="stylesheet" href="../style.css" />
+    </head>
+
+    <body class="bg-base-200 min-h-screen">
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Navbar -->
+                <div class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5">
+                    <div class="flex-none md:hidden">
+                        <label for="my-drawer" class="btn btn-ghost btn-square">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </label>
+                    </div>
+
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                                <img src="../assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-1">
+                        <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="/students" class="btn btn-ghost btn-sm">Students</a>
+                        <a href="/sit-in" class="btn btn-ghost btn-sm">Sit-in</a>
+                        <a href="/sit-in-records" class="btn btn-ghost btn-sm">Sit-in Records</a>
+                        <a href="/sit-in-reports" class="btn btn-ghost btn-sm">Sit-in Reports</a>
+                        <a href="/feedback-reports" class="btn btn-ghost btn-sm">Feedback Reports</a>
+                        <a href="/reservations" class="btn btn-ghost btn-sm">Reservations</a>
+                        <a href="/admin/leaderboard" class="btn btn-ghost btn-sm"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a>
+                        <a href="/admin/manage-dropdowns" class="btn btn-primary btn-sm"><i class="fa-solid fa-sliders mr-2"></i>Manage</a>
+
+                        <div class="dropdown dropdown-end ml-2">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-sm"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow border border-base-content/10 mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
+                        <div class="dropdown dropdown-end ml-4">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                                <i class="fa-solid fa-palette opacity-50"></i>
+                                Theme
+                                <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                                <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                                <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                                <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                                <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                                <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                                <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                                <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                                <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                                <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                                <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                                <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                                <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                                <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                                <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                                <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                                <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                                <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                                <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                                <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                                <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                                <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                                <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                                <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                                <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                                <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                                <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                                <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                                <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                                <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                                <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                                <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                                <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                                <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                                <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                                <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
+                            </ul>
+                        </div>
+
+                        <button onclick="logout()" class="btn btn-primary btn-sm ml-4">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
+                    <div class="flex flex-col gap-8">
+                        <!-- Header -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 class="text-3xl font-black tracking-tight">Manage Dropdowns</h1>
+                                <p class="opacity-60 font-medium">Configure the dropdown options for Courses, Labs, and Sit-in Purposes used across the system</p>
+                            </div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="tabs tabs-boxed bg-base-100 border border-base-content/5 p-1 rounded-2xl w-fit">
+                            <button class="tab tab-active font-bold text-sm gap-2 rounded-xl" data-tab="course" onclick="switchTab('course', this)">
+                                <i class="fa-solid fa-graduation-cap"></i> Courses
+                            </button>
+                            <button class="tab font-bold text-sm gap-2 rounded-xl" data-tab="lab" onclick="switchTab('lab', this)">
+                                <i class="fa-solid fa-flask"></i> Labs
+                            </button>
+                            <button class="tab font-bold text-sm gap-2 rounded-xl" data-tab="purpose" onclick="switchTab('purpose', this)">
+                                <i class="fa-solid fa-bullseye"></i> Purposes
+                            </button>
+                        </div>
+
+                        <!-- Content Card -->
+                        <div class="card bg-base-100/80 backdrop-blur-md border border-base-content/10">
+                            <div class="card-body">
+                                <!-- Category Header -->
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                    <div>
+                                        <h2 class="text-xl font-black flex items-center gap-3" id="categoryTitle">
+                                            <i class="fa-solid fa-graduation-cap text-primary"></i>
+                                            <span>Course Options</span>
+                                        </h2>
+                                        <p class="text-sm opacity-50 mt-1" id="categoryDesc">Programs/courses available for student registration</p>
+                                    </div>
+                                    <button class="btn btn-primary rounded-2xl font-black italic uppercase" onclick="openAddModal()">
+                                        <i class="fa-solid fa-plus mr-1"></i> Add New
+                                    </button>
+                                </div>
+
+                                <!-- Options List -->
+                                <div id="optionsList" class="space-y-3">
+                                    <!-- Dynamic content -->
+                                </div>
+
+                                <!-- Empty State -->
+                                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 opacity-40">
+                                    <i class="fa-solid fa-inbox text-5xl mb-4"></i>
+                                    <p class="font-bold text-lg">No options found</p>
+                                    <p class="text-sm">Click "Add New" to create one</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Sidebar (Mobile drawer) -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                    <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <span class="text-xl font-black">CCS SIT-IN</span>
+                    </li>
+                    <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
+                    <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
+                    <li><a href="/sit-in"><i class="fa-solid fa-clipboard-user mr-2"></i>Sit-in Session</a></li>
+                    <li><a href="/sit-in-records"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Sit-in Records</a></li>
+                    <li><a href="/sit-in-reports"><i class="fa-solid fa-chart-line mr-2"></i>Sit-in Reports</a></li>
+                    <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
+                    <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
+                    <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/admin/manage-dropdowns" class="active"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
+                    <li class="mt-auto">
+                        <button onclick="logout()" class="btn btn-error btn-outline mt-4">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Add/Edit Modal -->
+        <dialog id="optionModal" class="modal">
+            <div class="modal-box p-8 max-w-md rounded-3xl">
+                <h3 class="text-2xl font-black italic tracking-tighter text-base-content mb-6 flex items-center gap-2" id="modalTitle">
+                    <i class="fa-solid fa-plus-circle text-primary"></i>
+                    Add <span class="text-primary not-italic" id="modalCategoryLabel">Option</span>
+                </h3>
+
+                <div class="form-control">
+                    <label class="label pt-0 pb-1">
+                        <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Option Name</span>
+                    </label>
+                    <input type="text" id="optionValue" placeholder="Enter option name..."
+                        class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                </div>
+                <input type="hidden" id="optionId" value="" />
+
+                <div class="modal-action mt-8">
+                    <form method="dialog" class="w-full flex gap-3">
+                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500">Cancel</button>
+                        <button type="button" class="btn btn-primary flex-1 rounded-2xl font-black italic uppercase" onclick="saveOption()">
+                            Save <i class="fa-solid fa-check ml-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <!-- Software Management Modal -->
+        <dialog id="softwareModal" class="modal">
+            <div class="modal-box p-8 max-w-lg rounded-3xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-black italic tracking-tighter text-base-content flex items-center gap-2">
+                        <i class="fa-solid fa-laptop-code text-primary"></i>
+                        Manage <span class="text-primary not-italic" id="softwareLabName">Software</span>
+                    </h3>
+                    <form method="dialog">
+                        <button class="btn btn-ghost btn-sm btn-circle"><i class="fa-solid fa-xmark"></i></button>
+                    </form>
+                </div>
+
+                <!-- Add Software Form -->
+                <div class="flex gap-2 mb-6">
+                    <div class="form-control flex-1">
+                        <input type="text" id="newSoftwareName" placeholder="Software name (e.g. VS Code)..."
+                            class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                    </div>
+                    <button class="btn btn-primary rounded-2xl" onclick="addSoftware()">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                </div>
+
+                <div class="divider opacity-20 uppercase text-[10px] font-black tracking-widest">Available Software</div>
+
+                <!-- Software List -->
+                <div id="softwareList" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar p-1">
+                    <!-- Dynamic content -->
+                </div>
+
+                <input type="hidden" id="currentLabId" value="" />
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+
+        <script>
+            let currentTab = 'course';
+            let allOptions = {};
+
+            const categoryMeta = {
+                course: {
+                    icon: 'fa-graduation-cap',
+                    title: 'Course Options',
+                    desc: 'Programs/courses available for student registration',
+                    label: 'Course'
+                },
+                lab: {
+                    icon: 'fa-flask',
+                    title: 'Laboratory Options',
+                    desc: 'Lab rooms available for sit-in sessions and reservations',
+                    label: 'Lab'
+                },
+                purpose: {
+                    icon: 'fa-bullseye',
+                    title: 'Purpose Options',
+                    desc: 'Sit-in purpose options like programming languages and subjects',
+                    label: 'Purpose'
+                }
+            };
+
+            // Check session
+            window.addEventListener('DOMContentLoaded', () => {
+                fetch('/check-session')
+                    .then(r => r.json())
+                    .then(d => {
+                        if (!d.loggedIn || d.role !== 'admin') window.location.href = '/login';
+                        else fetchOptions();
+                    })
+                    .catch(() => window.location.href = '/login');
+
+                const currentTheme = localStorage.getItem('theme') || 'forest';
+                document.documentElement.setAttribute('data-theme', currentTheme);
+
+                document.querySelectorAll('.theme-controller').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const theme = btn.getAttribute('data-set-theme');
+                        document.documentElement.setAttribute('data-theme', theme);
+                        localStorage.setItem('theme', theme);
+                    });
+                });
+            });
+
+            function switchTab(tab, btn) {
+                currentTab = tab;
+                document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('tab-active'));
+                btn.classList.add('tab-active');
+
+                const meta = categoryMeta[tab];
+                document.getElementById('categoryTitle').innerHTML = `
+                    <i class="fa-solid ${meta.icon} text-primary"></i>
+                    <span>${meta.title}</span>
+                `;
+                document.getElementById('categoryDesc').textContent = meta.desc;
+                renderOptions();
+            }
+
+            async function fetchOptions() {
+                try {
+                    const res = await fetch('/api/admin/dropdown-options');
+                    allOptions = await res.json();
+                    renderOptions();
+                } catch (err) {
+                    console.error('Error fetching options:', err);
+                    showToast('Failed to load options', 'error');
+                }
+            }
+
+            function renderOptions() {
+                const list = document.getElementById('optionsList');
+                const empty = document.getElementById('emptyState');
+                const items = allOptions[currentTab] || [];
+
+                if (items.length === 0) {
+                    list.innerHTML = '';
+                    empty.classList.remove('hidden');
+                    return;
+                }
+
+                empty.classList.add('hidden');
+                list.innerHTML = items.map((item, index) => `
+                    <div class="flex items-center gap-4 p-4 rounded-2xl border ${item.is_active ? 'border-base-content/5 bg-base-200/30' : 'border-dashed border-base-content/20 bg-base-200/10 opacity-60'} hover:shadow-sm hover:shadow-primary/5 transition-all duration-300 group">
+                        <!-- Order Badge -->
+                        <div class="w-8 h-8 rounded-lg ${item.is_active ? 'bg-primary/10 text-primary' : 'bg-base-content/10 text-base-content/40'} flex items-center justify-center text-xs font-black shrink-0">
+                            ${index + 1}
+                        </div>
+                        
+                        <!-- Value -->
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-base truncate ${item.is_active ? '' : 'line-through opacity-60'}">${item.value}</p>
+                            <p class="text-[10px] uppercase font-black tracking-widest ${item.is_active ? 'text-primary/60' : 'text-base-content/30'}">
+                                ${item.is_active ? 'Active' : 'Inactive'}
+                            </p>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                            ${currentTab === 'lab' ? `
+                                <button onclick="openSoftwareModal(${item.id}, '${item.value.replace(/'/g, "\\'")}')" class="btn btn-ghost btn-sm btn-circle hover:bg-primary/10 hover:text-primary" title="Manage Software">
+                                    <i class="fa-solid fa-laptop-code"></i>
+                                </button>
+                            ` : ''}
+                            <button onclick="toggleOption(${item.id})" class="btn btn-ghost btn-sm btn-circle hover:bg-primary/10 hover:text-primary" title="${item.is_active ? 'Deactivate' : 'Activate'}">
+                                <i class="fa-solid ${item.is_active ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                            </button>
+                            <button onclick="editOption(${item.id}, '${item.value.replace(/'/g, "\\'")}')" class="btn btn-ghost btn-sm btn-circle hover:bg-info/10 hover:text-info" title="Edit">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteOption(${item.id}, '${item.value.replace(/'/g, "\\'")}')" class="btn btn-ghost btn-sm btn-circle hover:bg-error/10 hover:text-error" title="Delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function openAddModal() {
+                const meta = categoryMeta[currentTab];
+                document.getElementById('modalTitle').innerHTML = `
+                    <i class="fa-solid fa-plus-circle text-primary"></i>
+                    Add <span class="text-primary not-italic">${meta.label}</span>
+                `;
+                document.getElementById('optionValue').value = '';
+                document.getElementById('optionId').value = '';
+                document.getElementById('optionModal').showModal();
+            }
+
+            function editOption(id, value) {
+                const meta = categoryMeta[currentTab];
+                document.getElementById('modalTitle').innerHTML = `
+                    <i class="fa-solid fa-pen text-primary"></i>
+                    Edit <span class="text-primary not-italic">${meta.label}</span>
+                `;
+                document.getElementById('optionValue').value = value;
+                document.getElementById('optionId').value = id;
+                document.getElementById('optionModal').showModal();
+            }
+
+            async function saveOption() {
+                const value = document.getElementById('optionValue').value.trim();
+                const id = document.getElementById('optionId').value;
+
+                if (!value) {
+                    showToast('Please enter a value', 'warning');
+                    return;
+                }
+
+                try {
+                    let res;
+                    if (id) {
+                        // Update
+                        res = await fetch(`/api/admin/dropdown-options/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ value })
+                        });
+                    } else {
+                        // Add
+                        res = await fetch('/api/admin/dropdown-options', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ category: currentTab, value })
+                        });
+                    }
+
+                    const data = await res.json();
+                    if (res.ok) {
+                        showToast(data.message, 'success');
+                        document.getElementById('optionModal').close();
+                        fetchOptions();
+                    } else {
+                        showToast(data.error || 'Operation failed', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('An error occurred', 'error');
+                }
+            }
+
+            async function toggleOption(id) {
+                try {
+                    const res = await fetch(`/api/admin/dropdown-options/${id}/toggle`, { method: 'PUT' });
+                    const data = await res.json();
+                    if (res.ok) {
+                        showToast(data.is_active ? 'Option activated' : 'Option deactivated', 'success');
+                        fetchOptions();
+                    } else {
+                        showToast(data.error || 'Failed', 'error');
+                    }
+                } catch (err) {
+                    showToast('An error occurred', 'error');
+                }
+            }
+
+            async function deleteOption(id, name) {
+                showConfirm('Delete Option?', `Are you sure you want to permanently delete "${name}"? This cannot be undone.`, async () => {
+                    try {
+                        const res = await fetch(`/api/admin/dropdown-options/${id}`, { method: 'DELETE' });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showToast('Option deleted', 'success');
+                            fetchOptions();
+                        } else {
+                            showToast(data.error || 'Failed to delete', 'error');
+                        }
+                    } catch (err) {
+                        showToast('An error occurred', 'error');
+                    }
+                });
+            }
+
+            // Software Management Logic
+            async function openSoftwareModal(labId, labName) {
+                document.getElementById('currentLabId').value = labId;
+                document.getElementById('softwareLabName').textContent = labName;
+                document.getElementById('newSoftwareName').value = '';
+                await fetchLabSoftware(labId);
+                document.getElementById('softwareModal').showModal();
+            }
+
+            async function fetchLabSoftware(labId) {
+                const list = document.getElementById('softwareList');
+                list.innerHTML = '<div class="flex justify-center p-4"><span class="loading loading-spinner loading-sm opacity-20"></span></div>';
+                
+                try {
+                    const res = await fetch(`/api/lab-softwares/${labId}`);
+                    const softwares = await res.json();
+                    
+                    if (softwares.length === 0) {
+                        list.innerHTML = '<p class="text-center py-8 opacity-40 text-xs italic font-bold">No software added yet</p>';
+                        return;
+                    }
+
+                    list.innerHTML = softwares.map(s => `
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-base-200/50 border border-base-content/5 group/sw">
+                            <span class="font-bold text-sm">${s.software_name}</span>
+                            <button onclick="deleteSoftware(${s.id})" class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover/sw:opacity-100 hover:bg-error/10 hover:text-error transition-all">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                } catch (err) {
+                    list.innerHTML = '<p class="text-center py-4 text-error text-xs">Failed to load software</p>';
+                }
+            }
+
+            async function addSoftware() {
+                const labId = document.getElementById('currentLabId').value;
+                const name = document.getElementById('newSoftwareName').value.trim();
+                
+                if (!name) return showToast('Enter software name', 'warning');
+
+                try {
+                    const res = await fetch('/api/admin/lab-softwares', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lab_id: labId, software_name: name })
+                    });
+                    
+                    if (res.ok) {
+                        document.getElementById('newSoftwareName').value = '';
+                        fetchLabSoftware(labId);
+                        showToast('Software added', 'success');
+                    } else {
+                        const data = await res.json();
+                        showToast(data.error || 'Failed', 'error');
+                    }
+                } catch (err) {
+                    showToast('Error occurred', 'error');
+                }
+            }
+
+            async function deleteSoftware(id) {
+                const labId = document.getElementById('currentLabId').value;
+                try {
+                    const res = await fetch(`/api/admin/lab-softwares/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        fetchLabSoftware(labId);
+                        showToast('Software removed', 'success');
+                    }
+                } catch (err) {
+                    showToast('Error occurred', 'error');
+                }
+            }
+
+            function logout() {
+                fetch('/logout', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(d => { if (d.success) window.location.href = d.redirectUrl; });
+            }
+        </script>
+    </body>
+</html>

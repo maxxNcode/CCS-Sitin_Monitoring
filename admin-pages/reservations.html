@@ -189,29 +189,102 @@
                     class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700"
                 >
                     <div class="flex flex-col gap-8">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <h1 class="text-4xl font-black tracking-tight italic uppercase">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div class="flex-1">
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase leading-none mb-2">
                                     Manage <span class="text-primary not-italic">Reservations</span>
                                 </h1>
                                 <p class="text-base-content/60 font-medium">Review and respond to student sit-in requests.</p>
                             </div>
                             
-                            <div class="flex items-center gap-4">
-                                <div class="stats shadow-sm bg-base-100 border border-base-content/5">
-                                    <div class="stat py-2 px-4">
-                                        <div class="stat-title text-[10px] uppercase font-black opacity-40">Pending</div>
-                                        <div class="stat-value text-xl font-black text-warning" id="pending-count">0</div>
+                            <!-- Compact System Control Banner -->
+                            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden flex-none md:min-w-[400px]">
+                                <div class="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-base-content/5">
+                                    <!-- Reservation Toggle -->
+                                    <div class="p-4 flex-1 flex items-center justify-between gap-6">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                                <i class="fa-solid fa-calendar-check text-xs"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-black italic uppercase text-[10px] tracking-tighter leading-none mb-1">Student Reservations</p>
+                                                <p class="text-[9px] opacity-40 font-bold uppercase tracking-widest">Global Status</p>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" id="reservationToggle" class="toggle toggle-primary toggle-sm" onchange="toggleReservations(this.checked)" />
+                                    </div>
+
+                                    <!-- Quick Stats/Advanced -->
+                                    <div class="p-4 bg-base-200/30 flex items-center gap-4">
+                                        <div class="flex flex-col items-center px-4 border-r border-base-content/5">
+                                            <span class="text-[9px] uppercase font-black opacity-40">Pending</span>
+                                            <span class="text-lg font-black text-warning leading-none" id="pending-count">0</span>
+                                        </div>
+                                        <button class="btn btn-ghost btn-xs rounded-lg hover:bg-error hover:text-error-content transition-all" onclick="showConfirm('Maintenance Mode', 'This will log out all users. Continue?', () => {})" title="Maintenance Mode">
+                                            <i class="fa-solid fa-wrench text-[10px]"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Search & Filter Toolbar -->
+                        <div class="card bg-base-100 border border-base-content/5 p-4">
+                            <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3">
+
+                                <!-- Search input -->
+                                <div class="relative group flex-1 min-w-[200px]">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
+                                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        id="searchInput"
+                                        placeholder="Search by student name or ID…"
+                                        oninput="applyFilters()"
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold text-sm"
+                                    />
+                                </div>
+
+                                <!-- Status filter -->
+                                <select
+                                    id="statusFilter"
+                                    onchange="applyFilters()"
+                                    class="select select-bordered rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold text-sm min-w-[150px]"
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                    <option value="Checked In">Checked In</option>
+                                </select>
+
+                                <!-- Date filter -->
+                                <input
+                                    type="date"
+                                    id="dateFilter"
+                                    onchange="applyFilters()"
+                                    class="input input-bordered rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold text-sm"
+                                />
+
+                                <!-- Clear button -->
+                                <button
+                                    onclick="clearFilters()"
+                                    class="btn btn-ghost btn-sm rounded-2xl font-bold border border-base-content/10 hover:border-error hover:text-error transition-all"
+                                >
+                                    <i class="fa-solid fa-xmark mr-1"></i> Clear
+                                </button>
+
+                                <!-- Results count -->
+                                <span id="results-count" class="text-[11px] font-black uppercase tracking-widest opacity-40 ml-auto whitespace-nowrap"></span>
+                            </div>
+                        </div>
+
                         <!-- Reservations Table -->
-                        <div class="card bg-base-100 border border-base-content/5 overflow-hidden">
+                        <div class="card bg-base-100 border border-base-content/5 overflow-hidden rounded-3xl">
                             <div class="overflow-x-auto">
                                 <table class="table table-zebra w-full" id="reservations-table">
-                                    <thead class="bg-base-200/50">
+                                    <thead class="bg-base-200">
                                         <tr class="text-[10px] uppercase tracking-widest font-black opacity-50">
                                             <th>Student</th>
                                             <th>Laboratory</th>
@@ -308,83 +381,122 @@
 
                 // Initial Setup
                 fetchReservations();
+                loadSystemSettings();
             });
+
+            // Raw data store for client-side filtering
+            let allReservations = [];
 
             async function fetchReservations() {
                 try {
                     const res = await fetch("/api/admin/reservations");
                     const data = await res.json();
-                    const container = document.getElementById("reservations-list");
-                    const pendingEl = document.getElementById("pending-count");
-                    
-                    if (!data || data.length === 0) {
-                        container.innerHTML = `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">No reservations found</td></tr>`;
-                        pendingEl.innerText = "0";
-                        return;
-                    }
+                    allReservations = data || [];
 
-                    const pendingCount = data.filter(r => r.status === 'Pending').length;
-                    pendingEl.innerText = pendingCount;
+                    const pendingCount = allReservations.filter(r => r.status === 'Pending').length;
+                    document.getElementById("pending-count").innerText = pendingCount;
 
-                    container.innerHTML = data.map(r => {
-                        const resDateTime = new Date(`${r.reservationDate}T${r.reservationTime}`);
-                        const now = new Date();
-                        const isFuture = resDateTime > now;
-
-                        return `
-                        <tr class="hover:bg-base-200/30 transition-colors group">
-                            <td>
-                                <div class="flex items-center gap-3">
-                                    <div class="avatar">
-                                        <div class="mask mask-squircle h-10 w-10 bg-base-200">
-                                            <img src="${r.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.studentName}`}" alt="Avatar" class="w-full h-full object-cover" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="font-black text-sm">${r.studentName}</div>
-                                        <div class="text-[10px] opacity-40 font-bold uppercase tracking-tighter">${r.idNumber}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="badge badge-ghost border-base-content/10 font-bold text-[10px] uppercase">${r.lab}</div>
-                            </td>
-                            <td>
-                                <div class="font-bold text-sm text-primary">${r.reservationDate}</div>
-                                <div class="text-[10px] opacity-40 font-black uppercase">${r.reservationTime}</div>
-                            </td>
-                            <td>
-                                <p class="text-sm font-medium opacity-70 truncate max-w-[200px]" title="${r.purpose}">${r.purpose}</p>
-                            </td>
-                            <td>
-                                <div class="badge ${r.status === 'Pending' ? 'badge-warning' : r.status === 'Approved' ? 'badge-success' : r.status === 'Checked In' ? 'badge-info' : 'badge-error'} badge-sm font-black italic uppercase text-[9px] px-3">
-                                    ${r.status}
-                                </div>
-                            </td>
-                            <td class="text-right">
-                                ${r.status === 'Pending' ? `
-                                    <div class="flex justify-end gap-2 transition-all">
-                                        <button onclick="handleAction(${r.id}, 'Approved')" class="btn btn-success btn-xs rounded-lg font-black italic uppercase text-[9px] ">Approve</button>
-                                        <button onclick="handleAction(${r.id}, 'Rejected')" class="btn btn-error btn-xs rounded-lg font-black italic uppercase text-[9px] ">Reject</button>
-                                    </div>
-                                ` : r.status === 'Approved' ? `
-                                    <div class="flex justify-end gap-2 transition-all">
-                                        <button onclick="${isFuture ? '' : `handleCheckIn(${r.id})`}" 
-                                                class="btn ${isFuture ? 'btn-ghost opacity-40' : 'btn-primary'} btn-xs rounded-lg font-black italic uppercase text-[9px] ${isFuture ? '' : ''}"
-                                                ${isFuture ? `title="Scheduled for ${r.reservationDate} ${r.reservationTime}"` : ''}>
-                                            <i class="fa-solid ${isFuture ? 'fa-clock' : 'fa-right-to-bracket'} mr-1"></i> 
-                                            ${isFuture ? 'Upcoming' : 'Check In'}
-                                        </button>
-                                    </div>
-                                ` : `
-                                    <span class="text-[10px] opacity-20 font-black uppercase italic tracking-widest">${r.status === 'Checked In' ? 'In Session' : 'Completed'}</span>
-                                `}
-                            </td>
-                        </tr>
-                    `}).join('');
+                    applyFilters();
                 } catch (error) {
                     console.error("Error fetching reservations:", error);
+                    document.getElementById("reservations-list").innerHTML =
+                        `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">Failed to load reservations</td></tr>`;
                 }
+            }
+
+            function applyFilters() {
+                const search  = document.getElementById('searchInput').value.trim().toLowerCase();
+                const status  = document.getElementById('statusFilter').value;
+                const date    = document.getElementById('dateFilter').value;
+
+                const filtered = allReservations.filter(r => {
+                    const matchSearch = !search ||
+                        (r.studentName || '').toLowerCase().includes(search) ||
+                        (r.idNumber    || '').toLowerCase().includes(search);
+                    const matchStatus = !status || r.status === status;
+                    const matchDate   = !date   || r.reservationDate === date;
+                    return matchSearch && matchStatus && matchDate;
+                });
+
+                renderReservations(filtered);
+            }
+
+            function clearFilters() {
+                document.getElementById('searchInput').value  = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('dateFilter').value   = '';
+                applyFilters();
+            }
+
+            function renderReservations(data) {
+                const container  = document.getElementById('reservations-list');
+                const countEl    = document.getElementById('results-count');
+
+                countEl.innerText = data.length
+                    ? `${data.length} result${data.length !== 1 ? 's' : ''}`
+                    : '';
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">No reservations found</td></tr>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(r => {
+                    const resDateTime = new Date(`${r.reservationDate}T${r.reservationTime}`);
+                    const now = new Date();
+                    const isFuture = resDateTime > now;
+
+                    return `
+                    <tr class="hover:bg-base-200/30 transition-colors group">
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="avatar">
+                                    <div class="mask mask-squircle h-10 w-10 bg-base-200">
+                                        <img src="${r.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.studentName}`}" alt="Avatar" class="w-full h-full object-cover" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-black text-sm">${r.studentName}</div>
+                                    <div class="text-[10px] opacity-40 font-bold uppercase tracking-tighter">${r.idNumber}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="badge badge-ghost border-base-content/10 font-bold text-[10px] uppercase">${r.lab}</div>
+                        </td>
+                        <td>
+                            <div class="font-bold text-sm text-primary">${r.reservationDate}</div>
+                            <div class="text-[10px] opacity-40 font-black uppercase">${r.reservationTime}</div>
+                        </td>
+                        <td>
+                            <p class="text-sm font-medium opacity-70 truncate max-w-[200px]" title="${r.purpose}">${r.purpose}</p>
+                        </td>
+                        <td>
+                            <div class="badge ${r.status === 'Pending' ? 'badge-warning' : r.status === 'Approved' ? 'badge-success' : r.status === 'Checked In' ? 'badge-info' : 'badge-error'} badge-sm font-black italic uppercase text-[9px] px-3">
+                                ${r.status}
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            ${r.status === 'Pending' ? `
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="handleAction(${r.id}, 'Approved')" class="btn btn-success btn-xs rounded-lg font-black italic uppercase text-[9px]">Approve</button>
+                                    <button onclick="handleAction(${r.id}, 'Rejected')" class="btn btn-error btn-xs rounded-lg font-black italic uppercase text-[9px]">Reject</button>
+                                </div>
+                            ` : r.status === 'Approved' ? `
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="${isFuture ? '' : `handleCheckIn(${r.id})`}"
+                                            class="btn ${isFuture ? 'btn-ghost opacity-40' : 'btn-primary'} btn-xs rounded-lg font-black italic uppercase text-[9px]"
+                                            ${isFuture ? `title="Scheduled for ${r.reservationDate} ${r.reservationTime}"` : ''}>
+                                        <i class="fa-solid ${isFuture ? 'fa-clock' : 'fa-right-to-bracket'} mr-1"></i>
+                                        ${isFuture ? 'Upcoming' : 'Check In'}
+                                    </button>
+                                </div>
+                            ` : `
+                                <span class="text-[10px] opacity-20 font-black uppercase italic tracking-widest">${r.status === 'Checked In' ? 'In Session' : 'Completed'}</span>
+                            `}
+                        </td>
+                    </tr>
+                `}).join('');
             }
 
             async function handleAction(id, action) {
@@ -486,6 +598,35 @@
             // Initial call
             updateNotifications();
             setInterval(updateNotifications, 30000);
+
+            async function loadSystemSettings() {
+                try {
+                    const res = await fetch('/api/admin/settings');
+                    const settings = await res.json();
+                    document.getElementById('reservationToggle').checked = settings.reservationsEnabled === 'true';
+                } catch (err) {
+                    console.error('Error loading settings:', err);
+                }
+            }
+
+            async function toggleReservations(enabled) {
+                try {
+                    const res = await fetch('/api/admin/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: 'reservationsEnabled', value: enabled })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(`Reservations ${enabled ? 'Enabled' : 'Disabled'}`, 'success');
+                    } else {
+                        showToast('Failed to update setting', 'error');
+                    }
+                } catch (err) {
+                    console.error('Error updating setting:', err);
+                    showToast('Connection failed', 'error');
+                }
+            }
 
             function logout() {
                 fetch("/logout", { method: "POST" })

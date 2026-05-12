@@ -538,14 +538,49 @@
                                         </div>
                                     </div>
                                     <div class="card-actions justify-end mt-4">
-                                        <button
-                                            onclick="reservation_modal.showModal()"
+                                        <a
+                                            href="/reservation"
                                             class="btn btn-sm btn-ghost bg-primary-content/10 hover:bg-primary-content/20 border-none"
                                             >Reserve Session
                                             <i
                                                 class="fa-solid fa-arrow-right ml-2 text-[10px]"
-                                            ></i
-                                        ></button>
+                                            ></i></a>
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sit-in Summary Card -->
+                            <div class="card bg-base-100/80 backdrop-blur-xl border border-base-content/10 mt-6 shadow-xl overflow-hidden group">
+                                <div class="card-body p-6">
+                                    <h2 class="text-lg font-black flex items-center gap-3 mb-6">
+                                        <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs">
+                                            <i class="fa-solid fa-chart-pie"></i>
+                                        </div>
+                                        Sit-in Summary
+                                    </h2>
+                                    
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <!-- Total Hours -->
+                                        <div class="p-4 rounded-2xl bg-base-200/50 border border-base-content/5 hover:border-primary/20 transition-colors">
+                                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40 mb-1">Total Hours</p>
+                                            <h4 id="summary-total-hours" class="text-2xl font-black text-primary">0.0</h4>
+                                        </div>
+                                        <!-- Total Sessions -->
+                                        <div class="p-4 rounded-2xl bg-base-200/50 border border-base-content/5 hover:border-primary/20 transition-colors">
+                                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40 mb-1">Sessions</p>
+                                            <h4 id="summary-total-sessions" class="text-2xl font-black text-primary">0</h4>
+                                        </div>
+                                        <!-- Average Duration -->
+                                        <div class="p-4 rounded-2xl bg-base-200/50 border border-base-content/5 hover:border-primary/20 transition-colors">
+                                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40 mb-1">Avg Duration</p>
+                                            <h4 id="summary-avg-duration" class="text-2xl font-black text-primary">0m</h4>
+                                        </div>
+                                        <!-- Longest Session -->
+                                        <div class="p-4 rounded-2xl bg-base-200/50 border border-base-content/5 hover:border-primary/20 transition-colors">
+                                            <p class="text-[9px] uppercase font-black tracking-widest opacity-40 mb-1">Longest</p>
+                                            <h4 id="summary-longest-session" class="text-2xl font-black text-primary">0m</h4>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -611,7 +646,7 @@
 
                                     <div class="space-y-2">
                                         <div
-                                            class="collapse collapse-plus bg-base-200/50 border border-base-content/5"
+                                            class="collapse collapse-plus bg-base-200 border border-base-content/5"
                                         >
                                             <input
                                                 type="radio"
@@ -642,7 +677,7 @@
                                         </div>
 
                                         <div
-                                            class="collapse collapse-plus bg-base-200/50 border border-base-content/5"
+                                            class="collapse collapse-plus bg-base-200 border border-base-content/5"
                                         >
                                             <input
                                                 type="radio"
@@ -674,7 +709,7 @@
                                         </div>
 
                                         <div
-                                            class="collapse collapse-plus bg-base-200/50 border border-base-content/5"
+                                            class="collapse collapse-plus bg-base-200 border border-base-content/5"
                                         >
                                             <input
                                                 type="radio"
@@ -705,7 +740,7 @@
                                         </div>
 
                                         <div
-                                            class="collapse collapse-plus bg-base-200/50 border border-base-content/5"
+                                            class="collapse collapse-plus bg-base-200 border border-base-content/5"
                                         >
                                             <input
                                                 type="radio"
@@ -762,24 +797,27 @@
                     <form id="reservationForm" class="space-y-4">
                         <div class="form-control">
                             <label class="label pt-0 pb-1">
-                                <span
-                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                    >Select Laboratory</span
-                                >
+                                <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Select Laboratory</span>
                             </label>
                             <select
                                 id="resLab"
-                                class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                 required
                             >
                                 <option value="" disabled selected>
                                     Choose Lab Room
                                 </option>
-                                <option value="Lab 524">Lab 524</option>
-                                <option value="Lab 526">Lab 526</option>
-                                <option value="Lab 542">Lab 542</option>
-                                <option value="Mac Lab">Mac Lab</option>
                             </select>
+                        </div>
+
+                        <!-- Software Availability Section -->
+                        <div id="labSoftwareSection" class="hidden animate-in fade-in slide-in-from-top-2 duration-500">
+                            <label class="label pt-0 pb-1">
+                                <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Available Software</span>
+                            </label>
+                            <div id="softwareListDisplay" class="flex flex-wrap gap-1.5 p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                                <!-- Populated by JS -->
+                            </div>
                         </div>
 
                         <div class="form-control">
@@ -789,13 +827,13 @@
                                     >Purpose</span
                                 >
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 id="resPurpose"
-                                placeholder="e.g. SQL Database Activity"
-                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                 required
-                            />
+                            >
+                                <option value="" disabled selected>Select Purpose</option>
+                            </select>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -809,7 +847,7 @@
                                 <input
                                     type="date"
                                     id="resDate"
-                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                    class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                     required
                                 />
                             </div>
@@ -823,7 +861,7 @@
                                 <input
                                     type="time"
                                     id="resTime"
-                                    class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                    class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                     required
                                 />
                             </div>
@@ -921,6 +959,61 @@
                     })
                     .catch(() => (window.location.href = "/login"));
 
+                // Populate dynamic dropdowns
+                fetch('/api/dropdown-options')
+                    .then(r => r.json())
+                    .then(data => {
+                        const labSelect = document.getElementById('resLab');
+                        if (labSelect && data.lab) {
+                            data.lab.forEach(opt => {
+                                const option = document.createElement('option');
+                                option.value = opt.value;
+                                option.textContent = opt.value;
+                                option.dataset.id = opt.id;
+                                labSelect.appendChild(option);
+                            });
+                        }
+                        const purposeSelect = document.getElementById('resPurpose');
+                        if (purposeSelect && data.purpose) {
+                            data.purpose.forEach(opt => {
+                                purposeSelect.innerHTML += `<option value="${opt.value}">${opt.value}</option>`;
+                            });
+                        }
+                    })
+                    .catch(err => console.error('Error loading dropdown options:', err));
+
+                // Software Availability Fetch Logic
+                document.getElementById('resLab').addEventListener('change', async (e) => {
+                    const selectedOption = e.target.options[e.target.selectedIndex];
+                    const labId = selectedOption.dataset.id;
+                    const section = document.getElementById('labSoftwareSection');
+                    const list = document.getElementById('softwareListDisplay');
+
+                    if (!labId) {
+                        section.classList.add('hidden');
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`/api/lab-softwares/${labId}`);
+                        const softwares = await res.json();
+
+                        section.classList.remove('hidden');
+                        if (softwares.length === 0) {
+                            list.innerHTML = '<span class="text-[10px] font-bold opacity-40 uppercase tracking-widest py-1">No software data listed</span>';
+                        } else {
+                            list.innerHTML = softwares.map(s => `
+                                <div class="badge badge-primary badge-outline gap-1 py-3 px-3 rounded-lg border-primary/20 bg-primary/5">
+                                    <i class="fa-solid fa-check text-[8px]"></i>
+                                    <span class="text-[10px] font-bold">${s.software_name}</span>
+                                </div>
+                            `).join('');
+                        }
+                    } catch (err) {
+                        console.error('Error fetching software:', err);
+                    }
+                });
+
                 // Initial Theme Setup
                 const currentTheme = localStorage.getItem("theme") || "forest";
                 document.documentElement.setAttribute(
@@ -941,6 +1034,35 @@
                             localStorage.setItem("theme", theme);
                         });
                     });
+
+                // Reservation Form Submission
+                const reservationForm = document.getElementById("reservationForm");
+                if (reservationForm) {
+                    reservationForm.addEventListener("submit", (e) => {
+                        e.preventDefault();
+                        const formData = {
+                            lab: document.getElementById("resLab").value,
+                            purpose: document.getElementById("resPurpose").value,
+                            date: document.getElementById("resDate").value,
+                            time: document.getElementById("resTime").value,
+                        };
+
+                        fetch("/api/student/reserve", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(formData),
+                        })
+                        .then((r) => r.json())
+                        .then((data) => {
+                            if (data.success) {
+                                showSuccessModal("Success", data.message);
+                                reservation_modal.close();
+                            } else {
+                                showErrorModal("Error", data.error);
+                            }
+                        });
+                    });
+                }
             });
 
             // Announcements (Premium Activity Feed V4)
@@ -953,7 +1075,7 @@
                         const div = document.createElement("div");
                         div.className = "relative group";
                         div.innerHTML = `
-                        <div class="p-5 rounded-box bg-base-200/50 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                        <div class="p-5 rounded-box bg-base-200 border border-base-content/5 group-hover:bg-base-100 group-hover:shadow group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
                             <!-- Header Area -->
                             <div class="flex justify-between items-center mb-3">
                                 <span class="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1 opacity-70">
@@ -1033,7 +1155,7 @@
                         },
                     ];
 
-                    container.innerHTML = fields
+                        container.innerHTML = fields
                         .map(
                             (f) => `
                     <div class="flex items-center gap-4 py-3 px-4 rounded-xl hover:bg-base-200 transition-all duration-300">
@@ -1050,6 +1172,18 @@
                         .join("");
                 });
 
+            // Sit-in Summary
+            fetch("/api/student/summary")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) return;
+                    document.getElementById('summary-total-hours').innerText = data.totalHours;
+                    document.getElementById('summary-total-sessions').innerText = data.sessionCount;
+                    document.getElementById('summary-avg-duration').innerText = data.avgDuration + 'm';
+                    document.getElementById('summary-longest-session').innerText = data.longestSession + 'm';
+                })
+                .catch(err => console.error('Error fetching summary:', err));
+
             function logout() {
                 fetch("/logout", { method: "POST" })
                     .then((r) => r.json())
@@ -1061,32 +1195,6 @@
 
 
 
-            document
-                .getElementById("reservationForm")
-                .addEventListener("submit", (e) => {
-                    e.preventDefault();
-                    const formData = {
-                        lab: document.getElementById("resLab").value,
-                        purpose: document.getElementById("resPurpose").value,
-                        date: document.getElementById("resDate").value,
-                        time: document.getElementById("resTime").value,
-                    };
-
-                    fetch("/api/student/reserve", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(formData),
-                    })
-                        .then((r) => r.json())
-                        .then((data) => {
-                            if (data.success) {
-                                showSuccessModal("Success", data.message);
-                                reservation_modal.close();
-                            } else {
-                                showErrorModal("Error", data.error);
-                            }
-                        });
-                });
         </script>
     </body>
 </html>

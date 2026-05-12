@@ -280,7 +280,7 @@
                     }
                     const maxVisits = Math.max(...data.map(d => d.visits));
                     container.innerHTML = data.map((d, i) => `
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-base-200/50 border border-base-content/5">
+                        <div class="flex items-center gap-3 p-3 rounded-xl bg-base-200 border border-base-content/5">
                             <div class="badge badge-soft ${i === 0 ? 'badge-primary' : i === 1 ? 'badge-secondary' : 'badge-ghost'}">${i + 1}</div>
                             <div class="flex-1">
                                 <div class="flex justify-between text-sm font-bold mb-1">

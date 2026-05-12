@@ -70,7 +70,7 @@
                                         type="text"
                                         id="searchIdNumber"
                                         placeholder="e.g. 21-1234-567"
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                     />
                                 </div>
                             </div>
@@ -109,7 +109,7 @@
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">ID Number</span>
                                         </label>
-                                        <input type="text" id="formIdNumber" placeholder="Enter ID" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        <input type="text" id="formIdNumber" placeholder="Enter ID" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
 
                                     <!-- Remaining Sessions Highlight -->
@@ -123,7 +123,7 @@
                                         <label class="label pt-0 pb-1">
                                             <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student Name</span>
                                         </label>
-                                        <input type="text" id="formStudentName" placeholder="Enter Name" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        <input type="text" id="formStudentName" placeholder="Enter Name" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
                                 </div>
 
@@ -134,19 +134,17 @@
                                     <label class="label pt-0 pb-1">
                                         <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Purpose</span>
                                     </label>
-                                    <input type="text" id="formPurpose" placeholder="e.g. Java Programming, Assignment" class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    <select id="formPurpose" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold">
+                                        <option value="" disabled selected>Select Purpose</option>
+                                    </select>
                                 </div>
 
                                 <div class="form-control">
                                     <label class="label pt-0 pb-1">
                                         <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Laboratory</span>
                                     </label>
-                                    <select id="formLab" class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold">
+                                    <select id="formLab" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold">
                                         <option value="" disabled selected>Select Lab Room</option>
-                                        <option value="Lab 524">Lab 524</option>
-                                        <option value="Lab 526">Lab 526</option>
-                                        <option value="Lab 542">Lab 542</option>
-                                        <option value="Mac Lab">Mac Lab</option>
                                     </select>
                                 </div>
                             </div>
@@ -186,6 +184,9 @@
                     </a>
                     <a href="/admin/leaderboard" class="btn btn-ghost btn-sm">
                         <i class="fa-solid fa-trophy mr-2"></i>Leaderboard
+                    </a>
+                    <a href="/admin/manage-dropdowns" class="btn btn-ghost btn-sm">
+                        <i class="fa-solid fa-sliders mr-2"></i>Manage
                     </a>
 
                     <div class="dropdown dropdown-end ml-4">
@@ -279,7 +280,7 @@
                                 <div id="statistics" class="  ">
 
                                     <div id="statistics-data"
-                                        class="stats stats-vertical w-full bg-base-200/50 backdrop-blur-md border border-base-content/10 shadow-inner flex">
+                                        class="stats stats-vertical w-full bg-base-200 backdrop-blur-md border border-base-content/10 shadow-inner flex">
                                         <!-- Registered Students -->
                                         <div class="stat">
                                             <div class="stat-figure text-primary">
@@ -319,7 +320,7 @@
                                     </div>
 
                                     <div class="graph-view mt-6">
-                                        <div class="card bg-base-200/50 border border-base-content/5 shadow-inner">
+                                        <div class="card bg-base-200 border border-base-content/5 shadow-inner">
                                             <div class="card-body p-4">
                                                 <h3
                                                     class="text-[10px] font-black uppercase tracking-[4px] opacity-40 mb-4 px-2">
@@ -346,8 +347,8 @@
                                     <div class="create-announcements pb-6 border-b border-base-content/5">
                                         <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40 mb-4">Create New</h3>
                                         <input type="text" placeholder="Title" id="announcementTitle"
-                                            class="input input-bordered w-full mb-2 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
-                                        <textarea class="textarea textarea-bordered resize-y w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            class="input input-bordered w-full mb-2 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        <textarea class="textarea textarea-bordered resize-y w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             placeholder="Announcement..." id="announcementDescription"></textarea>
 
                                         <button class="btn btn-primary mt-4 w-full rounded-2xl font-black italic uppercase" onclick="addAnnouncement()">
@@ -360,13 +361,13 @@
                                         <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40">Manage & Filter</h3>
                                         <div class="flex items-center gap-3">
                                             <div class="relative group flex-1">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                                     <i class="fa-solid fa-magnifying-glass"></i>
                                                 </div>
                                                 <input type="text" id="announcementSearch" placeholder="Search announcements..." 
-                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" oninput="applyAnnouncementFilters()" />
+                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" oninput="applyAnnouncementFilters()" />
                                             </div>
-                                            <input type="date" id="announcementDateFilter" class="input input-bordered rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" onchange="applyAnnouncementFilters()" />
+                                            <input type="date" id="announcementDateFilter" class="input input-bordered rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" onchange="applyAnnouncementFilters()" />
                                         </div>
                                     </div>
 
@@ -398,6 +399,7 @@
                 <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
                 <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
                 <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                <li><a href="/admin/manage-dropdowns"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
                 <li class="mt-auto">
                     <button onclick="logout()" class="btn btn-error btn-outline mt-4">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
@@ -408,13 +410,41 @@
     </div>
 
     <script>
+        // Populate dynamic dropdowns
+        function populateDropdowns() {
+            fetch('/api/dropdown-options')
+                .then(r => r.json())
+                .then(data => {
+                    // Populate purpose dropdown
+                    const purposeSelect = document.getElementById('formPurpose');
+                    if (purposeSelect && data.purpose) {
+                        purposeSelect.innerHTML = '<option value="" disabled selected>Select Purpose</option>';
+                        data.purpose.forEach(opt => {
+                            purposeSelect.innerHTML += `<option value="${opt.value}">${opt.value}</option>`;
+                        });
+                    }
+                    // Populate lab dropdown
+                    const labSelect = document.getElementById('formLab');
+                    if (labSelect && data.lab) {
+                        labSelect.innerHTML = '<option value="" disabled selected>Select Lab Room</option>';
+                        data.lab.forEach(opt => {
+                            labSelect.innerHTML += `<option value="${opt.value}">${opt.value}</option>`;
+                        });
+                    }
+                })
+                .catch(err => console.error('Error loading dropdown options:', err));
+        }
+
         // Check session
         window.addEventListener('DOMContentLoaded', () => {
             fetch('/check-session')
                 .then(r => r.json())
                 .then(d => { 
                     if (!d.loggedIn || d.role !== 'admin') window.location.href = '/login'; 
-                    else fetchDashboardStats();
+                    else { 
+                        fetchDashboardStats(); 
+                        populateDropdowns(); 
+                    }
                 })
                 .catch(() => window.location.href = '/login');
 
@@ -485,7 +515,7 @@
                 const div = document.createElement('div');
                 div.className = `relative group ${isHidden ? 'opacity-60' : ''}`;
                 div.innerHTML = `
-                    <div class="p-5 rounded-box bg-base-200/50 border ${isHidden ? 'border-dashed border-base-content/20' : 'border-base-content/5'} group-hover:bg-base-100 group-hover:shadow group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
+                    <div class="p-5 rounded-box bg-base-200 border ${isHidden ? 'border-dashed border-base-content/20' : 'border-base-content/5'} group-hover:bg-base-100 group-hover:shadow group-hover:shadow-primary/5 transition-all duration-500 group-hover:-translate-y-1">
                         <!-- Header Area -->
                         <div class="flex justify-between items-center mb-3">
                             <span class="text-[10px] font-black uppercase tracking-widest ${isHidden ? 'text-base-content/50' : 'text-primary'} flex items-center gap-1 opacity-70">

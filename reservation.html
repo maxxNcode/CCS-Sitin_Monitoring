@@ -1,0 +1,349 @@
+<!doctype html>
+<html data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Make a Reservation - CCS SIT-IN</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="/notify.js"></script>
+    </head>
+
+    <body class="bg-base-200 min-h-screen">
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Navbar -->
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm">
+                    <div class="flex-none md:hidden">
+                        <label for="my-drawer" class="btn btn-ghost btn-square">
+                            <i class="fa-solid fa-bars text-xl"></i>
+                        </label>
+                    </div>
+
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                                <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <a href="/homepage" class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN</a>
+                    </div>
+                </div>
+
+                <main class="flex-1 p-4 md:p-8">
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Header -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            <div>
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase">Make a <span class="text-primary not-italic">Reservation</span></h1>
+                                <p class="opacity-60 font-medium">Book your lab session in advance to guarantee a slot.</p>
+                            </div>
+                            <a href="/homepage" class="btn btn-ghost btn-sm gap-2 rounded-xl">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                Back to Home
+                            </a>
+                        </div>
+
+                        <!-- Status Notice -->
+                        <div id="disabled-notice" class="hidden mb-8">
+                            <div class="alert alert-error bg-error/10 border-error/20 text-error p-6 rounded-3xl flex flex-col items-center text-center gap-4">
+                                <div class="w-16 h-16 rounded-full bg-error/20 flex items-center justify-center text-2xl animate-bounce">
+                                    <i class="fa-solid fa-calendar-xmark"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-black uppercase italic">Reservations are Closed</h3>
+                                    <p class="font-bold opacity-80 mt-1">The administrator has temporarily disabled new reservation requests. Please check back later or contact the lab supervisor.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reservation Form Card -->
+                        <div id="reservation-card" class="card bg-base-100 border border-base-content/10 shadow-2xl overflow-hidden rounded-3xl">
+                            <div class="grid md:grid-cols-5">
+                                <!-- Left Decoration -->
+                                <div class="md:col-span-2 bg-primary p-8 text-primary-content flex flex-col justify-between relative overflow-hidden">
+                                    <div class="absolute -right-12 -top-12 opacity-10 rotate-12">
+                                        <i class="fa-solid fa-calendar-check text-[200px]"></i>
+                                    </div>
+                                    
+                                    <div class="relative z-10">
+                                        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6 backdrop-blur-md">
+                                            <i class="fa-solid fa-calendar-day text-xl"></i>
+                                        </div>
+                                        <h2 class="text-3xl font-black italic uppercase leading-none mb-4">Plan Your <br> Workload</h2>
+                                        <p class="opacity-80 font-medium text-sm leading-relaxed">Ensure you have a dedicated machine for your programming tasks, thesis development, or personal study.</p>
+                                    </div>
+
+                                    <div class="relative z-10 space-y-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-[10px]">
+                                                <i class="fa-solid fa-check"></i>
+                                            </div>
+                                            <span class="text-xs font-bold uppercase tracking-widest">Guaranteed Slot</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center text-[10px]">
+                                                <i class="fa-solid fa-check"></i>
+                                            </div>
+                                            <span class="text-xs font-bold uppercase tracking-widest">Priority Software</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Form -->
+                                <div class="md:col-span-3 p-8">
+                                    <form id="reservationForm" class="space-y-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div class="form-control">
+                                                <label class="label pt-0">
+                                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Laboratory Room</span>
+                                                </label>
+                                                <select id="resLab" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold transition-all" required>
+                                                    <option value="" disabled selected>Choose Lab Room</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-control">
+                                                <label class="label pt-0">
+                                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Sit-in Purpose</span>
+                                                </label>
+                                                <select id="resPurpose" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold transition-all" required>
+                                                    <option value="" disabled selected>Select Purpose</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Software Availability Section -->
+                                        <div id="labSoftwareSection" class="hidden animate-in fade-in slide-in-from-top-2 duration-500">
+                                            <label class="label pt-0 pb-1">
+                                                <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Available Software</span>
+                                            </label>
+                                            <div id="softwareListDisplay" class="flex flex-wrap gap-1.5 p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                                                <!-- Populated by JS -->
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-6">
+                                            <div class="form-control">
+                                                <label class="label pt-0">
+                                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Preferred Date</span>
+                                                </label>
+                                                <input type="date" id="resDate" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                            </div>
+                                            <div class="form-control">
+                                                <label class="label pt-0">
+                                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Arrival Time</span>
+                                                </label>
+                                                <input type="time" id="resTime" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                            </div>
+                                        </div>
+
+                                        <div class="pt-4">
+                                            <button type="submit" id="submitBtn" class="btn btn-primary w-full rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-lg shadow-primary/20">
+                                                Submit Reservation Request
+                                                <i class="fa-solid fa-paper-plane ml-2"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- My Recent Reservations -->
+                        <div class="mt-12">
+                            <h2 class="text-xl font-black italic uppercase mb-6 flex items-center gap-3">
+                                <i class="fa-solid fa-history text-primary"></i>
+                                My <span class="text-primary not-italic">Recent Requests</span>
+                            </h2>
+                            <div id="reservations-list" class="grid gap-4 md:grid-cols-2">
+                                <!-- Populated by JS -->
+                                <div class="skeleton h-32 w-full rounded-3xl opacity-10"></div>
+                                <div class="skeleton h-32 w-full rounded-3xl opacity-10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                    <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <span class="text-xl font-black">CCS SIT-IN</span>
+                    </li>
+                    <li><a href="/homepage"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
+                    <li><a href="/reservation" class="active"><i class="fa-solid fa-calendar-check mr-2"></i>Make Reservation</a></li>
+                    <li><a href="/student-history"><i class="fa-solid fa-clock-rotate-left mr-2"></i>History</a></li>
+                    <li class="mt-auto"><button onclick="logout()" class="btn btn-error btn-outline mt-4"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</button></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                checkStatus();
+                loadDropdowns();
+                loadReservations();
+
+                const currentTheme = localStorage.getItem("theme") || "forest";
+                document.documentElement.setAttribute("data-theme", currentTheme);
+            });
+
+            async function checkStatus() {
+                try {
+                    const res = await fetch('/api/settings/reservations-status');
+                    const data = await res.json();
+                    if (!data.enabled) {
+                        document.getElementById('disabled-notice').classList.remove('hidden');
+                        document.getElementById('reservation-card').classList.add('opacity-50', 'pointer-events-none');
+                        document.getElementById('submitBtn').disabled = true;
+                    }
+                } catch (err) {
+                    console.error('Error checking status:', err);
+                }
+            }
+
+            function loadDropdowns() {
+                fetch('/api/dropdown-options')
+                    .then(r => r.json())
+                    .then(data => {
+                        const labSelect = document.getElementById('resLab');
+                        if (labSelect && data.lab) {
+                            data.lab.forEach(opt => {
+                                const option = document.createElement('option');
+                                option.value = opt.value;
+                                option.textContent = opt.value;
+                                option.dataset.id = opt.id;
+                                labSelect.appendChild(option);
+                            });
+                        }
+                        const purposeSelect = document.getElementById('resPurpose');
+                        if (purposeSelect && data.purpose) {
+                            data.purpose.forEach(opt => {
+                                purposeSelect.innerHTML += `<option value="${opt.value}">${opt.value}</option>`;
+                            });
+                        }
+                    });
+
+                document.getElementById('resLab').addEventListener('change', async (e) => {
+                    const selectedOption = e.target.options[e.target.selectedIndex];
+                    const labId = selectedOption.dataset.id;
+                    const section = document.getElementById('labSoftwareSection');
+                    const list = document.getElementById('softwareListDisplay');
+
+                    if (!labId) {
+                        section.classList.add('hidden');
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`/api/lab-softwares/${labId}`);
+                        const softwares = await res.json();
+                        section.classList.remove('hidden');
+                        if (softwares.length === 0) {
+                            list.innerHTML = '<span class="text-[10px] font-bold opacity-40 uppercase tracking-widest py-1">No software data listed</span>';
+                        } else {
+                            list.innerHTML = softwares.map(s => `
+                                <div class="badge badge-primary badge-outline gap-1 py-3 px-3 rounded-lg border-primary/20 bg-primary/5">
+                                    <i class="fa-solid fa-check text-[8px]"></i>
+                                    <span class="text-[10px] font-bold">${s.software_name}</span>
+                                </div>
+                            `).join('');
+                        }
+                    } catch (err) {
+                        console.error('Error fetching software:', err);
+                    }
+                });
+            }
+
+            function loadReservations() {
+                fetch('/api/student/reservations')
+                    .then(r => r.json())
+                    .then(data => {
+                        const container = document.getElementById('reservations-list');
+                        if (data.length === 0) {
+                            container.innerHTML = `
+                                <div class="col-span-full py-12 text-center opacity-40">
+                                    <i class="fa-solid fa-calendar-day text-4xl mb-4"></i>
+                                    <p class="font-bold italic uppercase">No reservations found</p>
+                                </div>
+                            `;
+                            return;
+                        }
+                        container.innerHTML = data.slice(0, 4).map(r => `
+                            <div class="card bg-base-100 border border-base-content/10 p-5 rounded-3xl hover:border-primary/30 transition-all duration-500 group">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-base-200 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-content transition-colors duration-500">
+                                            <i class="fa-solid fa-building"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-lg">${r.lab}</h4>
+                                            <p class="text-[10px] font-black uppercase opacity-40 tracking-widest">${new Date(r.reservationDate).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <div class="badge ${getStatusBadgeClass(r.status)} font-black italic uppercase text-[10px] py-3 px-3 rounded-lg">${r.status}</div>
+                                </div>
+                                <div class="bg-base-200/50 rounded-2xl p-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-clock text-xs opacity-40"></i>
+                                        <span class="text-sm font-bold">${r.reservationTime}</span>
+                                    </div>
+                                    <span class="text-[10px] font-black uppercase opacity-30">${r.purpose}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    });
+            }
+
+            function getStatusBadgeClass(status) {
+                switch(status) {
+                    case 'Approved': return 'badge-success bg-success/10 text-success border-success/20';
+                    case 'Rejected': return 'badge-error bg-error/10 text-error border-error/20';
+                    case 'Checked In': return 'badge-primary bg-primary/10 text-primary border-primary/20';
+                    default: return 'badge-warning bg-warning/10 text-warning border-warning/20';
+                }
+            }
+
+            document.getElementById('reservationForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = {
+                    lab: document.getElementById('resLab').value,
+                    purpose: document.getElementById('resPurpose').value,
+                    date: document.getElementById('resDate').value,
+                    time: document.getElementById('resTime').value
+                };
+
+                fetch('/api/student/reserve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Reservation submitted successfully!');
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+            });
+
+            function logout() {
+                fetch("/logout", { method: "POST" })
+                    .then((r) => r.json())
+                    .then((d) => {
+                        if (d.success) window.location.href = d.redirectUrl;
+                    });
+            }
+        </script>
+    </body>
+</html>

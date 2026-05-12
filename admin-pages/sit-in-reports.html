@@ -121,7 +121,7 @@
                                             type="text"
                                             id="searchIdNumber"
                                             placeholder="e.g. 21-1234-567"
-                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                         />
                                     </div>
                                 </div>
@@ -183,7 +183,7 @@
                                                 type="text"
                                                 id="formIdNumber"
                                                 placeholder="Enter ID"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
 
@@ -216,7 +216,7 @@
                                                 type="text"
                                                 id="formStudentName"
                                                 placeholder="Enter Name"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
                                             />
                                         </div>
                                     </div>
@@ -235,12 +235,12 @@
                                                 >Purpose</span
                                             >
                                         </label>
-                                        <input
-                                            type="text"
+                                        <select
                                             id="formPurpose"
-                                            placeholder="e.g. Java Programming, Assignment"
-                                            class="input input-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold"
-                                        />
+                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
+                                        >
+                                            <option value="" disabled selected>Select Purpose</option>
+                                        </select>
                                     </div>
 
                                     <div class="form-control">
@@ -252,22 +252,10 @@
                                         </label>
                                         <select
                                             id="formLab"
-                                            class="select select-bordered w-full rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary font-bold"
+                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
                                         >
                                             <option value="" disabled selected>
                                                 Select Lab Room
-                                            </option>
-                                            <option value="Lab 524">
-                                                Lab 524
-                                            </option>
-                                            <option value="Lab 526">
-                                                Lab 526
-                                            </option>
-                                            <option value="Lab 542">
-                                                Lab 542
-                                            </option>
-                                            <option value="Mac Lab">
-                                                Mac Lab
                                             </option>
                                         </select>
                                     </div>
@@ -326,6 +314,9 @@
                         </a>
                         <a href="/admin/leaderboard" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-trophy mr-2"></i>Leaderboard
+                        </a>
+                        <a href="/admin/manage-dropdowns" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-sliders mr-2"></i>Manage
                         </a>
 
                         <div class="dropdown dropdown-end ml-4">
@@ -703,11 +694,11 @@
                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Student</span>
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </div>
                                     <input type="text" id="reportSearch" placeholder="Name or ID Number..." 
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                 </div>
                             </div>
 
@@ -717,11 +708,11 @@
                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Filter by Date</span>
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-calendar-day"></i>
                                     </div>
                                     <input type="date" id="reportDate" 
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200/50 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                 </div>
                             </div>
 
@@ -735,10 +726,10 @@
                         </div>
 
                         <!-- Table -->
-                        <div class="card bg-base-100 border border-base-content/5 overflow-hidden">
+                        <div class="card bg-base-100 border border-base-content/5 overflow-hidden rounded-3xl">
                             <div class="overflow-x-auto">
                                 <table class="table table-md w-full" id="reportsTable">
-                                    <thead class="bg-base-200/50">
+                                    <thead class="bg-base-200">
                                         <tr>
                                             <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4">Student</th>
                                             <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4">ID Number</th>
@@ -809,6 +800,7 @@
                     <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
                     <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
                     <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/admin/manage-dropdowns"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
                     <li class="mt-auto">
                         <button onclick="logout()" class="btn btn-error btn-outline mt-4">
                             <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
@@ -832,6 +824,12 @@
                             window.location.href = "/login";
                         else {
                             loadReports();
+                            fetch('/api/dropdown-options').then(r=>r.json()).then(data=>{
+                                const ps = document.getElementById('formPurpose');
+                                if(ps && data.purpose) data.purpose.forEach(o => ps.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                                const ls = document.getElementById('formLab');
+                                if(ls && data.lab) data.lab.forEach(o => ls.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                            });
                         }
                     })
                     .catch(() => (window.location.href = "/login"));
@@ -897,7 +895,7 @@
                 }
 
                 tbody.innerHTML = data.map(record => `
-                    <tr class="hover:bg-base-200/50 transition-all duration-300">
+                    <tr class="hover:bg-base-200 transition-all duration-300">
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="avatar">
