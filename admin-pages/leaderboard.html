@@ -184,7 +184,7 @@
                                         </div>
                                     </div>
                                     <div class="overflow-x-auto p-6">
-                                        <table class="table table-zebra w-full">
+                                        <table class="table w-full">
                                             <thead>
                                                 <tr class="text-[10px] uppercase tracking-widest opacity-60">
                                                     <th class="w-16">Rank</th>
@@ -229,17 +229,11 @@
         </div>
 
         <script>
-            window.addEventListener("DOMContentLoaded", () => {
-                fetch("/check-session")
-                    .then(r => r.json())
-                    .then(data => { if (!data.loggedIn || data.role !== 'admin') window.location.href = "/login"; })
-                    .catch(() => window.location.href = "/login");
-                loadLeaderboard();
-                loadLabAnalytics();
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
 
-                // Initial Theme Setup
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute("data-theme", currentTheme);
+            window.addEventListener("DOMContentLoaded", () => {
                 // Theme Switcher Logic
                 document.querySelectorAll(".theme-controller").forEach((btn) => {
                     btn.addEventListener("click", () => {
@@ -248,6 +242,13 @@
                         localStorage.setItem("theme", theme);
                     });
                 });
+
+                fetch("/check-session")
+                    .then(r => r.json())
+                    .then(data => { if (!data.loggedIn || data.role !== 'admin') window.location.href = "/login"; })
+                    .catch(() => window.location.href = "/login");
+                loadLeaderboard();
+                loadLabAnalytics();
             });
 
             function logout() {

@@ -676,7 +676,7 @@
                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Active</span>
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </div>
                                     <input type="text" id="searchInput" placeholder="Name or ID Number..." 
@@ -786,8 +786,20 @@
         </div>
 
         <script>
-            // Check session
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
             window.addEventListener("DOMContentLoaded", () => {
+                // Theme Switcher Logic
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                    });
+                });
+
                 fetch("/check-session")
                     .then((r) => r.json())
                     .then((d) => {
@@ -821,27 +833,6 @@
                         }
                     })
                     .catch(() => (window.location.href = "/login"));
-
-                // Initial Theme Setup
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute(
-                    "data-theme",
-                    currentTheme,
-                );
-
-                // Theme Switcher Logic
-                document
-                    .querySelectorAll(".theme-controller")
-                    .forEach((btn) => {
-                        btn.addEventListener("click", () => {
-                            const theme = btn.getAttribute("data-set-theme");
-                            document.documentElement.setAttribute(
-                                "data-theme",
-                                theme,
-                            );
-                            localStorage.setItem("theme", theme);
-                        });
-                    });
             });
 
             let allActiveRecords = [];

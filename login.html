@@ -59,7 +59,7 @@
                     <div class="flex-1 gap-3 flex items-center">
                         <div class="avatar text-base-content">
                             <div
-                                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20"
+                                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5"
                             >
                                 <img
                                     src="assets/ccslogo.png"
@@ -401,7 +401,7 @@
                         class="w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-700"
                     >
                         <div
-                            class="card bg-base-100/70 backdrop-blur-2xl shadow  border border-base-content/10 overflow-hidden rounded-[2.5rem] hover:shadow-primary/5 transition-all duration-500"
+                            class="card bg-base-100/70 backdrop-blur-2xl shadow-sm border border-base-content/5 overflow-hidden rounded-[2.5rem] hover:shadow-primary/5 transition-all duration-500"
                         >
                             <!-- Hero Header inside Card -->
                             <div
@@ -469,7 +469,7 @@
                                                 type="text"
                                                 id="idNumber"
                                                 placeholder="Enter your ID #"
-                                                class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 focus:border-primary transition-all font-bold"
                                                 required
                                             />
                                         </div>
@@ -501,7 +501,7 @@
                                                 type="password"
                                                 id="password"
                                                 placeholder="Enter your password"
-                                                class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
+                                                class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 focus:border-primary transition-all font-bold"
                                                 required
                                             />
                                         </div>
@@ -576,7 +576,7 @@
                             class="flex items-center gap-3 px-0 bg-transparent hover:bg-transparent"
                         >
                             <div
-                                class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center p-2 border border-primary/20"
+                                class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center p-2"
                             >
                                 <img
                                     src="assets/ccslogo.png"
@@ -657,6 +657,7 @@
                                 "Login Successful",
                                 "Welcome back! Redirecting to your dashboard...",
                                 data.redirectUrl,
+                                5,
                             );
                         } else {
                             errorText.textContent =

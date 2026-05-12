@@ -3,12 +3,14 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Make a Reservation - CCS SIT-IN</title>
+        <title>Make a Reservation - CCS SIT-IN MONITORING</title>
         <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
         <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="/notify.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/notification-client.js"></script>
     </head>
 
     <body class="bg-base-200 min-h-screen">
@@ -16,7 +18,7 @@
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
-                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm">
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm">
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
                             <i class="fa-solid fa-bars text-xl"></i>
@@ -29,7 +31,7 @@
                                 <img src="assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                             </div>
                         </div>
-                        <a href="/homepage" class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN</a>
+                        <a href="/homepage" class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
                     </div>
 
                     <!-- Desktop Menu -->
@@ -39,7 +41,7 @@
                             <i class="fa-solid fa-clock mr-2 opacity-50"></i>Sessions
                         </a>
                         <a href="/reservation" class="btn btn-primary btn-sm">
-                            <i class="fa-solid fa-calendar-check mr-2 opacity-50"></i>Reservation
+                            <i class="fa-solid fa-calendar-check mr-2"></i>Reservation
                         </a>
                         <a href="/student-history" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History
@@ -57,7 +59,7 @@
                                 Theme
                                 <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
                             </div>
-                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/5 mt-2 max-h-96 overflow-y-auto">
                                 <li><button class="theme-controller" data-set-theme="light">Light</button></li>
                                 <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
                                 <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
@@ -96,16 +98,31 @@
                             </ul>
                         </div>
 
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-lg"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow border border-base-content/5 mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
                         <button onclick="logout()" class="btn btn-primary btn-sm ml-4">
                             <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
                         </button>
                     </div>
                 </div>
 
-                <main class="flex-1 p-4 md:p-8">
-                    <div class="max-w-4xl mx-auto">
+                <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
+                    <div class="flex flex-col gap-8">
                         <!-- Header -->
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
                                 <h1 class="text-4xl font-black tracking-tight italic uppercase">Make a <span class="text-primary not-italic">Reservation</span></h1>
                                 <p class="opacity-60 font-medium">Book your lab session in advance to guarantee a slot.</p>
@@ -117,7 +134,7 @@
                         </div>
 
                         <!-- Status Notice -->
-                        <div id="disabled-notice" class="hidden mb-8">
+                        <div id="disabled-notice" class="hidden">
                             <div class="alert alert-error bg-error/10 border-error/20 text-error p-6 rounded-3xl flex flex-col items-center text-center gap-4">
                                 <div class="w-16 h-16 rounded-full bg-error/20 flex items-center justify-center text-2xl animate-bounce">
                                     <i class="fa-solid fa-calendar-xmark"></i>
@@ -130,7 +147,7 @@
                         </div>
 
                         <!-- Reservation Form Card -->
-                        <div id="reservation-card" class="card bg-base-100 border border-base-content/10 shadow-2xl overflow-hidden rounded-3xl">
+                        <div id="reservation-card" class="card bg-base-100 shadow-sm overflow-hidden rounded-3xl">
                             <div class="grid md:grid-cols-5">
                                 <!-- Left Decoration -->
                                 <div class="md:col-span-2 bg-primary p-8 text-primary-content flex flex-col justify-between relative overflow-hidden">
@@ -170,7 +187,7 @@
                                                 <label class="label pt-0">
                                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Laboratory Room</span>
                                                 </label>
-                                                <select id="resLab" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold transition-all" required>
+                                                <select id="resLab" class="select select-bordered w-full rounded-2xl bg-base-200 focus:border-primary font-bold transition-all" required>
                                                     <option value="" disabled selected>Choose Lab Room</option>
                                                 </select>
                                             </div>
@@ -179,7 +196,7 @@
                                                 <label class="label pt-0">
                                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Sit-in Purpose</span>
                                                 </label>
-                                                <select id="resPurpose" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold transition-all" required>
+                                                <select id="resPurpose" class="select select-bordered w-full rounded-2xl bg-base-200 focus:border-primary font-bold transition-all" required>
                                                     <option value="" disabled selected>Select Purpose</option>
                                                 </select>
                                             </div>
@@ -190,7 +207,7 @@
                                             <label class="label pt-0 pb-1">
                                                 <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Available Software</span>
                                             </label>
-                                            <div id="softwareListDisplay" class="flex flex-wrap gap-1.5 p-4 rounded-2xl bg-base-200 border border-base-content/5">
+                                            <div id="softwareListDisplay" class="flex flex-wrap gap-1.5 p-4 rounded-2xl bg-base-200">
                                                 <!-- Populated by JS -->
                                             </div>
                                         </div>
@@ -200,24 +217,59 @@
                                                 <label class="label pt-0">
                                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Preferred Date</span>
                                                 </label>
-                                                <input type="date" id="resDate" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                                <input type="date" id="resDate" class="input input-bordered w-full rounded-2xl bg-base-200 focus:border-primary transition-all font-bold" required />
                                             </div>
                                             <div class="form-control">
                                                 <label class="label pt-0">
                                                     <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Arrival Time</span>
                                                 </label>
-                                                <input type="time" id="resTime" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" required />
+                                                <input type="time" id="resTime" class="input input-bordered w-full rounded-2xl bg-base-200 focus:border-primary transition-all font-bold" required />
                                             </div>
                                         </div>
 
                                         <div class="pt-4">
-                                            <button type="submit" id="submitBtn" class="btn btn-primary w-full rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-lg shadow-primary/20">
+                                            <button type="submit" id="submitBtn" class="btn btn-primary w-full rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-sm shadow-primary/20">
                                                 Submit Reservation Request
                                                 <i class="fa-solid fa-paper-plane ml-2"></i>
                                             </button>
                                         </div>
                                     </form>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Reservation History Table -->
+                        <div class="card bg-base-100 shadow-sm overflow-hidden rounded-3xl mb-12">
+                            <div class="p-6 flex justify-between items-center">
+                                <div>
+                                    <h2 class="text-xl font-black italic uppercase tracking-tight">My <span class="text-primary not-italic">Reservations</span></h2>
+                                    <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest mt-0.5">History of your reservation attempts</p>
+                                </div>
+                                <div class="badge badge-primary font-black italic uppercase text-[10px] px-4 py-3" id="reservation-count">0 Records</div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="table w-full" id="reservations-history-table">
+                                    <thead>
+                                        <tr class="text-[10px] uppercase tracking-widest font-black opacity-40">
+                                            <th class="pl-6">Laboratory</th>
+                                            <th>Purpose</th>
+                                            <th>Schedule</th>
+                                            <th>Status</th>
+                                            <th>Date Requested</th>
+                                            <th class="pr-6 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="my-reservations-list">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-12">
+                                                <div class="flex flex-col items-center gap-3">
+                                                    <span class="loading loading-spinner loading-lg text-primary"></span>
+                                                    <span class="text-[10px] font-black uppercase opacity-20 tracking-widest">Loading records...</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -233,7 +285,7 @@
                         <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
                             <i class="fa-solid fa-desktop"></i>
                         </div>
-                        <span class="text-xl font-black">CCS SIT-IN</span>
+                        <span class="text-xl font-black">CCS SIT-IN MONITORING</span>
                     </li>
                     <li><a href="/homepage"><i class="fa-solid fa-house mr-2"></i>Home</a></li>
                     <li><a href="/sessions"><i class="fa-solid fa-clock mr-2"></i>Sessions</a></li>
@@ -248,13 +300,97 @@
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
+            window.addEventListener('DOMContentLoaded', () => {
+                // Theme Switcher Logic
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                    });
+                });
+
                 checkStatus();
                 loadDropdowns();
-
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute("data-theme", currentTheme);
+                fetchMyReservations();
             });
+
+            async function fetchMyReservations() {
+                try {
+                    const res = await fetch('/api/student/reservations');
+                    const data = await res.json();
+                    
+                    const container = document.getElementById('my-reservations-list');
+                    const countEl = document.getElementById('reservation-count');
+                    
+                    if (!data || data.length === 0) {
+                        countEl.innerText = '0 Records';
+                        container.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center py-12">
+                                    <div class="flex flex-col items-center gap-2 opacity-20">
+                                        <i class="fa-solid fa-calendar-xmark text-4xl"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest">No reservation records found</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    countEl.innerText = `${data.length} Record${data.length !== 1 ? 's' : ''}`;
+                    container.innerHTML = data.map(r => {
+                        const statusClass = r.status === 'Pending' ? 'badge-warning' : 
+                                          r.status === 'Approved' ? 'badge-success' : 
+                                          r.status === 'Cancelled' ? 'badge-error opacity-50' :
+                                          r.status === 'Checked In' ? 'badge-info' : 'badge-error';
+                        
+                        return `
+                            <tr class="hover:bg-base-200/30 transition-colors">
+                                <td class="pl-6">
+                                    <div class="font-black text-sm uppercase italic">${r.lab}</div>
+                                </td>
+                                <td>
+                                    <div class="text-[11px] font-bold opacity-60">${r.purpose}</div>
+                                </td>
+                                <td>
+                                    <div class="flex flex-col">
+                                        <span class="font-black text-xs text-primary">${r.reservationDate}</span>
+                                        <span class="text-[10px] font-bold opacity-40 uppercase">${r.reservationTime}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="badge ${statusClass} badge-sm font-black italic uppercase text-[9px] px-3">
+                                        ${r.status}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-[10px] font-bold opacity-40">
+                                        ${new Date(r.created_at).toLocaleDateString()} ${new Date(r.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </div>
+                                </td>
+                                 <td class="pr-6">
+                                     <div class="flex justify-end items-center gap-2">
+                                         ${(r.status === 'Pending' || r.status === 'Approved' || r.status === 'Cancelled') ? `
+                                             <button onclick="toggleReservation(${r.id}, '${r.status}')" 
+                                                     class="btn btn-ghost btn-xs ${r.status === 'Cancelled' ? 'text-success' : 'text-error'} hover:bg-base-content/5 rounded-lg p-1" 
+                                                     title="${r.status === 'Cancelled' ? 'Enable Reservation' : 'Cancel Reservation'}">
+                                                 <i class="fa-solid ${r.status === 'Cancelled' ? 'fa-rotate-left' : 'fa-xmark'} text-xs"></i>
+                                             </button>
+                                         ` : ''}
+                                     </div>
+                                 </td>
+                            </tr>
+                        `;
+                    }).join('');
+                } catch (err) {
+                    console.error('Error fetching reservations:', err);
+                }
+            }
 
             async function checkStatus() {
                 try {
@@ -311,7 +447,7 @@
                             list.innerHTML = '<span class="text-[10px] font-bold opacity-40 uppercase tracking-widest py-1">No software data listed</span>';
                         } else {
                             list.innerHTML = softwares.map(s => `
-                                <div class="badge badge-primary badge-outline gap-1 py-3 px-3 rounded-lg border-primary/20 bg-primary/5">
+                                <div class="badge badge-primary badge-outline gap-1 py-3 px-3 rounded-lg bg-primary/5">
                                     <i class="fa-solid fa-check text-[8px]"></i>
                                     <span class="text-[10px] font-bold">${s.software_name}</span>
                                 </div>
@@ -341,13 +477,47 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Reservation submitted successfully!');
-                        window.location.reload();
+                        showSuccessModal('Reservation Submitted!', 'Your lab reservation has been submitted successfully. Please wait for admin approval.');
+                        document.getElementById('reservationForm').reset();
+                        fetchMyReservations(); // Refresh the table
                     } else {
-                        alert('Error: ' + data.error);
+                        showErrorModal('Reservation Failed', data.error || 'Something went wrong. Please try again.');
                     }
                 });
             });
+
+            async function toggleReservation(id, currentStatus) {
+                const isCancelled = currentStatus === 'Cancelled';
+                const title = isCancelled ? "Enable Reservation?" : "Cancel Reservation?";
+                const msg = isCancelled 
+                    ? "This will set your reservation back to Pending for admin review." 
+                    : "Are you sure you want to cancel this request?";
+
+                showConfirm(
+                    title,
+                    msg,
+                    async () => {
+                        try {
+                            const res = await fetch('/api/student/reservations/toggle-status', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: parseInt(id) })
+                            });
+                            
+                            const data = await res.json();
+                            if (data.success) {
+                                showToast(data.message, 'success');
+                                fetchMyReservations();
+                            } else {
+                                showToast(data.error || 'Failed to update reservation status', 'error');
+                            }
+                        } catch (err) {
+                            console.error('Reservation action error:', err);
+                            showToast('Failed to connect to server', 'error');
+                        }
+                    }
+                );
+            }
 
             function logout() {
                 fetch("/logout", { method: "POST" })

@@ -46,18 +46,21 @@ function showToast(message, type = "info", duration = 3000) {
 }
 
 // ─── Success / Info Modal ───────────────────────────────────────
-function showSuccessModal(title, message, redirectUrl = null) {
-    _showModal(title, message, "success", redirectUrl);
+function showSuccessModal(title, message, redirectUrl = null, autoCloseSeconds = 0) {
+    _showModal(title, message, "success", redirectUrl, autoCloseSeconds);
 }
 
 function showErrorModal(title, message) {
     _showModal(title, message, "error");
 }
 
-function _showModal(title, message, type, redirectUrl = null) {
+function _showModal(title, message, type, redirectUrl = null, autoCloseSeconds = 0) {
     // Remove existing notification modal if any
     const existing = document.getElementById("notify-modal");
-    if (existing) existing.remove();
+    if (existing) {
+        if (existing._autoCloseTimer) clearInterval(existing._autoCloseTimer);
+        existing.remove();
+    }
 
     const iconMap = {
         success:
@@ -67,6 +70,7 @@ function _showModal(title, message, type, redirectUrl = null) {
     };
 
     const btnClass = type === "error" ? "btn-error" : "btn-primary";
+    const btnLabel = autoCloseSeconds > 0 ? `OK (${autoCloseSeconds}s)` : "OK";
 
     const modal = document.createElement("dialog");
     modal.id = "notify-modal";
@@ -76,8 +80,9 @@ function _showModal(title, message, type, redirectUrl = null) {
             ${iconMap[type] || iconMap.info}
             <h3 class="text-xl font-black">${title}</h3>
             <p class="py-3 opacity-70">${message}</p>
+            ${autoCloseSeconds > 0 ? `<div class="flex justify-center mb-2"><div class="radial-progress text-primary text-xs font-black" style="--value:100;--size:3rem;--thickness:3px;" id="notify-countdown-ring">${autoCloseSeconds}</div></div>` : ''}
             <div class="modal-action justify-center">
-                <button class="btn ${btnClass} rounded-2xl px-8 font-bold" id="notify-modal-btn">OK</button>
+                <button class="btn ${btnClass} rounded-2xl px-8 font-bold" id="notify-modal-btn">${btnLabel}</button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
@@ -87,12 +92,30 @@ function _showModal(title, message, type, redirectUrl = null) {
     modal.showModal();
 
     const closeModal = () => {
+        if (modal._autoCloseTimer) clearInterval(modal._autoCloseTimer);
         modal.close();
         setTimeout(() => {
             modal.remove();
             if (redirectUrl) window.location.href = redirectUrl;
         }, 200);
     };
+
+    // Auto-close countdown
+    if (autoCloseSeconds > 0) {
+        let remaining = autoCloseSeconds;
+        const btn = modal.querySelector("#notify-modal-btn");
+        const ring = modal.querySelector("#notify-countdown-ring");
+        modal._autoCloseTimer = setInterval(() => {
+            remaining--;
+            if (btn) btn.textContent = `OK (${remaining}s)`;
+            if (ring) {
+                const pct = Math.round((remaining / autoCloseSeconds) * 100);
+                ring.style.setProperty('--value', pct);
+                ring.textContent = remaining;
+            }
+            if (remaining <= 0) closeModal();
+        }, 1000);
+    }
 
     modal.querySelector("#notify-modal-btn").addEventListener("click", closeModal);
     modal.querySelector(".modal-backdrop button").addEventListener("click", closeModal);

@@ -20,7 +20,7 @@
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
-                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5">
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm shadow-base-content/5">
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
@@ -43,14 +43,15 @@
                         <a href="/homepage" class="btn btn-ghost btn-sm">Home</a>
                         <a href="/sessions" class="btn btn-primary btn-sm"><i class="fa-solid fa-clock mr-2"></i>Sessions</a>
                         <a href="/reservation" class="btn btn-ghost btn-sm"><i class="fa-solid fa-calendar-check mr-2 opacity-50"></i>Reservation</a>
-                        <a href="/student-history" class="btn btn-ghost btn-sm"><i class="fa-solid fa-history mr-2 opacity-50"></i>History</a>
+                        <a href="/student-history" class="btn btn-ghost btn-sm"><i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History</a>
                         <a href="/leaderboard" class="btn btn-ghost btn-sm"><i class="fa-solid fa-trophy mr-2 opacity-50"></i>Leaderboard</a>
+                        <a href="/ai-recommendations" class="btn btn-ghost btn-sm"><i class="fa-solid fa-robot mr-2 opacity-50"></i>AI Recs</a>
                         
                         <div class="dropdown dropdown-end ml-4">
                             <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
                                 <i class="fa-solid fa-palette opacity-50"></i>Theme<i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
                             </div>
-                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto">
                                 <li><button class="theme-controller" data-set-theme="light">Light</button></li>
                                 <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
                                 <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
@@ -89,6 +90,21 @@
                             </ul>
                         </div>
 
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-lg"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
                         <button onclick="logout()" class="btn btn-primary btn-sm ml-4"><i class="fa-solid fa-right-from-bracket mr-2"></i>Logout</button>
                     </div>
                 </div>
@@ -98,31 +114,31 @@
                     <div class="flex flex-col gap-8">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 class="text-3xl font-black tracking-tight uppercase italic">My <span class="text-primary not-italic">Sessions</span></h1>
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase">My <span class="text-primary not-italic">Sessions</span></h1>
                                 <p class="opacity-60 font-medium">Track your laboratory sit-in session details and history</p>
                             </div>
                             <div class="flex items-center gap-4">
-                                <div class="bg-primary/10 px-6 py-3 rounded-2xl border border-primary/20 flex flex-col items-center">
+                                <div class="bg-primary/5 px-6 py-3 rounded-3xl flex flex-col items-center">
                                     <span class="text-[10px] uppercase font-black tracking-widest opacity-40">Total Sessions</span>
-                                    <span class="text-2xl font-black text-primary" id="totalSessionsCount">0</span>
+                                    <span class="text-3xl font-black text-primary" id="totalSessionsCount">0</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card bg-base-100 border border-base-content/5 shadow-xl overflow-hidden">
-                            <div class="p-6 bg-base-200/50 border-b border-base-content/5 flex flex-col md:flex-row gap-4 justify-between items-center">
+                        <div class="card bg-base-100 shadow-sm overflow-hidden rounded-3xl">
+                            <div class="p-6 flex flex-col md:flex-row gap-4 justify-between items-center">
                                 <div class="relative w-full md:w-96 group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </div>
-                                    <input type="text" id="searchInput" placeholder="Search by date, lab, or pc..." class="input input-bordered w-full pl-11 rounded-2xl bg-base-100 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    <input type="text" id="searchInput" placeholder="Search by date, lab, or pc..." class="input input-bordered w-full pl-11 rounded-2xl bg-base-100 focus:border-primary transition-all font-bold" />
                                 </div>
                             </div>
 
                             <div class="overflow-x-auto">
                                 <table class="table table-md w-full">
                                     <thead>
-                                        <tr class="bg-base-200/50 text-[10px] uppercase tracking-widest font-black opacity-60">
+                                        <tr class="text-[10px] uppercase tracking-widest font-black opacity-50">
                                             <th class="py-4 px-6">Date</th>
                                             <th class="py-4">Time-In</th>
                                             <th class="py-4">Time-Out</th>
@@ -150,7 +166,7 @@
             <div class="drawer-side z-[200]">
                 <label for="my-drawer" class="drawer-overlay"></label>
                 <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
-                    <li class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4">
+                    <li class="menu-title flex flex-row items-center gap-3 py-4 mb-4">
                         <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"><i class="fa-solid fa-desktop"></i></div>
                         <span class="text-xl font-black">CCS SIT-IN</span>
                     </li>
@@ -167,17 +183,12 @@
         </div>
 
         <script>
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
             window.addEventListener("DOMContentLoaded", () => {
-                fetch("/check-session")
-                    .then(r => r.json())
-                    .then(d => {
-                        if (!d.loggedIn) window.location.href = "/login";
-                    })
-                    .catch(() => window.location.href = "/login");
-
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute("data-theme", currentTheme);
-
+                // Theme Switcher Logic
                 document.querySelectorAll(".theme-controller").forEach(btn => {
                     btn.addEventListener("click", () => {
                         const theme = btn.getAttribute("data-set-theme");
@@ -185,6 +196,13 @@
                         localStorage.setItem("theme", theme);
                     });
                 });
+
+                fetch("/check-session")
+                    .then(r => r.json())
+                    .then(d => {
+                        if (!d.loggedIn) window.location.href = "/login";
+                    })
+                    .catch(() => window.location.href = "/login");
 
                 document.getElementById("searchInput").addEventListener("input", renderTable);
                 fetchSessions();
@@ -246,12 +264,12 @@
                     const duration = calculateDuration(s.loginTime, s.logoutTime);
                     
                     tbody.innerHTML += `
-                        <tr class="hover:bg-base-200/50 transition-colors border-b border-base-content/5 last:border-0 group">
+                        <tr class="hover:bg-base-200/50 transition-colors last:border-0 group">
                             <td class="py-4 px-6 font-mono text-xs opacity-70">${s.date}</td>
                             <td class="py-4 font-bold text-sm">${loginTime}</td>
                             <td class="py-4 font-bold text-sm text-primary">${logoutTime}</td>
                             <td class="py-4">
-                                <span class="badge badge-sm badge-ghost font-black text-[10px] tracking-widest bg-base-200 border-base-content/5">${duration}</span>
+                                <span class="badge badge-sm badge-ghost font-black text-[10px] tracking-widest bg-base-200">${duration}</span>
                             </td>
                             <td class="py-4">
                                 <div class="flex items-center gap-2">

@@ -816,7 +816,20 @@
             let totalPages = 1;
             let reportData = [];
 
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
             window.addEventListener("DOMContentLoaded", () => {
+                // Theme Switcher
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                    });
+                });
+
                 fetch("/check-session")
                     .then((r) => r.json())
                     .then((d) => {
@@ -833,19 +846,6 @@
                         }
                     })
                     .catch(() => (window.location.href = "/login"));
-
-                // Initial Theme Setup
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute("data-theme", currentTheme);
-
-                // Theme Switcher
-                document.querySelectorAll(".theme-controller").forEach((btn) => {
-                    btn.addEventListener("click", () => {
-                        const theme = btn.getAttribute("data-set-theme");
-                        document.documentElement.setAttribute("data-theme", theme);
-                        localStorage.setItem("theme", theme);
-                    });
-                });
 
                 // Filter Listeners
                 document.getElementById("reportSearch").addEventListener("input", debounce(loadReports, 500));

@@ -295,19 +295,13 @@
                 }
             };
 
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
             // Check session
             window.addEventListener('DOMContentLoaded', () => {
-                fetch('/check-session')
-                    .then(r => r.json())
-                    .then(d => {
-                        if (!d.loggedIn || d.role !== 'admin') window.location.href = '/login';
-                        else fetchOptions();
-                    })
-                    .catch(() => window.location.href = '/login');
-
-                const currentTheme = localStorage.getItem('theme') || 'forest';
-                document.documentElement.setAttribute('data-theme', currentTheme);
-
+                // Theme Switcher Logic
                 document.querySelectorAll('.theme-controller').forEach(btn => {
                     btn.addEventListener('click', () => {
                         const theme = btn.getAttribute('data-set-theme');
@@ -315,6 +309,14 @@
                         localStorage.setItem('theme', theme);
                     });
                 });
+
+                fetch('/check-session')
+                    .then(r => r.json())
+                    .then(d => {
+                        if (!d.loggedIn || d.role !== 'admin') window.location.href = '/login';
+                        else fetchOptions();
+                    })
+                    .catch(() => window.location.href = '/login');
             });
 
             function switchTab(tab, btn) {

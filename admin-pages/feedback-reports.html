@@ -669,7 +669,7 @@
 
                         <div class="card bg-base-100 border border-base-content/5 shadow-sm overflow-hidden rounded-3xl">
                             <div class="card-body p-0 overflow-x-auto">
-                                <table class="table table-zebra">
+                                <table class="table w-full">
                                     <thead>
                                         <tr class="bg-base-200">
                                             <th class="font-black text-xs uppercase tracking-wider">Student</th>
@@ -724,8 +724,20 @@
         </div>
 
         <script>
-            // Check session
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
             window.addEventListener("DOMContentLoaded", () => {
+                // Theme Switcher Logic
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                    });
+                });
+
                 fetch("/check-session")
                     .then((r) => r.json())
                     .then((d) => {
@@ -742,27 +754,6 @@
                         }
                     })
                     .catch(() => (window.location.href = "/login"));
-
-                // Initial Theme Setup
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute(
-                    "data-theme",
-                    currentTheme,
-                );
-
-                // Theme Switcher Logic
-                document
-                    .querySelectorAll(".theme-controller")
-                    .forEach((btn) => {
-                        btn.addEventListener("click", () => {
-                            const theme = btn.getAttribute("data-set-theme");
-                            document.documentElement.setAttribute(
-                                "data-theme",
-                                theme,
-                            );
-                            localStorage.setItem("theme", theme);
-                        });
-                    });
 
                 // Student/Admin Info Sync
                 fetch("/api/studentinfo")

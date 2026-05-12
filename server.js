@@ -920,6 +920,41 @@ app.get('/api/student/reservations', checkAuth, (req, res) => {
     });
 });
 
+// Student API: Toggle Reservation Status (Enable/Disable/Cancel)
+app.post('/api/student/reservations/toggle-status', checkAuth, (req, res) => {
+    const id = parseInt(req.body.id);
+    const idNumber = req.session.idNumber;
+
+    if (!id || isNaN(id)) return res.status(400).json({ error: 'Valid Reservation ID is required' });
+
+    db.get('SELECT * FROM reservations WHERE id = ? AND idNumber = ?', [id, idNumber], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!row) return res.status(404).json({ error: 'Reservation not found' });
+        
+        if (row.status === 'Checked In' || row.status === 'Rejected') {
+            return res.status(400).json({ error: `Cannot change status for a reservation that is ${row.status}` });
+        }
+
+        const newStatus = row.status === 'Cancelled' ? 'Pending' : 'Cancelled';
+
+        db.run('UPDATE reservations SET status = ? WHERE id = ?', [newStatus, id], function(err) {
+            if (err) return res.status(500).json({ error: `Failed to ${newStatus === 'Cancelled' ? 'cancel' : 'enable'} reservation` });
+            
+            const actionVerb = newStatus === 'Cancelled' ? 'cancelled' : 're-enabled';
+            const adminMsg = `Student ${req.session.firstName} ${req.session.lastName} ${actionVerb} their reservation for ${row.lab} on ${row.reservationDate}.`;
+            
+            db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', ['ADMIN', adminMsg, 'warning']);
+            io.emit('notification:admin', { message: adminMsg, type: 'warning' });
+
+            res.json({ 
+                success: true, 
+                message: `Reservation ${newStatus === 'Cancelled' ? 'cancelled' : 're-enabled'} successfully`,
+                newStatus 
+            });
+        });
+    });
+});
+
 // Admin API: Fetch All Reservations
 app.get('/api/admin/reservations', checkAdminAuth, (req, res) => {
     db.all(`

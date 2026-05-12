@@ -34,7 +34,7 @@
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
                 <div
-                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/10 shadow-sm shadow-base-content/5"
+                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm shadow-base-content/5"
                 >
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
@@ -78,17 +78,17 @@
                         <a href="/sessions" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-clock mr-2 opacity-50"></i>Sessions
                         </a>
+                        <a href="/reservation" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-calendar-check mr-2 opacity-50"></i>Reservation
+                        </a>
                         <a href="/student-history" class="btn btn-primary btn-sm">
-                            <i class="fa-solid fa-clock-rotate-left mr-2 opacity-50"></i>History
+                            <i class="fa-solid fa-clock-rotate-left mr-2"></i>History
                         </a>
                         <a href="/leaderboard" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-trophy mr-2 opacity-50"></i>Leaderboard
                         </a>
                         <a href="/ai-recommendations" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-robot mr-2 opacity-50"></i>AI Recs
-                        </a>
-                        <a href="/reservation" class="btn btn-ghost btn-sm">
-                            <i class="fa-solid fa-calendar-check mr-2 opacity-50"></i>Reservation
                         </a>
 
                         <div class="dropdown dropdown-end ml-4">
@@ -97,7 +97,7 @@
                                 Theme
                                 <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
                             </div>
-                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto">
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto">
                                 <li><button class="theme-controller" data-set-theme="light">Light</button></li>
                                 <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
                                 <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
@@ -136,6 +136,21 @@
                             </ul>
                         </div>
 
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-lg"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
+
                         <button onclick="logout()" class="btn btn-primary btn-sm ml-4">
                             <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
                         </button>
@@ -150,52 +165,56 @@
                         <!-- Header -->
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 class="text-3xl font-black tracking-tight">History</h1>
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase">My <span class="text-primary not-italic">History</span></h1>
                                 <p class="opacity-60 font-medium">Your past sit-in sessions and feedback records</p>
                             </div>
+                            <a href="/homepage" class="btn btn-ghost btn-sm gap-2 rounded-xl">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                Back to Home
+                            </a>
                         </div>
 
                         <!-- Filters Section -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100 p-6 rounded-3xl border border-base-content/5 shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100 p-6 rounded-3xl shadow-sm">
                             <!-- Search -->
                             <div class="form-control w-full md:col-span-2">
                                 <label class="label pt-0 pb-1">
-                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Log</span>
+                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest text-xs">Search Logs</span>
                                 </label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
                                         <i class="fa-solid fa-magnifying-glass"></i>
                                     </div>
                                     <input
                                         type="text"
                                         id="searchInput"
                                         placeholder="Purpose / Lab / Date"
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
+                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 focus:border-primary transition-all font-bold"
                                     />
                                 </div>
                             </div>
 
                             <!-- Results Summary -->
                             <div class="flex items-end justify-end">
-                                <div class="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex flex-col items-center">
-                                    <span class="text-[10px] uppercase font-black tracking-widest opacity-40">Total Sessions</span>
+                                <div class="bg-primary/5 px-6 py-3 rounded-2xl flex flex-col items-center">
+                                    <span class="text-[10px] uppercase font-black tracking-widest opacity-40">Total Records</span>
                                     <span class="text-2xl font-black text-primary" id="totalSessionsCount">0</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Sit-in History Table -->
-                        <div class="card bg-base-100/80 backdrop-blur-xl border border-base-content/10 overflow-hidden">
+                        <div class="card bg-base-100 shadow-sm overflow-hidden rounded-3xl">
                             <div class="overflow-x-auto">
                                 <table class="table table-md w-full">
                                     <thead>
-                                        <tr class="bg-base-200 border-b border-base-content/5">
-                                            <th class="text-[10px] font-black uppercase tracking-widest opacity-40 py-4">Date</th>
-                                            <th class="text-[10px] font-black uppercase tracking-widest opacity-40 py-4">Time In</th>
-                                            <th class="text-[10px] font-black uppercase tracking-widest opacity-40 py-4">Time Out</th>
-                                            <th class="text-[10px] font-black uppercase tracking-widest opacity-40 py-4">Purpose</th>
-                                            <th class="text-[10px] font-black uppercase tracking-widest opacity-40 py-4">Lab</th>
-                                            <th class="text-[10px] font-black uppercase tracking-widest opacity-40 py-4 text-center">Status</th>
+                                        <tr class="text-[10px] uppercase tracking-widest font-black opacity-40">
+                                            <th class="py-4 px-6">Date</th>
+                                            <th class="py-4">Time In</th>
+                                            <th class="py-4">Time Out</th>
+                                            <th class="py-4">Purpose</th>
+                                            <th class="py-4">Lab Room</th>
+                                            <th class="py-4 text-center">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="historyTableBody">
@@ -210,7 +229,7 @@
                 <!-- Feedback Modal -->
                 <dialog id="feedback_modal" class="modal">
                     <div
-                        class="modal-box bg-base-100 shadow border border-base-content/5"
+                        class="modal-box bg-base-100 shadow"
                     >
                         <form method="dialog">
                             <button
@@ -279,7 +298,7 @@
                             >
                             <textarea
                                 id="feedbackComments"
-                                class="textarea textarea-bordered h-24 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
+                                class="textarea textarea-bordered h-24 rounded-2xl bg-base-200 focus:border-primary transition-all font-bold"
                                 placeholder="How was your lab session?"
                             ></textarea>
                         </div>
@@ -303,7 +322,7 @@
                     class="menu p-4 w-80 min-h-full bg-base-100 text-base-content"
                 >
                     <li
-                        class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4"
+                        class="menu-title flex flex-row items-center gap-3 py-4 mb-4"
                     >
                         <div
                             class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"
@@ -365,8 +384,21 @@
         </div>
 
         <script>
-            // Check session
+            // Initial Theme Setup
+            const savedTheme = localStorage.getItem("theme") || "forest";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+
             window.addEventListener("DOMContentLoaded", () => {
+                // Theme Switcher Logic
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                    });
+                });
+
+                // Check session
                 fetch("/check-session")
                     .then((r) => r.json())
                     .then((d) => {
@@ -375,27 +407,6 @@
                             window.location.href = "/admin";
                     })
                     .catch(() => (window.location.href = "/login"));
-
-                // Initial Theme Setup
-                const currentTheme = localStorage.getItem("theme") || "forest";
-                document.documentElement.setAttribute(
-                    "data-theme",
-                    currentTheme,
-                );
-
-                // Theme Switcher Logic
-                document
-                    .querySelectorAll(".theme-controller")
-                    .forEach((btn) => {
-                        btn.addEventListener("click", () => {
-                            const theme = btn.getAttribute("data-set-theme");
-                            document.documentElement.setAttribute(
-                                "data-theme",
-                                theme,
-                            );
-                            localStorage.setItem("theme", theme);
-                        });
-                    });
 
                 // Fetch History Records Search Event Listener
                 document
@@ -465,11 +476,11 @@
 
                     const statusBadge =
                         r.feedbackStatus === "Pending"
-                            ? `<button onclick="openFeedbackModal('${r.id}')" class="btn btn-xs btn-ghost btn-warning hover:btn-warning border border-warning/30 font-black uppercase text-[9px] tracking-wider gap-1"><i class="fa-solid fa-pen-to-square text-[10px]"></i> Feedback</button>`
-                            : `<div class="badge badge-sm badge-success gap-1 uppercase text-[9px] font-black bg-success/10 text-success border-success/20"><i class="fa-solid fa-check text-[10px]"></i> Done</div>`;
+                            ? `<button onclick="openFeedbackModal('${r.id}')" class="btn btn-xs btn-ghost btn-warning hover:btn-warning font-black uppercase text-[9px] tracking-wider gap-1"><i class="fa-solid fa-pen-to-square text-[10px]"></i> Feedback</button>`
+                            : `<div class="badge badge-sm badge-success gap-1 uppercase text-[9px] font-black bg-success/10 text-success"><i class="fa-solid fa-check text-[10px]"></i> Done</div>`;
 
                     tbody.innerHTML += `
-                        <tr class="hover:bg-base-200/30 transition-colors border-b border-base-content/5 last:border-0">
+                        <tr class="hover:bg-base-200/30 transition-colors last:border-0">
                             <td class="font-mono text-xs opacity-70 py-3">${r.date}</td>
                             <td class="font-mono text-xs py-3">${loginTime}</td>
                             <td class="font-mono text-xs py-3">${logoutTime}</td>
