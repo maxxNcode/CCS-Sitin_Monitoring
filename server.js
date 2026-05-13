@@ -1585,12 +1585,27 @@ app.get('/api/admin/analytics/daily-trends', checkAdminAuth, (req, res) => {
     db.all(`
         SELECT date as name, COUNT(*) as value
         FROM student_history
-        WHERE date >= date('now', '-7 days')
+        WHERE date >= date('now', '-6 days')
         GROUP BY date
         ORDER BY date ASC
     `, (err, rows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
-        res.json(rows);
+        
+        // Generate the last 7 days array to ensure missing days show as 0
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            
+            const row = rows.find(r => r.name === dateStr);
+            last7Days.push({
+                name: dateStr,
+                value: row ? row.value : 0
+            });
+        }
+        
+        res.json(last7Days);
     });
 });
 

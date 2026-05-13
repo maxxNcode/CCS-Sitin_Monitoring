@@ -1,9 +1,9 @@
 <!doctype html>
-<html>
+<html data-theme="dark">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CCS - Admin Analytics</title>
+        <title>Analytics - CCS Sit-In Monitoring</title>
         <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
         <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
         <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
@@ -13,48 +13,146 @@
         <script src="/notify.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/notification-client.js"></script>
-        <link rel="stylesheet" href="../style.css" />
+        <link rel="stylesheet" href="/style.css" />
     </head>
 
+    <style>
+        #sidebar-nav {
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            width: 16rem;
+        }
+        #sidebar-nav.sidebar-collapsed { width: 4.5rem; }
+        #sidebar-nav.sidebar-collapsed .sidebar-text { display: none; }
+        #sidebar-nav.sidebar-collapsed .sidebar-brand-text { display: none; }
+        #sidebar-nav.sidebar-collapsed li > a,
+        #sidebar-nav.sidebar-collapsed li > button {
+            justify-content: center;
+            padding: 0.75rem;
+            border-right: none !important;
+        }
+        #sidebar-nav.sidebar-collapsed li > a i { margin-right: 0 !important; }
+        #sidebar-nav.sidebar-collapsed .sidebar-header { align-items: center; padding: 1rem 0; }
+        #sidebar-nav.sidebar-collapsed .sidebar-logo { width: 2.5rem; height: 2.5rem; }
+    </style>
+
     <body class="bg-base-200 min-h-screen">
-        <div class="drawer">
+        <div class="drawer lg:drawer-open">
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
                 <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm">
-                    <div class="flex-none md:hidden">
+                    <div class="flex-none lg:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </label>
                     </div>
 
-                    <div class="flex-1 gap-3 flex items-center">
+                    <div class="flex-1 gap-3 flex items-center lg:hidden">
                         <div class="avatar">
                             <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
-                                <img src="../assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                                <img src="/assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                             </div>
                         </div>
                         <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
                     </div>
 
-                    <!-- Desktop Menu -->
-                    <div class="hidden md:flex flex-none items-center gap-1">
-                        <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
-                        <a href="/students" class="btn btn-ghost btn-sm">Students</a>
-                        <a href="/sit-in" class="btn btn-ghost btn-sm">Sit-in</a>
-                        <a href="/sit-in-records" class="btn btn-ghost btn-sm">Records</a>
-                        <a href="/sit-in-reports" class="btn btn-ghost btn-sm">Reports</a>
-                        <a href="/feedback-reports" class="btn btn-ghost btn-sm">Feedback</a>
-                        <a href="/reservations" class="btn btn-ghost btn-sm">Reservations</a>
-                        <a href="/admin/leaderboard" class="btn btn-ghost btn-sm"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a>
-                        <a href="/admin/analytics" class="btn btn-primary btn-sm"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a>
+                    <!-- Sidebar toggle for desktop -->
+                    <div class="hidden lg:flex flex-none">
+                        <button id="sidebar-toggle" onclick="toggleSidebar()" class="btn btn-ghost btn-square btn-sm" title="Toggle Sidebar">
+                            <i class="fa-solid fa-bars text-base"></i>
+                        </button>
+                    </div>
 
-                        <div class="dropdown dropdown-end ml-4">
+                    <div class="hidden lg:flex flex-none items-center gap-1 ml-auto">
+                        <!-- Search Student Modal Button -->
+                        <button class="btn btn-ghost btn-sm" onclick="my_modal_1.showModal()">
+                            <i class="fa-solid fa-search"></i>Search
+                        </button>
+                        
+                        <!-- Search Modal -->
+                        <dialog id="my_modal_1" class="modal">
+                            <div class="modal-box">
+                                <h3 class="text-xl font-black italic tracking-tighter text-base-content mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass text-primary"></i> 
+                                    Search <span class="text-primary not-italic">Student</span>
+                                </h3>
+                                <p class="text-sm opacity-60 mb-6 font-medium">Enter the student's ID Number to start a sit-in session.</p>
+
+                                <div class="form-control w-full">
+                                    <label class="label pt-0 pb-1">
+                                        <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student ID Number</span>
+                                    </label>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
+                                            <i class="fa-solid fa-id-card"></i>
+                                        </div>
+                                        <input type="text" id="searchIdNumber" placeholder="e.g. 21-1234-567" class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    </div>
+                                </div>
+                                
+                                <div class="modal-action mt-8">
+                                    <form method="dialog" class="w-full flex gap-3">
+                                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500">Cancel</button>
+                                        <button type="button" class="btn btn-primary flex-1 rounded-2xl font-black italic uppercase" onclick="searchStudent()">
+                                            Search <i class="fa-solid fa-arrow-right ml-1"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                        </dialog>
+
+                        <!-- Record Sit-in Modal -->
+                        <dialog id="my_modal_2" class="modal">
+                            <div class="modal-box p-8 max-w-md">
+                                <h3 class="text-2xl font-black italic tracking-tighter text-base-content mb-6 flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-user text-primary"></i>
+                                    Record <span class="text-primary not-italic">Sit-in</span>
+                                </h3>
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                        <div class="form-control">
+                                            <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">ID Number</span></label>
+                                            <input type="text" id="formIdNumber" placeholder="Enter ID" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        </div>
+                                        <div class="bg-primary/10 rounded-2xl border border-primary/20 flex justify-center gap-2 items-center text-center mt-[1.6rem]">
+                                            <p class="text-[10px] font-black uppercase tracking-widest text-primary/60">Remaining</p>
+                                            <p class="text-2xl font-black text-primary leading-none" id="formSessions">0</p>
+                                        </div>
+                                        <div class="form-control col-span-2">
+                                            <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student Name</span></label>
+                                            <input type="text" id="formStudentName" placeholder="Enter Name" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                        </div>
+                                    </div>
+                                    <div class="divider text-xs font-black opacity-30 uppercase tracking-widest before:bg-base-content/10 after:bg-base-content/10">Session Details</div>
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Purpose</span></label>
+                                        <select id="formPurpose" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"><option value="" disabled selected>Select Purpose</option></select>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Laboratory</span></label>
+                                        <select id="formLab" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"><option value="" disabled selected>Select Lab Room</option></select>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">PC Number</span></label>
+                                        <input type="text" id="formPcNumber" placeholder="e.g. PC-01" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    </div>
+                                </div>
+                                <div class="modal-action mt-8">
+                                    <form method="dialog" class="w-full flex gap-3">
+                                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500" id="closeSitinModal">Cancel</button>
+                                        <button type="button" class="btn btn-primary flex-1 rounded-2xl font-black italic uppercase" onclick="submitSitin()">Confirm Sit-in</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                        </dialog>
+
+                        <!-- Theme Dropdown -->
+                        <div class="dropdown dropdown-end ml-2">
                             <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
-                                <i class="fa-solid fa-palette opacity-50"></i>
-                                Theme
+                                <i class="fa-solid fa-palette opacity-50"></i> Theme
                                 <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
                             </div>
                             <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto">
@@ -85,23 +183,42 @@
                                 <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
                                 <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
                                 <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                                <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                                <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                                <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                                <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                                <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                                <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                                <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                                <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
                             </ul>
                         </div>
-                        
-                        <button onclick="logout()" class="btn btn-ghost btn-sm ml-4">
-                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
-                        </button>
+
+                        <!-- Notifications Dropdown -->
+                        <div class="dropdown dropdown-end ml-2">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
+                                <div class="indicator">
+                                    <i class="fa-solid fa-bell text-sm"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
+                                </div>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notificationList" class="max-h-60 overflow-y-auto">
+                                    <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
+                                </div>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Page Content -->
                 <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700 text-base-content">
                     <div class="flex flex-col gap-8">
                         <!-- Header -->
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 class="text-3xl font-black tracking-tight">Analytics Dashboard</h1>
-                                <p class="opacity-60 font-medium">Visualizing laboratory usage and student engagement trends</p>
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase leading-none mb-2">System <span class="text-primary not-italic">Analytics</span></h1>
+                                <p class="text-base-content/60 font-medium">Visualizing laboratory usage and student engagement trends.</p>
                             </div>
                         </div>
 
@@ -165,28 +282,33 @@
                 </main>
             </div>
 
-            <!-- Sidebar (Mobile drawer) -->
+            <!-- Sidebar (Desktop permanent + Mobile drawer) -->
             <div class="drawer-side z-[200]">
                 <label for="my-drawer" class="drawer-overlay"></label>
-                <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
-                    <li class="menu-title flex flex-row items-center gap-3 py-4 mb-4">
-                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
-                            <i class="fa-solid fa-desktop"></i>
+                <ul id="sidebar-nav" class="menu p-3 min-h-full bg-base-100 text-base-content space-y-1">
+                    <li class="sidebar-header flex flex-col items-center pt-5 pb-3 mb-1">
+                        <div class="sidebar-logo w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 mb-2 transition-all duration-300">
+                            <img src="/assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                         </div>
-                        <span class="text-xl font-black">CCS SIT-IN MONITORING</span>
+                        <span class="sidebar-brand-text text-[16px] font-black tracking-tighter italic uppercase whitespace-nowrap leading-tight text-center">
+                            <span class="text-primary not-italic">CCS</span> <span class="text-base-content">SIT-IN MONITORING</span>
+                        </span>
                     </li>
-                    <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
-                    <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
-                    <li><a href="/sit-in"><i class="fa-solid fa-clipboard-user mr-2"></i>Sit-in Session</a></li>
-                    <li><a href="/sit-in-records"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Sit-in Records</a></li>
-                    <li><a href="/sit-in-reports"><i class="fa-solid fa-chart-line mr-2"></i>Sit-in Reports</a></li>
-                    <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
-                    <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
-                    <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
-                    <li><a href="/admin/analytics" class="active"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a></li>
-                    <li class="mt-auto">
-                        <button onclick="logout()" class="btn btn-error btn-outline mt-4">
-                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                    <div class="divider my-0 opacity-20"></div>
+                    <li><a href="/admin" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-house w-4 text-center"></i><span class="sidebar-text">Dashboard</span></a></li>
+                    <li><a href="/students" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-users w-4 text-center"></i><span class="sidebar-text">Students</span></a></li>
+                    <li><a href="/sit-in" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-clipboard-user w-4 text-center"></i><span class="sidebar-text">Sit-in Session</span></a></li>
+                    <li><a href="/sit-in-records" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-clock-rotate-left w-4 text-center"></i><span class="sidebar-text">Sit-in Records</span></a></li>
+                    <li><a href="/sit-in-reports" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-chart-line w-4 text-center"></i><span class="sidebar-text">Sit-in Reports</span></a></li>
+                    <li><a href="/feedback-reports" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-comment-dots w-4 text-center"></i><span class="sidebar-text">Feedback</span></a></li>
+                    <li><a href="/reservations" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-calendar-check w-4 text-center"></i><span class="sidebar-text">Reservations</span></a></li>
+                    <li><a href="/admin/leaderboard" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-trophy w-4 text-center"></i><span class="sidebar-text">Leaderboard</span></a></li>
+                    <li><a href="/admin/manage-dropdowns" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-sliders w-4 text-center"></i><span class="sidebar-text">Manage Dropdowns</span></a></li>
+                    <li><a href="/admin/analytics" class="active bg-primary/10 text-primary border-r-4 border-primary !rounded-l-xl !rounded-r-none font-black"><i class="fa-solid fa-chart-pie w-4 text-center"></i><span class="sidebar-text">Analytics</span></a></li>
+                    <li class="mt-auto pt-4">
+                        <button onclick="logout()" class="btn btn-error btn-outline w-full rounded-2xl">
+                            <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                            <span class="sidebar-text">Logout</span>
                         </button>
                     </li>
                 </ul>
@@ -194,47 +316,40 @@
         </div>
 
         <script>
-            // Helper to get resolved CSS variable colors for Chart.js
-            function getThemeColor(variable) {
-                const temp = document.createElement('div');
-                temp.style.color = `var(${variable})`;
-                document.body.appendChild(temp);
-                const color = window.getComputedStyle(temp).color;
-                document.body.removeChild(temp);
-                return color;
+            function getThemeColor(v) {
+                const t = document.createElement('div');
+                t.style.color = `var(${v})`;
+                document.body.appendChild(t);
+                const c = window.getComputedStyle(t).color;
+                document.body.removeChild(t);
+                return c;
             }
 
-            // Initial Theme Setup (Immediate to prevent flash)
             const savedTheme = localStorage.getItem('theme') || 'forest';
             document.documentElement.setAttribute('data-theme', savedTheme);
 
             window.addEventListener('DOMContentLoaded', () => {
-                // Theme Switcher Logic
                 document.querySelectorAll(".theme-controller").forEach((btn) => {
                     btn.addEventListener("click", () => {
                         const theme = btn.getAttribute("data-set-theme");
                         document.documentElement.setAttribute("data-theme", theme);
                         localStorage.setItem("theme", theme);
-                        // Reload to re-render charts with new theme colors
                         location.reload();
                     });
                 });
 
+                fetch('/check-session').then(r=>r.json()).then(d=>{ if(!d.loggedIn || d.role !== 'admin') window.location.href='/login'; });
                 fetchSummary();
                 renderCharts();
+                
+                // Populate dynamic dropdowns
+                fetch('/api/dropdown-options').then(r=>r.json()).then(data=>{
+                    const formLab = document.getElementById('formLab');
+                    if(formLab && data.lab) data.lab.forEach(o => formLab.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                    const formPurpose = document.getElementById('formPurpose');
+                    if(formPurpose && data.purpose) data.purpose.forEach(o => formPurpose.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                });
             });
-
-            async function renderCharts() {
-                const textColor = getThemeColor('--color-base-content') || getThemeColor('--bc') || '#888';
-                const primaryColor = getThemeColor('--color-primary') || getThemeColor('--p') || '#5785f8';
-                const gridColor = 'rgba(128, 128, 128, 0.1)';
-
-                await Promise.all([
-                    renderLabChart(textColor),
-                    renderPurposeChart(textColor, primaryColor),
-                    renderTrendChart(textColor, primaryColor, gridColor)
-                ]);
-            }
 
             async function fetchSummary() {
                 try {
@@ -244,156 +359,126 @@
                     document.getElementById('stat-sitins').innerText = data.totalSitIns || 0;
                     document.getElementById('stat-feedbacks').innerText = data.totalFeedbacks || 0;
                     document.getElementById('stat-reservations').innerText = data.totalReservations || 0;
-                } catch (err) {
-                    console.error('Failed to fetch summary:', err);
-                }
+                } catch (err) { console.error(err); }
             }
 
-            async function renderLabChart(textColor) {
+            async function renderCharts() {
+                const textColor = getThemeColor('--color-base-content') || getThemeColor('--bc') || '#888';
+                const primaryColor = getThemeColor('--color-primary') || getThemeColor('--p') || '#5785f8';
+                const gridColor = 'rgba(128, 128, 128, 0.1)';
+
                 try {
-                    const res = await fetch('/api/admin/analytics/usage-by-lab');
-                    const data = await res.json();
-                    
-                    const ctx = document.getElementById('chart-labs').getContext('2d');
-                    new Chart(ctx, {
+                    const labsRes = await fetch('/api/admin/analytics/usage-by-lab');
+                    const labsData = await labsRes.json();
+                    new Chart(document.getElementById('chart-labs').getContext('2d'), {
                         type: 'doughnut',
-                        data: {
-                            labels: data.map(r => r.name),
-                            datasets: [{
-                                data: data.map(r => r.value),
-                                backgroundColor: [
-                                    '#5785f8', '#ff6b6b', '#3ae374', '#ff9f43', '#7d5fff'
-                                ],
-                                borderWidth: 0,
-                                borderRadius: 5,
-                                hoverOffset: 20
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        color: textColor,
-                                        font: { weight: 'bold', family: 'Inter' },
-                                        padding: 20,
-                                        usePointStyle: true
-                                    }
-                                }
-                            }
-                        }
+                        data: { labels: labsData.map(r => r.name), datasets: [{ data: labsData.map(r => r.value), backgroundColor: ['#5785f8', '#ff6b6b', '#3ae374', '#ff9f43', '#7d5fff'], borderWidth: 0 }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { weight: 'bold' } } } } }
                     });
-                } catch (err) {
-                    console.error('Failed to render lab chart:', err);
-                }
-            }
 
-            async function renderPurposeChart(textColor, primaryColor) {
-                try {
-                    const res = await fetch('/api/admin/analytics/usage-by-purpose');
-                    const data = await res.json();
-                    
-                    const ctx = document.getElementById('chart-purposes').getContext('2d');
-                    new Chart(ctx, {
+                    const purpRes = await fetch('/api/admin/analytics/usage-by-purpose');
+                    const purpData = await purpRes.json();
+                    new Chart(document.getElementById('chart-purposes').getContext('2d'), {
                         type: 'bar',
-                        data: {
-                            labels: data.map(r => r.name),
-                            datasets: [{
-                                label: 'Visits',
-                                data: data.map(r => r.value),
-                                backgroundColor: primaryColor,
-                                borderRadius: 10,
-                                barThickness: 20
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            indexAxis: 'y',
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                x: { 
-                                    grid: { display: false },
-                                    ticks: { color: textColor }
-                                },
-                                y: { 
-                                    grid: { display: false },
-                                    ticks: { 
-                                        color: textColor,
-                                        font: { weight: 'bold' }
-                                    }
-                                }
-                            }
-                        }
+                        data: { labels: purpData.map(r => r.name), datasets: [{ data: purpData.map(r => r.value), backgroundColor: primaryColor, borderRadius: 10 }] },
+                        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor } }, y: { ticks: { color: textColor, font: { weight: 'bold' } } } } }
                     });
-                } catch (err) {
-                    console.error('Failed to render purpose chart:', err);
-                }
+
+                    const trendRes = await fetch('/api/admin/analytics/daily-trends');
+                    const trendData = await trendRes.json();
+                    new Chart(document.getElementById('chart-trends').getContext('2d'), {
+                        type: 'line',
+                        data: { labels: trendData.map(r => new Date(r.name).toLocaleDateString([], { month: 'short', day: 'numeric' })), datasets: [{ data: trendData.map(r => r.value), borderColor: primaryColor, backgroundColor: primaryColor + '1A', fill: true, tension: 0.4 }] },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor } }, y: { grid: { color: gridColor }, ticks: { color: textColor } } } }
+                    });
+                } catch (err) { console.error(err); }
             }
 
-            async function renderTrendChart(textColor, primaryColor, gridColor) {
+            async function searchStudent() {
+                const idNumber = document.getElementById("searchIdNumber").value;
+                if (!idNumber) return showToast("Please enter an ID Number", "warning");
                 try {
-                    const res = await fetch('/api/admin/analytics/daily-trends');
+                    const res = await fetch(`/api/admin/search-student/${idNumber}`);
                     const data = await res.json();
-                    
-                    const ctx = document.getElementById('chart-trends').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: data.map(r => {
-                                const d = new Date(r.name);
-                                return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-                            }),
-                            datasets: [{
-                                label: 'Sit-ins',
-                                data: data.map(r => r.value),
-                                borderColor: primaryColor,
-                                backgroundColor: primaryColor + '1A', // 10% opacity hex
-                                fill: true,
-                                tension: 0.4,
-                                borderWidth: 4,
-                                pointRadius: 5,
-                                pointBackgroundColor: primaryColor
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                x: { 
-                                    grid: { display: false },
-                                    ticks: { color: textColor }
-                                },
-                                y: { 
-                                    beginAtZero: true,
-                                    grid: { 
-                                        color: gridColor,
-                                        drawBorder: false
-                                    },
-                                    ticks: { color: textColor }
-                                }
+                    if (res.ok) {
+                        document.getElementById("formIdNumber").value = idNumber;
+                        document.getElementById("formStudentName").value = data.name;
+                        document.getElementById("formSessions").innerText = data.sessionLeft;
+                        document.getElementById("my_modal_1").close();
+                        document.getElementById("my_modal_2").showModal();
+                    } else { showToast(data.error || "Student not found", "error"); }
+                } catch (err) { console.error(err); }
+            }
+
+            async function submitSitin() {
+                const payload = {
+                    idNumber: document.getElementById("formIdNumber").value,
+                    studentName: document.getElementById("formStudentName").value,
+                    purpose: document.getElementById("formPurpose").value,
+                    lab: document.getElementById("formLab").value,
+                    pcNumber: document.getElementById('formPcNumber').value
+                };
+                if (!payload.purpose || !payload.lab) return showToast("Please select purpose and lab", "error");
+                try {
+                    const res = await fetch("/api/admin/sit-in", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                    if (res.ok) { showToast("Sit-in recorded!", "success"); document.getElementById("my_modal_2").close(); }
+                    else { const data = await res.json(); showToast(data.error, "error"); }
+                } catch (err) { console.error(err); }
+            }
+
+            function updateNotifications() {
+                fetch("/api/notifications")
+                    .then((r) => r.json())
+                    .then((data) => {
+                        const list = document.getElementById("notificationList");
+                        const badge = document.querySelector(".indicator .badge");
+                        const unreadCount = data.filter((n) => !n.isRead).length;
+                        if (unreadCount > 0) { badge.innerText = unreadCount; badge.classList.remove("hidden"); }
+                        else { badge.classList.add("hidden"); }
+                        if (data.length === 0) { list.innerHTML = `<li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>`; }
+                        else {
+                            list.innerHTML = data.map(n => `
+                                <li>
+                                    <a class="flex flex-col items-start gap-1 py-3 ${!n.isRead ? "bg-primary/5" : ""}">
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-xs ${n.type === "success" ? "badge-success" : n.type === "error" ? "badge-error" : "badge-info"}"></span>
+                                            <span class="text-xs font-bold">${n.message}</span>
+                                        </div>
+                                        <span class="text-[10px] opacity-40">${new Date(n.created_at).toLocaleString()}</span>
+                                    </a>
+                                </li>
+                            `).join('');
+                            if (unreadCount > 0) {
+                                const markBtn = document.createElement("button");
+                                markBtn.className = "btn btn-ghost btn-xs w-full text-[10px] uppercase tracking-tighter mt-2 pt-2 border-t border-base-content/5";
+                                markBtn.innerText = "Mark all as read";
+                                markBtn.onclick = () => fetch("/api/notifications/mark-read", { method: "POST" }).then(() => updateNotifications());
+                                list.appendChild(markBtn);
                             }
                         }
                     });
-                } catch (err) {
-                    console.error('Failed to render trend chart:', err);
-                }
             }
+
+            updateNotifications();
+            setInterval(updateNotifications, 30000);
 
             function logout() {
-                fetch("/logout", { method: "POST" })
-                    .then((r) => r.json())
-                    .then((d) => {
-                        if (d.success) window.location.href = d.redirectUrl;
-                    });
+                fetch("/logout", { method: "POST" }).then(r=>r.json()).then(d=>{ if(d.success) window.location.href=d.redirectUrl; });
             }
+        
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar-nav');
+                const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                if (isCollapsed) { sidebar.classList.remove('sidebar-collapsed'); localStorage.setItem('sidebar-collapsed', '0'); }
+                else { sidebar.classList.add('sidebar-collapsed'); localStorage.setItem('sidebar-collapsed', '1'); }
+            }
+
+            (function() {
+                if (localStorage.getItem('sidebar-collapsed') === '1') {
+                    const sidebar = document.getElementById('sidebar-nav');
+                    if (sidebar) sidebar.classList.add('sidebar-collapsed');
+                }
+            })();
         </script>
     </body>
 </html>

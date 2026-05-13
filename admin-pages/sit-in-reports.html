@@ -3,723 +3,249 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>CCS - Sit-In Monitoring System</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/daisyui@5"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <script
-            src="https://kit.fontawesome.com"
-            crossorigin="anonymous"
-        ></script>
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        />
+        <title>Sit-in Reports - CCS Sit-In Monitoring</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+        <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <script src="/notify.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/notification-client.js"></script>
-        <link rel="stylesheet" href="style.css" />
-        <!-- Export Libraries -->
+        <link rel="stylesheet" href="/style.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     </head>
 
+    <style>
+        #sidebar-nav {
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            width: 16rem;
+        }
+        #sidebar-nav.sidebar-collapsed { width: 4.5rem; }
+        #sidebar-nav.sidebar-collapsed .sidebar-text { display: none; }
+        #sidebar-nav.sidebar-collapsed .sidebar-brand-text { display: none; }
+        #sidebar-nav.sidebar-collapsed li > a,
+        #sidebar-nav.sidebar-collapsed li > button {
+            justify-content: center;
+            padding: 0.75rem;
+            border-right: none !important;
+        }
+        #sidebar-nav.sidebar-collapsed li > a i { margin-right: 0 !important; }
+        #sidebar-nav.sidebar-collapsed .sidebar-header { align-items: center; padding: 1rem 0; }
+        #sidebar-nav.sidebar-collapsed .sidebar-logo { width: 2.5rem; height: 2.5rem; }
+    </style>
+
     <body class="bg-base-200 min-h-screen">
-        <div class="drawer">
+        <div class="drawer lg:drawer-open">
             <input id="my-drawer" type="checkbox" class="drawer-toggle" />
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
-                <div
-                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm"
-                >
-                    <div class="flex-none md:hidden">
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm">
+                    <div class="flex-none lg:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                class="inline-block w-6 h-6 stroke-current"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M4 6h16M4 12h16M4 18h16"
-                                ></path>
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </label>
                     </div>
 
-                    <div class="flex-1 gap-3 flex items-center">
+                    <div class="flex-1 gap-3 flex items-center lg:hidden">
                         <div class="avatar">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20"
-                            >
-                                <img
-                                    src="assets/ccslogo.png"
-                                    alt="CCS Logo"
-                                    class="w-full h-full object-contain"
-                                />
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                                <img src="/assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                             </div>
                         </div>
-                        <a class="text-xl font-black tracking-tight"
-                            ><span class="text-primary">CCS</span> SIT-IN
-                            MONITORING</a
-                        >
+                        <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
                     </div>
 
-                    <!-- Desktop Menu -->
-                    <div class="hidden md:flex flex-none items-center gap-1">
-                        <!-- Open the modal using ID.showModal() method -->
-                        <button
-                            class="btn btn-ghost btn-sm"
-                            onclick="my_modal_1.showModal()"
-                        >
+                    <!-- Sidebar toggle for desktop -->
+                    <div class="hidden lg:flex flex-none">
+                        <button id="sidebar-toggle" onclick="toggleSidebar()" class="btn btn-ghost btn-square btn-sm" title="Toggle Sidebar">
+                            <i class="fa-solid fa-bars text-base"></i>
+                        </button>
+                    </div>
+
+                    <div class="hidden lg:flex flex-none items-center gap-1 ml-auto">
+                        <!-- Search Student Modal Button -->
+                        <button class="btn btn-ghost btn-sm" onclick="my_modal_1.showModal()">
                             <i class="fa-solid fa-search"></i>Search
                         </button>
+                        
+                        <!-- Search Modal -->
                         <dialog id="my_modal_1" class="modal">
                             <div class="modal-box">
-                                <h3
-                                    class="text-xl font-black italic tracking-tighter text-base-content mb-2 flex items-center gap-2"
-                                >
-                                    <i
-                                        class="fa-solid fa-magnifying-glass text-primary"
-                                    ></i>
-                                    Search
-                                    <span class="text-primary not-italic"
-                                        >Student</span
-                                    >
+                                <h3 class="text-xl font-black italic tracking-tighter text-base-content mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-magnifying-glass text-primary"></i> 
+                                    Search <span class="text-primary not-italic">Student</span>
                                 </h3>
-                                <p class="text-sm opacity-60 mb-6 font-medium">
-                                    Enter the student's ID Number to start a
-                                    sit-in session.
-                                </p>
+                                <p class="text-sm opacity-60 mb-6 font-medium">Enter the student's ID Number to start a sit-in session.</p>
 
                                 <div class="form-control w-full">
                                     <label class="label pt-0 pb-1">
-                                        <span
-                                            class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                            >Student ID Number</span
-                                        >
+                                        <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student ID Number</span>
                                     </label>
                                     <div class="relative group">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10"
-                                        >
+                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-primary/50 group-focus-within:text-primary transition-colors z-10">
                                             <i class="fa-solid fa-id-card"></i>
                                         </div>
-                                        <input
-                                            type="text"
-                                            id="searchIdNumber"
-                                            placeholder="e.g. 21-1234-567"
-                                            class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
-                                        />
+                                        <input type="text" id="searchIdNumber" placeholder="e.g. 21-1234-567" class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
                                 </div>
-
+                                
                                 <div class="modal-action mt-8">
-                                    <form
-                                        method="dialog"
-                                        class="w-full flex gap-3"
-                                    >
-                                        <button
-                                            class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-primary flex-1 rounded-2xl  font-black italic uppercase"
-                                            onclick="searchStudent()"
-                                        >
-                                            Search
-                                            <i
-                                                class="fa-solid fa-arrow-right ml-1"
-                                            ></i>
+                                    <form method="dialog" class="w-full flex gap-3">
+                                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500">Cancel</button>
+                                        <button type="button" class="btn btn-primary flex-1 rounded-2xl font-black italic uppercase" onclick="searchStudent()">
+                                            Search <i class="fa-solid fa-arrow-right ml-1"></i>
                                         </button>
                                     </form>
                                 </div>
                             </div>
-                            <form method="dialog" class="modal-backdrop">
-                                <button>close</button>
-                            </form>
+                            <form method="dialog" class="modal-backdrop"><button>close</button></form>
                         </dialog>
 
+                        <!-- Record Sit-in Modal -->
                         <dialog id="my_modal_2" class="modal">
                             <div class="modal-box p-8 max-w-md">
-                                <h3
-                                    class="text-2xl font-black italic tracking-tighter text-base-content mb-6 flex items-center gap-2"
-                                >
-                                    <i
-                                        class="fa-solid fa-clipboard-user text-primary"
-                                    ></i>
-                                    Record
-                                    <span class="text-primary not-italic"
-                                        >Sit-in</span
-                                    >
+                                <h3 class="text-2xl font-black italic tracking-tighter text-base-content mb-6 flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-user text-primary"></i>
+                                    Record <span class="text-primary not-italic">Sit-in</span>
                                 </h3>
-
                                 <div class="space-y-4">
-                                    <!-- Readonly Info Cards -->
                                     <div class="grid grid-cols-2 gap-4 mb-6">
-                                        <!-- ID Number Input -->
                                         <div class="form-control">
-                                            <label class="label pt-0 pb-1">
-                                                <span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                                    >ID Number</span
-                                                >
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="formIdNumber"
-                                                placeholder="Enter ID"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
-                                            />
+                                            <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">ID Number</span></label>
+                                            <input type="text" id="formIdNumber" placeholder="Enter ID" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                         </div>
-
-                                        <!-- Remaining Sessions Highlight -->
-                                        <div
-                                            class="bg-primary/10 rounded-2xl border border-primary/20 flex justify-center gap-2 items-center text-center mt-[1.6rem]"
-                                        >
-                                            <p
-                                                class="text-[10px] font-black uppercase tracking-widest text-primary/60"
-                                            >
-                                                Remaining
-                                            </p>
-                                            <p
-                                                class="text-2xl font-black text-primary leading-none"
-                                                id="formSessions"
-                                            >
-                                                0
-                                            </p>
+                                        <div class="bg-primary/10 rounded-2xl border border-primary/20 flex justify-center gap-2 items-center text-center mt-[1.6rem]">
+                                            <p class="text-[10px] font-black uppercase tracking-widest text-primary/60">Remaining</p>
+                                            <p class="text-2xl font-black text-primary leading-none" id="formSessions">0</p>
                                         </div>
-
-                                        <!-- Student Name Input -->
                                         <div class="form-control col-span-2">
-                                            <label class="label pt-0 pb-1">
-                                                <span
-                                                    class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                                    >Student Name</span
-                                                >
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="formStudentName"
-                                                placeholder="Enter Name"
-                                                class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold"
-                                            />
+                                            <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Student Name</span></label>
+                                            <input type="text" id="formStudentName" placeholder="Enter Name" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                         </div>
                                     </div>
-
-                                    <div
-                                        class="divider text-xs font-black opacity-30 uppercase tracking-widest before:bg-base-content/10 after:bg-base-content/10"
-                                    >
-                                        Session Details
-                                    </div>
-
-                                    <!-- Inputs -->
+                                    <div class="divider text-xs font-black opacity-30 uppercase tracking-widest before:bg-base-content/10 after:bg-base-content/10">Session Details</div>
                                     <div class="form-control">
-                                        <label class="label pt-0 pb-1">
-                                            <span
-                                                class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                                >Purpose</span
-                                            >
-                                        </label>
-                                        <select
-                                            id="formPurpose"
-                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
-                                        >
-                                            <option value="" disabled selected>Select Purpose</option>
-                                        </select>
+                                        <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Purpose</span></label>
+                                        <select id="formPurpose" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"><option value="" disabled selected>Select Purpose</option></select>
                                     </div>
-
                                     <div class="form-control">
-                                        <label class="label pt-0 pb-1">
-                                            <span
-                                                class="label-text-alt font-black uppercase opacity-40 tracking-widest"
-                                                >Laboratory</span
-                                            >
-                                        </label>
-                                        <select
-                                            id="formLab"
-                                            class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"
-                                        >
-                                            <option value="" disabled selected>
-                                                Select Lab Room
-                                            </option>
-                                        </select>
+                                        <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Laboratory</span></label>
+                                        <select id="formLab" class="select select-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary font-bold"><option value="" disabled selected>Select Lab Room</option></select>
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">PC Number</span></label>
+                                        <input type="text" id="formPcNumber" placeholder="e.g. PC-01" class="input input-bordered w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                     </div>
                                 </div>
-
                                 <div class="modal-action mt-8">
-                                    <form
-                                        method="dialog"
-                                        class="w-full flex gap-3"
-                                    >
-                                        <button
-                                            class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500"
-                                            id="closeSitinModal"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-primary flex-1 rounded-2xl  font-black italic uppercase"
-                                            onclick="submitSitin()"
-                                        >
-                                            Confirm Sit-in
-                                        </button>
+                                    <form method="dialog" class="w-full flex gap-3">
+                                        <button class="btn btn-ghost flex-1 rounded-2xl font-bold border border-base-content/5 hover:bg-base-content hover:text-base-100 transition-all duration-500" id="closeSitinModal">Cancel</button>
+                                        <button type="button" class="btn btn-primary flex-1 rounded-2xl font-black italic uppercase" onclick="submitSitin()">Confirm Sit-in</button>
                                     </form>
                                 </div>
                             </div>
-                            <form method="dialog" class="modal-backdrop">
-                                <button>close</button>
-                            </form>
+                            <form method="dialog" class="modal-backdrop"><button>close</button></form>
                         </dialog>
 
-                        <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
-                        <a href="/students" class="btn btn-ghost btn-sm">
-                            Students
-                        </a>
-                        <a href="/sit-in" class="btn btn-ghost btn-sm">
-                            Sit-in
-                        </a>
-                        <a href="/sit-in-records" class="btn btn-ghost btn-sm">
-                            Sit-in Records
-                        </a>
-                        <a
-                            href="/sit-in-reports"
-                            class="btn btn-primary btn-sm"
-                        >
-                            Sit-in Reports
-                        </a>
-                        <a
-                            href="/feedback-reports"
-                            class="btn btn-ghost btn-sm"
-                        >
-                            Feedback Reports
-                        </a>
-                        <a href="/reservations" class="btn btn-ghost btn-sm">
-                            Reservations
-                        </a>
-                        <a href="/admin/leaderboard" class="btn btn-ghost btn-sm">
-                            <i class="fa-solid fa-trophy mr-2"></i>Leaderboard
-                        </a>
-                        <a href="/admin/manage-dropdowns" class="btn btn-ghost btn-sm">
-                            <i class="fa-solid fa-sliders mr-2"></i>Manage
-                        </a>
-                        <a href="/admin/analytics" class="btn btn-ghost btn-sm">
-                            <i class="fa-solid fa-chart-pie mr-2"></i>Analytics
-                        </a>
-
-                        <div class="dropdown dropdown-end ml-4">
-                            <div
-                                tabindex="0"
-                                role="button"
-                                class="btn btn-ghost btn-sm gap-2"
-                            >
-                                <i class="fa-solid fa-palette opacity-50"></i>
-                                Theme
-                                <i
-                                    class="fa-solid fa-chevron-down text-[10px] opacity-50"
-                                ></i>
+                        <!-- Theme Dropdown -->
+                        <div class="dropdown dropdown-end ml-2">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                                <i class="fa-solid fa-palette opacity-50"></i> Theme
+                                <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
                             </div>
-                             <ul
-                                tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto"
-                            >
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="light"
-                                    >
-                                        Light
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="dark"
-                                    >
-                                        Dark
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="cupcake"
-                                    >
-                                        Cupcake
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="bumblebee"
-                                    >
-                                        Bumblebee
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="emerald"
-                                    >
-                                        Emerald
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="corporate"
-                                    >
-                                        Corporate
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="synthwave"
-                                    >
-                                        Synthwave
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="retro"
-                                    >
-                                        Retro
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="cyberpunk"
-                                    >
-                                        Cyberpunk
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="valentine"
-                                    >
-                                        Valentine
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="halloween"
-                                    >
-                                        Halloween
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="garden"
-                                    >
-                                        Garden
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="forest"
-                                    >
-                                        Forest
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="aqua"
-                                    >
-                                        Aqua
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="lofi"
-                                    >
-                                        Lofi
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="pastel"
-                                    >
-                                        Pastel
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="fantasy"
-                                    >
-                                        Fantasy
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="wireframe"
-                                    >
-                                        Wireframe
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="black"
-                                    >
-                                        Black
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="luxury"
-                                    >
-                                        Luxury
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="dracula"
-                                    >
-                                        Dracula
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="cmyk"
-                                    >
-                                        Cmyk
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="autumn"
-                                    >
-                                        Autumn
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="business"
-                                    >
-                                        Business
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="acid"
-                                    >
-                                        Acid
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="lemonade"
-                                    >
-                                        Lemonade
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="night"
-                                    >
-                                        Night
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="coffee"
-                                    >
-                                        Coffee
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="winter"
-                                    >
-                                        Winter
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="dim"
-                                    >
-                                        Dim
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="nord"
-                                    >
-                                        Nord
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="sunset"
-                                    >
-                                        Sunset
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="caramellatte"
-                                    >
-                                        Caramellatte
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="abyss"
-                                    >
-                                        Abyss
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        class="theme-controller"
-                                        data-set-theme="silk"
-                                    >
-                                        Silk
-                                    </button>
-                                </li>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto">
+                                <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                                <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                                <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                                <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                                <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                                <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                                <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                                <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                                <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                                <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                                <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                                <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                                <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                                <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                                <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                                <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                                <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                                <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                                <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                                <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                                <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                                <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                                <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                                <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                                <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                                <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                                <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                                <li><button class="theme-controller" data-set-theme="coffee">Coffee</button></li>
+                                <li><button class="theme-controller" data-set-theme="winter">Winter</button></li>
+                                <li><button class="theme-controller" data-set-theme="dim">Dim</button></li>
+                                <li><button class="theme-controller" data-set-theme="nord">Nord</button></li>
+                                <li><button class="theme-controller" data-set-theme="sunset">Sunset</button></li>
+                                <li><button class="theme-controller" data-set-theme="caramellatte">Caramellatte</button></li>
+                                <li><button class="theme-controller" data-set-theme="abyss">Abyss</button></li>
+                                <li><button class="theme-controller" data-set-theme="silk">Silk</button></li>
                             </ul>
                         </div>
 
-                        <div class="dropdown dropdown-end">
-                            <div
-                                tabindex="0"
-                                role="button"
-                                class="btn btn-ghost btn-circle"
-                            >
+                        <!-- Notifications Dropdown -->
+                        <div class="dropdown dropdown-end ml-2">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
                                 <div class="indicator">
-                                    <i class="fa-solid fa-bell text-lg"></i>
-                                    <span
-                                        id="notif-bell-badge"
-                                        class="badge badge-xs badge-primary indicator-item hidden"
-                                    ></span>
+                                    <i class="fa-solid fa-bell text-sm"></i>
+                                    <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
                                 </div>
                             </div>
-                            <ul
-                                tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow border border-base-content/10 mt-2"
-                            >
-                                <li
-                                    class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0"
-                                >
-                                    Notifications
-                                </li>
-                                <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow mt-2">
+                                <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
+                                <div id="notificationList" class="max-h-60 overflow-y-auto">
                                     <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
                                 </div>
                             </ul>
                         </div>
-
-                        <button
-                            onclick="logout()"
-                            class="btn btn-primary btn-sm ml-4"
-                        >
-                            <i class="fa-solid fa-right-from-bracket mr-2"></i
-                            >Logout
-                        </button>
                     </div>
                 </div>
 
-                <!-- Page Content -->
                 <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
                     <div class="flex flex-col gap-8">
-                        <!-- Header -->
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h1 class="text-3xl font-black tracking-tight">Sit-in Reports</h1>
-                                <p class="opacity-60 font-medium">Detailed historical logs and analytics of all sit-in sessions</p>
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase leading-none mb-2">Sit-in <span class="text-primary not-italic">Reports</span></h1>
+                                <p class="text-base-content/60 font-medium">Detailed historical logs and analytics of all sit-in sessions.</p>
                             </div>
-                            
-                            <!-- Export Controls -->
                             <div class="flex flex-wrap gap-2">
                                 <div class="bg-base-100 p-1.5 rounded-2xl border border-base-content/5 shadow-sm flex gap-1">
-                                    <button onclick="exportReport('csv')" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs">
-                                        <i class="fa-solid fa-file-csv text-success"></i> CSV
-                                    </button>
-                                    <button onclick="exportReport('excel')" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs">
-                                        <i class="fa-solid fa-file-excel text-success"></i> Excel
-                                    </button>
-                                    <button onclick="exportReport('pdf')" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs">
-                                        <i class="fa-solid fa-file-pdf text-error"></i> PDF
-                                    </button>
-                                    <button onclick="window.print()" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs">
-                                        <i class="fa-solid fa-print text-primary"></i> Print
-                                    </button>
+                                    <button onclick="exportReport('csv')" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs"><i class="fa-solid fa-file-csv text-success"></i> CSV</button>
+                                    <button onclick="exportReport('excel')" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs"><i class="fa-solid fa-file-excel text-success"></i> Excel</button>
+                                    <button onclick="exportReport('pdf')" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs"><i class="fa-solid fa-file-pdf text-error"></i> PDF</button>
+                                    <button onclick="window.print()" class="btn btn-ghost btn-sm rounded-xl gap-2 text-xs"><i class="fa-solid fa-print text-primary"></i> Print</button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Filters Section -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100/80 backdrop-blur-md p-6 rounded-3xl shadow-sm">
-                            <!-- Search -->
                             <div class="form-control w-full">
-                                <label class="label pt-0 pb-1">
-                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Student</span>
-                                </label>
+                                <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Search Student</span></label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
-                                        <i class="fa-solid fa-magnifying-glass"></i>
-                                    </div>
-                                    <input type="text" id="reportSearch" placeholder="Name or ID Number..." 
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10"><i class="fa-solid fa-magnifying-glass"></i></div>
+                                    <input type="text" id="reportSearch" placeholder="Name or ID Number..." class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                 </div>
                             </div>
-
-                            <!-- Date Filter -->
                             <div class="form-control w-full">
-                                <label class="label pt-0 pb-1">
-                                    <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Filter by Date</span>
-                                </label>
+                                <label class="label pt-0 pb-1"><span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Filter by Date</span></label>
                                 <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
-                                        <i class="fa-solid fa-calendar-day"></i>
-                                    </div>
-                                    <input type="date" id="reportDate" 
-                                        class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10"><i class="fa-solid fa-calendar-day"></i></div>
+                                    <input type="date" id="reportDate" class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
                                 </div>
                             </div>
-
-                            <!-- Results Summary -->
                             <div class="flex items-end justify-end">
                                 <div class="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10 flex flex-col items-center">
                                     <span class="text-[10px] uppercase font-black tracking-widest opacity-40">Total Records</span>
@@ -728,86 +254,66 @@
                             </div>
                         </div>
 
-                        <!-- Table -->
                         <div class="card bg-base-100 shadow-sm overflow-hidden rounded-3xl">
                             <div class="overflow-x-auto">
                                 <table class="table table-md w-full" id="reportsTable">
                                     <thead class="bg-base-200/50">
-                                        <tr>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4">Student</th>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4">ID Number</th>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4">Purpose</th>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4">Laboratory</th>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4 text-center">Login</th>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4 text-center">Logout</th>
-                                            <th class="font-black uppercase text-[10px] tracking-widest opacity-50 py-4 text-center">Date</th>
+                                        <tr class="text-[10px] uppercase tracking-widest font-black opacity-50">
+                                            <th class="py-4">Student</th>
+                                            <th class="py-4">ID Number</th>
+                                            <th class="py-4">Purpose</th>
+                                            <th class="py-4">Laboratory</th>
+                                            <th class="py-4 text-center">Login</th>
+                                            <th class="py-4 text-center">Logout</th>
+                                            <th class="py-4 text-center">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody id="reportsTableBody">
-                                        <!-- Rows injected here -->
-                                        <tr>
-                                            <td colspan="7" class="text-center py-20">
-                                                <span class="loading loading-spinner loading-lg text-primary"></span>
-                                            </td>
-                                        </tr>
+                                        <tr><td colspan="7" class="text-center py-20"><span class="loading loading-spinner loading-lg text-primary"></span></td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- Pagination -->
                         <div class="flex flex-col md:flex-row items-center justify-between gap-4 px-2">
                             <p class="text-xs font-bold opacity-40 uppercase tracking-widest" id="paginationInfo">Showing 0 of 0 records</p>
-                            
                             <div class="join bg-base-100 shadow-sm">
-                                <button class="join-item btn btn-sm" id="prevPage" onclick="changePage(-1)">
-                                    <i class="fa-solid fa-chevron-left"></i>
-                                </button>
-                                <div class="join-item btn btn-sm pointer-events-none no-animation px-6 flex gap-2">
-                                    <span class="opacity-40 uppercase tracking-widest text-[10px] font-black">Page</span>
-                                    <input type="number" id="pageInput" value="1" min="1" 
-                                        class="w-10 bg-transparent text-center font-bold focus:outline-none" 
-                                        onchange="jumpToPage(this.value)">
-                                    <span class="opacity-40 uppercase tracking-widest text-[10px] font-black" id="totalPages">of 1</span>
-                                </div>
-                                <button class="join-item btn btn-sm" id="nextPage" onclick="changePage(1)">
-                                    <i class="fa-solid fa-chevron-right"></i>
-                                </button>
+                                <button class="join-item btn btn-sm" id="prevPage" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                                <div class="join-item btn btn-sm pointer-events-none no-animation px-6 flex gap-2"><span class="opacity-40 uppercase tracking-widest text-[10px] font-black">Page</span><input type="number" id="pageInput" value="1" min="1" class="w-10 bg-transparent text-center font-bold focus:outline-none" onchange="jumpToPage(this.value)"><span class="opacity-40 uppercase tracking-widest text-[10px] font-black" id="totalPages">of 1</span></div>
+                                <button class="join-item btn btn-sm" id="nextPage" onclick="changePage(1)"><i class="fa-solid fa-chevron-right"></i></button>
                             </div>
                         </div>
                     </div>
                 </main>
             </div>
 
-            <!-- Sidebar (Mobile drawer) -->
+            <!-- Sidebar (Desktop permanent + Mobile drawer) -->
             <div class="drawer-side z-[200]">
                 <label for="my-drawer" class="drawer-overlay"></label>
-                <ul
-                    class="menu p-4 w-80 min-h-full bg-base-100 text-base-content"
-                >
-                    <li
-                        class="menu-title flex flex-row items-center gap-3 py-4 mb-4"
-                    >
-                        <div
-                            class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"
-                        >
-                            <i class="fa-solid fa-desktop"></i>
+                <ul id="sidebar-nav" class="menu p-3 min-h-full bg-base-100 text-base-content space-y-1">
+                    <li class="sidebar-header flex flex-col items-center pt-5 pb-3 mb-1">
+                        <div class="sidebar-logo w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 mb-2 transition-all duration-300">
+                            <img src="/assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
                         </div>
-                        <span class="text-xl font-black">CCS SIT-IN MONITORING</span>
+                        <span class="sidebar-brand-text text-[16px] font-black tracking-tighter italic uppercase whitespace-nowrap leading-tight text-center">
+                            <span class="text-primary not-italic">CCS</span> <span class="text-base-content">SIT-IN MONITORING</span>
+                        </span>
                     </li>
-                    <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
-                    <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
-                    <li><a href="/sit-in"><i class="fa-solid fa-clipboard-user mr-2"></i>Sit-in Session</a></li>
-                    <li><a href="/sit-in-records"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Sit-in Records</a></li>
-                    <li><a href="/sit-in-reports" class="active"><i class="fa-solid fa-chart-line mr-2"></i>Sit-in Reports</a></li>
-                    <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
-                    <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
-                    <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
-                    <li><a href="/admin/manage-dropdowns"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
-                    <li><a href="/admin/analytics"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a></li>
-                    <li class="mt-auto">
-                        <button onclick="logout()" class="btn btn-error btn-outline mt-4">
-                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                    <div class="divider my-0 opacity-20"></div>
+                    <li><a href="/admin" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-house w-4 text-center"></i><span class="sidebar-text">Dashboard</span></a></li>
+                    <li><a href="/students" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-users w-4 text-center"></i><span class="sidebar-text">Students</span></a></li>
+                    <li><a href="/sit-in" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-clipboard-user w-4 text-center"></i><span class="sidebar-text">Sit-in Session</span></a></li>
+                    <li><a href="/sit-in-records" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-clock-rotate-left w-4 text-center"></i><span class="sidebar-text">Sit-in Records</span></a></li>
+                    <li><a href="/sit-in-reports" class="active bg-primary/10 text-primary border-r-4 border-primary !rounded-l-xl !rounded-r-none font-black"><i class="fa-solid fa-chart-line w-4 text-center"></i><span class="sidebar-text">Sit-in Reports</span></a></li>
+                    <li><a href="/feedback-reports" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-comment-dots w-4 text-center"></i><span class="sidebar-text">Feedback</span></a></li>
+                    <li><a href="/reservations" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-calendar-check w-4 text-center"></i><span class="sidebar-text">Reservations</span></a></li>
+                    <li><a href="/admin/leaderboard" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-trophy w-4 text-center"></i><span class="sidebar-text">Leaderboard</span></a></li>
+                    <li><a href="/admin/manage-dropdowns" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-sliders w-4 text-center"></i><span class="sidebar-text">Manage Dropdowns</span></a></li>
+                    <li><a href="/admin/analytics" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-chart-pie w-4 text-center"></i><span class="sidebar-text">Analytics</span></a></li>
+                    <li class="mt-auto pt-4">
+                        <button onclick="logout()" class="btn btn-error btn-outline w-full rounded-2xl">
+                            <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                            <span class="sidebar-text">Logout</span>
                         </button>
                     </li>
                 </ul>
@@ -815,17 +321,13 @@
         </div>
 
         <script>
-            let currentPage = 1;
+            let currentPage = 1, totalPages = 1, reportData = [];
             const recordsPerPage = 20;
-            let totalPages = 1;
-            let reportData = [];
 
-            // Initial Theme Setup
             const savedTheme = localStorage.getItem("theme") || "forest";
             document.documentElement.setAttribute("data-theme", savedTheme);
 
             window.addEventListener("DOMContentLoaded", () => {
-                // Theme Switcher
                 document.querySelectorAll(".theme-controller").forEach((btn) => {
                     btn.addEventListener("click", () => {
                         const theme = btn.getAttribute("data-set-theme");
@@ -834,379 +336,107 @@
                     });
                 });
 
-                fetch("/check-session")
-                    .then((r) => r.json())
-                    .then((d) => {
-                        if (!d.loggedIn || d.role !== "admin")
-                            window.location.href = "/login";
-                        else {
-                            loadReports();
-                            fetch('/api/dropdown-options').then(r=>r.json()).then(data=>{
-                                const ps = document.getElementById('formPurpose');
-                                if(ps && data.purpose) data.purpose.forEach(o => ps.innerHTML += `<option value="${o.value}">${o.value}</option>`);
-                                const ls = document.getElementById('formLab');
-                                if(ls && data.lab) data.lab.forEach(o => ls.innerHTML += `<option value="${o.value}">${o.value}</option>`);
-                            });
-                        }
-                    })
-                    .catch(() => (window.location.href = "/login"));
+                fetch("/check-session").then(r => r.json()).then(d => {
+                    if (!d.loggedIn || d.role !== "admin") window.location.href = "/login";
+                    else {
+                        loadReports();
+                        fetch('/api/dropdown-options').then(r => r.json()).then(data => {
+                            const ps = document.getElementById('formPurpose');
+                            if (ps && data.purpose) data.purpose.forEach(o => ps.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                            const ls = document.getElementById('formLab');
+                            if (ls && data.lab) data.lab.forEach(o => ls.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                        });
+                    }
+                });
 
-                // Filter Listeners
                 document.getElementById("reportSearch").addEventListener("input", debounce(loadReports, 500));
                 document.getElementById("reportDate").addEventListener("change", loadReports);
-
-                // Sync profile sync (handled via common logic in real app, simplified here)
-                fetch("/api/studentinfo")
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.error && data.profilePic) {
-                            document.querySelectorAll(".avatar img").forEach(img => {
-                                if (!img.src.includes("ccslogo")) img.src = data.profilePic;
-                            });
-                        }
-                    });
             });
 
             async function loadReports() {
-                const search = document.getElementById("reportSearch").value;
-                const date = document.getElementById("reportDate").value;
-                const pageInput = document.getElementById("pageInput");
-                
-                currentPage = parseInt(pageInput.value) || 1;
-
-                const url = `/api/admin/reports/sit-in?search=${encodeURIComponent(search)}&date=${date}&page=${currentPage}&limit=${recordsPerPage}`;
-                
-                try {
-                    const res = await fetch(url);
-                    const result = await res.json();
-                    
-                    if (res.ok) {
-                        reportData = result.data;
-                        totalPages = result.totalPages || 1;
-                        renderReports(result.data);
-                        updatePagination(result.total, result.totalPages);
-                    }
-                } catch (err) {
-                    console.error("Error loading reports:", err);
-                }
+                const s = document.getElementById("reportSearch").value;
+                const d = document.getElementById("reportDate").value;
+                currentPage = parseInt(document.getElementById("pageInput").value) || 1;
+                const res = await fetch(`/api/admin/reports/sit-in?search=${encodeURIComponent(s)}&date=${d}&page=${currentPage}&limit=${recordsPerPage}`);
+                const resData = await res.json();
+                if (res.ok) { reportData = resData.data; totalPages = resData.totalPages || 1; renderReports(resData.data); updatePagination(resData.total, resData.totalPages); }
             }
 
             function renderReports(data) {
                 const tbody = document.getElementById("reportsTableBody");
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-20 opacity-40"><i class="fa-solid fa-inbox text-4xl mb-4"></i><br>No records found for the selected filters</td></tr>`;
-                    return;
-                }
-
-                tbody.innerHTML = data.map(record => `
+                if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="text-center py-20 opacity-40">No records found</td></tr>`; return; }
+                tbody.innerHTML = data.map(r => `
                     <tr class="hover:bg-base-200 transition-all duration-300">
                         <td>
                             <div class="flex items-center gap-3">
-                                <div class="avatar">
-                                    <div class="mask mask-squircle w-10 h-10 bg-base-200">
-                                        <img src="${record.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${record.studentName}`}" alt="Avatar" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="font-bold text-sm">${record.studentName}</div>
-                                    <div class="text-[10px] opacity-40 font-black uppercase tracking-widest">${record.date}</div>
-                                </div>
+                                <div class="avatar"><div class="mask mask-squircle w-10 h-10 bg-base-200"><img src="${r.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.studentName}`}" /></div></div>
+                                <div><div class="font-bold text-sm">${r.studentName}</div><div class="text-[10px] opacity-40 font-black uppercase tracking-widest">${r.date}</div></div>
                             </div>
                         </td>
-                        <td class="font-mono text-xs font-bold">${record.idNumber}</td>
-                        <td><div class="max-w-[150px] truncate text-sm font-medium" title="${record.purpose}">${record.purpose}</div></td>
-                        <td><div class="badge badge-ghost badge-sm opacity-70">${record.lab}</div></td>
-                        <td class="text-center font-mono text-xs text-primary font-bold">${formatTime(record.loginTime)}</td>
-                        <td class="text-center font-mono text-xs text-error font-bold">${formatTime(record.logoutTime)}</td>
-                        <td class="text-center font-bold text-sm opacity-60">${record.date}</td>
-                    </tr>
-                `).join("");
+                        <td class="font-mono text-xs font-bold">${r.idNumber}</td>
+                        <td><div class="max-w-[150px] truncate text-sm font-medium" title="${r.purpose}">${r.purpose}</div></td>
+                        <td><div class="badge badge-ghost badge-sm opacity-70">${r.lab}</div></td>
+                        <td class="text-center font-mono text-xs text-primary font-bold">${formatTime(r.loginTime)}</td>
+                        <td class="text-center font-mono text-xs text-error font-bold">${formatTime(r.logoutTime)}</td>
+                        <td class="text-center font-bold text-sm opacity-60">${r.date}</td>
+                    </tr>`).join("");
             }
 
             function updatePagination(total, totalPagesCount) {
                 document.getElementById("totalRecords").innerText = total;
                 document.getElementById("totalPages").innerText = `of ${totalPagesCount || 1}`;
                 document.getElementById("paginationInfo").innerText = `Showing ${reportData.length} of ${total} records`;
-                
                 document.getElementById("prevPage").disabled = currentPage <= 1;
                 document.getElementById("nextPage").disabled = currentPage >= totalPagesCount;
             }
 
-            function changePage(delta) {
-                const newPage = currentPage + delta;
-                if (newPage >= 1 && newPage <= totalPages) {
-                    document.getElementById("pageInput").value = newPage;
-                    loadReports();
-                }
-            }
-
-            function jumpToPage(val) {
-                let page = parseInt(val);
-                if (isNaN(page) || page < 1) page = 1;
-                if (page > totalPages) page = totalPages;
-                document.getElementById("pageInput").value = page;
-                loadReports();
-            }
-
-            function formatTime(isoStr) {
-                if (!isoStr) return "--:--";
-                try {
-                    const date = new Date(isoStr.replace(' ', 'T'));
-                    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-                } catch (e) { return isoStr; }
-            }
-
-            function debounce(func, wait) {
-                let timeout;
-                return function executedFunction(...args) {
-                    const later = () => {
-                        clearTimeout(timeout);
-                        func(...args);
-                    };
-                    clearTimeout(timeout);
-                    timeout = setTimeout(later, wait);
-                };
-            }
+            function changePage(delta) { currentPage += delta; document.getElementById("pageInput").value = currentPage; loadReports(); }
+            function jumpToPage(val) { currentPage = parseInt(val) || 1; loadReports(); }
+            function formatTime(iso) { if (!iso) return "--:--"; const d = new Date(iso.replace(' ', 'T')); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); }
+            function debounce(fn, wait) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), wait); }; }
 
             function exportReport(format) {
-                if (reportData.length === 0) return alert("No data to export");
-                
-                const exportData = reportData.map(r => ({
-                    "ID Number": r.idNumber,
-                    "Name": r.studentName,
-                    "Purpose": r.purpose,
-                    "Laboratory": r.lab,
-                    "Login Time": formatTime(r.loginTime),
-                    "Logout Time": formatTime(r.logoutTime),
-                    "Date": r.date
-                }));
-
-                const dateStr = new Date().toISOString().split('T')[0];
-                const fileName = `Sit-in_Report_${dateStr}`;
-
-                if (format === 'csv') {
-                    const csvContent = jsonToCSV(exportData);
-                    downloadFile(csvContent, `${fileName}.csv`, 'text/csv');
-                } else if (format === 'excel') {
-                    const worksheet = XLSX.utils.json_to_sheet(exportData);
-                    const workbook = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(workbook, worksheet, "Reports");
-                    XLSX.writeFile(workbook, `${fileName}.xlsx`);
-                } else if (format === 'pdf') {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    
-                    doc.setFontSize(18);
-                    doc.text("CCS Sit-in Report", 14, 22);
-                    doc.setFontSize(11);
-                    doc.setTextColor(100);
-                    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
-                    
-                    doc.autoTable({
-                        startY: 35,
-                        head: [Object.keys(exportData[0])],
-                        body: exportData.map(Object.values),
-                        theme: 'striped',
-                        headStyles: { fillColor: [45, 85, 255] }
-                    });
-                    
-                    doc.save(`${fileName}.pdf`);
-                }
+                if (reportData.length === 0) return alert("No data");
+                const exportData = reportData.map(r => ({ "ID Number": r.idNumber, "Name": r.studentName, "Purpose": r.purpose, "Laboratory": r.lab, "Login Time": formatTime(r.loginTime), "Logout Time": formatTime(r.logoutTime), "Date": r.date }));
+                const name = `Sit-in_Report_${new Date().toISOString().split('T')[0]}`;
+                if (format === 'csv') downloadFile([Object.keys(exportData[0]).join(","), ...exportData.map(o => Object.values(o).map(v => `"${v}"`).join(","))].join("\n"), `${name}.csv`, 'text/csv');
+                else if (format === 'excel') { const ws = XLSX.utils.json_to_sheet(exportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Reports"); XLSX.writeFile(wb, `${name}.xlsx`); }
+                else if (format === 'pdf') { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("CCS Sit-in Report", 14, 20); doc.autoTable({ startY: 30, head: [Object.keys(exportData[0])], body: exportData.map(Object.values) }); doc.save(`${name}.pdf`); }
             }
 
-            function jsonToCSV(json) {
-                const header = Object.keys(json[0]).join(",");
-                const rows = json.map(obj => Object.values(obj).map(val => `"${val}"`).join(","));
-                return [header, ...rows].join("\n");
-            }
-
-            function downloadFile(content, fileName, mimeType) {
-                const blob = new Blob([content], { type: mimeType });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", fileName);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            function downloadFile(c, n, m) { const b = new Blob([c], { type: m }); const u = URL.createObjectURL(b); const l = document.createElement("a"); l.href = u; l.download = n; l.click(); }
 
             async function searchStudent() {
-                const idNumber = document.getElementById("searchIdNumber").value;
-                if (!idNumber) return;
-                try {
-                    const res = await fetch(`/api/admin/search-student/${idNumber}`);
-                    const data = await res.json();
-                    if (res.ok) {
-                        document.getElementById("formIdNumber").value = idNumber;
-                        document.getElementById("formStudentName").value = data.name;
-                        document.getElementById("formSessions").innerText = data.sessionLeft;
-                        document.getElementById("my_modal_1").close();
-                        document.getElementById("my_modal_2").showModal();
-                    }
-                } catch (err) { console.error(err); }
+                const id = document.getElementById("searchIdNumber").value; if (!id) return;
+                const res = await fetch(`/api/admin/search-student/${id}`); const data = await res.json();
+                if (res.ok) { document.getElementById("formIdNumber").value = id; document.getElementById("formStudentName").value = data.name; document.getElementById("formSessions").innerText = data.sessionLeft; document.getElementById("my_modal_1").close(); document.getElementById("my_modal_2").showModal(); }
             }
 
             async function submitSitin() {
-                const payload = {
-                    idNumber: document.getElementById("formIdNumber").value,
-                    studentName: document.getElementById("formStudentName").value,
-                    purpose: document.getElementById("formPurpose").value,
-                    lab: document.getElementById("formLab").value,
-                };
-
-                if (!payload.purpose || !payload.lab) {
-                    return alert("Please select a purpose and a lab");
-                }
-
-                try {
-                    const res = await fetch("/api/admin/sit-in", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload),
-                    });
-                    if (res.ok) {
-                        alert("Sit-in recorded successfully!");
-                        document.getElementById("my_modal_2").close();
-                        loadReports(); // Refresh
-                    } else {
-                        const data = await res.json();
-                        alert(data.error || "Failed to record sit-in");
-                    }
-                } catch (err) {
-                    console.error(err);
-                    alert("An error occurred");
-                }
+                const payload = { idNumber: document.getElementById("formIdNumber").value, studentName: document.getElementById("formStudentName").value, purpose: document.getElementById("formPurpose").value, lab: document.getElementById("formLab").value, pcNumber: document.getElementById('formPcNumber').value };
+                const res = await fetch("/api/admin/sit-in", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                if (res.ok) { showToast("Recorded!", "success"); document.getElementById("my_modal_2").close(); loadReports(); }
+                else { const data = await res.json(); showToast(data.error, "error"); }
             }
 
-            // Notifications Logic
             function updateNotifications() {
-                fetch("/api/notifications")
-                    .then((r) => r.json())
-                    .then((data) => {
-                        const list = document.getElementById("notificationList");
-                        const badge = document.querySelector(".indicator .badge");
-
-                        const unreadCount = data.filter((n) => !n.isRead).length;
-                        if (unreadCount > 0) {
-                            badge.innerText = unreadCount;
-                            badge.classList.remove("hidden");
-                        } else {
-                            badge.classList.add("hidden");
-                        }
-
-                        if (data.length === 0) {
-                            list.innerHTML = `<li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>`;
-                        } else {
-                            list.innerHTML = data.map(n => `
-                                <li>
-                                    <a class="flex flex-col items-start gap-1 py-3 ${!n.isRead ? "bg-primary/5" : ""}">
-                                        <div class="flex items-center gap-2">
-                                            <span class="badge badge-xs ${n.type === "success" ? "badge-success" : n.type === "error" ? "badge-error" : "badge-info"}"></span>
-                                            <span class="text-xs font-bold">${n.message}</span>
-                                        </div>
-                                        <span class="text-[10px] opacity-40">${new Date(n.created_at).toLocaleString()}</span>
-                                    </a>
-                                </li>
-                            `).join('');
-
-                            if (unreadCount > 0) {
-                                const markBtn = document.createElement("button");
-                                markBtn.className = "btn btn-ghost btn-xs w-full text-[10px] uppercase tracking-tighter mt-2 pt-2 border-t border-base-content/5";
-                                markBtn.innerText = "Mark all as read";
-                                markBtn.onclick = markNotificationsAsRead;
-                                list.appendChild(markBtn);
-                            }
-                        }
-                    });
+                fetch("/api/notifications").then(r => r.json()).then(data => {
+                    const list = document.getElementById("notificationList"), badge = document.querySelector(".indicator .badge");
+                    const unread = data.filter(n => !n.isRead).length;
+                    if (unread > 0) { badge.innerText = unread; badge.classList.remove("hidden"); } else badge.classList.add("hidden");
+                    if (data.length === 0) list.innerHTML = `<li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>`;
+                    else {
+                        list.innerHTML = data.map(n => `<li><a class="flex flex-col items-start gap-1 py-3 ${!n.isRead ? "bg-primary/5" : ""}"><div class="flex items-center gap-2"><span class="badge badge-xs ${n.type === "success" ? "badge-success" : n.type === "error" ? "badge-error" : "badge-info"}"></span><span class="text-xs font-bold">${n.message}</span></div><span class="text-[10px] opacity-40">${new Date(n.created_at).toLocaleString()}</span></a></li>`).join('');
+                        if (unread > 0) { const btn = document.createElement("button"); btn.className = "btn btn-ghost btn-xs w-full text-[10px] mt-2 pt-2 border-t border-base-content/5"; btn.innerText = "Mark all as read"; btn.onclick = () => fetch("/api/notifications/mark-read", { method: "POST" }).then(() => updateNotifications()); list.appendChild(btn); }
+                    }
+                });
             }
 
-            function markNotificationsAsRead() {
-                fetch("/api/notifications/mark-read", { method: "POST" }).then(() => updateNotifications());
-            }
-
-            // Initial call
             updateNotifications();
             setInterval(updateNotifications, 30000);
-
-            function logout() {
-                fetch("/logout", { method: "POST" })
-                    .then((r) => r.json())
-                    .then((d) => {
-                        if (d.success) window.location.href = d.redirectUrl;
-                    });
-            }
+            function logout() { fetch("/logout", { method: "POST" }).then(r => r.json()).then(d => { if (d.success) window.location.href = d.redirectUrl; }); }
+            function toggleSidebar() { const s = document.getElementById('sidebar-nav'); if (s.classList.contains('sidebar-collapsed')) { s.classList.remove('sidebar-collapsed'); localStorage.setItem('sidebar-collapsed', '0'); } else { s.classList.add('sidebar-collapsed'); localStorage.setItem('sidebar-collapsed', '1'); } }
+            (function () { if (localStorage.getItem('sidebar-collapsed') === '1') { const s = document.getElementById('sidebar-nav'); if (s) s.classList.add('sidebar-collapsed'); } })();
         </script>
-        <style>
-            @media print {
-                /* Hide everything except the report content */
-                .drawer-side, 
-                .navbar, 
-                .btn, 
-                .bg-base-100.p-6,
-                .pagination-controls,
-                #paginationInfo,
-                .join,
-                header,
-                footer {
-                    display: none !important;
-                }
-
-                /* Layout adjustments for print */
-                body {
-                    background: white !important;
-                    color: black !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }
-
-                main {
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    width: 100% !important;
-                    max-width: 100% !important;
-                }
-
-                .card {
-                    box-shadow: none !important;
-                    border: none !important;
-                    background: transparent !important;
-                }
-
-                table {
-                    width: 100% !important;
-                    border-collapse: collapse !important;
-                    border: 1px solid #eee !important;
-                }
-
-                th, td {
-                    border: 1px solid #ddd !important;
-                    padding: 10px 8px !important;
-                    font-size: 11px !important;
-                    color: black !important;
-                }
-
-                th {
-                    background-color: #f8f9fa !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-
-                .avatar {
-                    display: none !important;
-                }
-
-                h1 {
-                    font-size: 24pt !important;
-                    margin-bottom: 5pt !important;
-                }
-
-                p.opacity-60 {
-                    margin-bottom: 20pt !important;
-                    font-size: 12pt !important;
-                }
-            }
-        </style>
     </body>
 </html>
