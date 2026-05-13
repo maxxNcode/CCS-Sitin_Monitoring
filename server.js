@@ -52,6 +52,7 @@ function initializeDatabase() {
             course TEXT,
             address TEXT,
             sessionLeft INTEGER DEFAULT 30,
+            points INTEGER DEFAULT 0,
             profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky',
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -60,6 +61,10 @@ function initializeDatabase() {
             console.error('Error creating users table:', err);
         } else {
             console.log('Users table ready');
+            // Ensure points column exists for existing databases
+            db.run("ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0", (err) => {
+                // Ignore error if column already exists
+            });
         }
     });
 }
@@ -1279,6 +1284,10 @@ app.get('/admin/manage-dropdowns', checkAdminAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'admin-pages/manage-dropdowns.html'));
 });
 
+app.get('/admin/analytics', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/analytics.html'));
+});
+
 // ─── Dropdown Options API ──────────────────────────────────────────
 
 // Public: Fetch all active dropdown options (used by all pages)
@@ -1522,6 +1531,64 @@ app.get('/api/analytics/most-visited-lab', checkAdminAuth, (req, res) => {
         GROUP BY lab
         ORDER BY visits DESC
     `, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin Analytics: Summary Stats
+app.get('/api/admin/analytics/summary', checkAdminAuth, (req, res) => {
+    const stats = {};
+    db.get('SELECT COUNT(*) as count FROM users', (err, row) => {
+        stats.totalStudents = row.count;
+        db.get('SELECT COUNT(*) as count FROM sitin_records', (err, row) => {
+            stats.totalSitIns = row.count;
+            db.get('SELECT COUNT(*) as count FROM feedbacks', (err, row) => {
+                stats.totalFeedbacks = row.count;
+                db.get('SELECT COUNT(*) as count FROM reservations', (err, row) => {
+                    stats.totalReservations = row.count;
+                    res.json(stats);
+                });
+            });
+        });
+    });
+});
+
+// Admin Analytics: Usage by Lab (Dynamic)
+app.get('/api/admin/analytics/usage-by-lab', checkAdminAuth, (req, res) => {
+    db.all(`
+        SELECT lab as name, COUNT(*) as value
+        FROM student_history
+        GROUP BY lab
+        ORDER BY value DESC
+    `, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin Analytics: Usage by Purpose (Dynamic)
+app.get('/api/admin/analytics/usage-by-purpose', checkAdminAuth, (req, res) => {
+    db.all(`
+        SELECT purpose as name, COUNT(*) as value
+        FROM student_history
+        GROUP BY purpose
+        ORDER BY value DESC
+    `, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin Analytics: Daily Trends (Last 7 Days)
+app.get('/api/admin/analytics/daily-trends', checkAdminAuth, (req, res) => {
+    db.all(`
+        SELECT date as name, COUNT(*) as value
+        FROM student_history
+        WHERE date >= date('now', '-7 days')
+        GROUP BY date
+        ORDER BY date ASC
+    `, (err, rows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         res.json(rows);
     });

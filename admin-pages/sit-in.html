@@ -35,7 +35,7 @@
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
                 <div
-                    class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5"
+                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm"
                 >
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
@@ -325,6 +325,9 @@
                         <a href="/admin/manage-dropdowns" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-sliders mr-2"></i>Manage
                         </a>
+                        <a href="/admin/analytics" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-chart-pie mr-2"></i>Analytics
+                        </a>
 
                         <div class="dropdown dropdown-end ml-2">
                             <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
@@ -333,7 +336,7 @@
                                     <span id="notif-bell-badge" class="badge badge-xs badge-primary indicator-item hidden"></span>
                                 </div>
                             </div>
-                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow border border-base-content/10 mt-2">
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-80 p-4 shadow mt-2">
                                 <li class="menu-title font-bold text-base-content uppercase text-[10px] tracking-widest mb-2 px-0">Notifications</li>
                                 <div id="notif-dropdown-list" class="max-h-60 overflow-y-auto">
                                     <li><a class="text-sm py-3 opacity-60 italic justify-center">No new notifications</a></li>
@@ -355,7 +358,7 @@
                             </div>
                             <ul
                                 tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10 mt-2 max-h-96 overflow-y-auto"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto"
                             >
                                 <li>
                                     <button
@@ -669,7 +672,7 @@
                         </div>
 
                         <!-- Filters Section -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100 p-6 rounded-3xl border border-base-content/5 shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-100/80 backdrop-blur-md p-6 rounded-3xl shadow-sm">
                             <!-- Search -->
                             <div class="form-control w-full">
                                 <label class="label pt-0 pb-1">
@@ -712,10 +715,10 @@
 
                         <!-- Active Sit-ins Table -->
                         <div
-                            class="overflow-x-auto lg:overflow-x-hidden card bg-base-100 border border-base-content/5"
+                            class="overflow-x-auto lg:overflow-x-hidden card bg-base-100 shadow-sm rounded-3xl"
                         >
                             <table class="table table-md">
-                                <thead class="bg-base-200">
+                                <thead class="bg-base-200/50">
                                     <tr>
                                         <th class="text-center">Sit ID</th>
                                         <th>Student</th>
@@ -758,14 +761,14 @@
                     class="menu p-4 w-80 min-h-full bg-base-100 text-base-content"
                 >
                     <li
-                        class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4"
+                        class="menu-title flex flex-row items-center gap-3 py-4 mb-4"
                     >
                         <div
                             class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"
                         >
                             <i class="fa-solid fa-desktop"></i>
                         </div>
-                        <span class="text-xl font-black">CCS SIT-IN</span>
+                        <span class="text-xl font-black">CCS SIT-IN MONITORING</span>
                     </li>
                     <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
                     <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
@@ -776,6 +779,7 @@
                     <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
                     <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
                     <li><a href="/admin/manage-dropdowns"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
+                    <li><a href="/admin/analytics"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a></li>
                     <li class="mt-auto">
                         <button onclick="logout()" class="btn btn-error btn-outline mt-4">
                             <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout

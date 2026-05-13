@@ -1,0 +1,399 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CCS - Admin Analytics</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+        <script src="https://kit.fontawesome.com" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="/notify.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/notification-client.js"></script>
+        <link rel="stylesheet" href="../style.css" />
+    </head>
+
+    <body class="bg-base-200 min-h-screen">
+        <div class="drawer">
+            <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+            <div class="drawer-content flex flex-col">
+                <!-- Navbar -->
+                <div class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm">
+                    <div class="flex-none md:hidden">
+                        <label for="my-drawer" class="btn btn-ghost btn-square">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </label>
+                    </div>
+
+                    <div class="flex-1 gap-3 flex items-center">
+                        <div class="avatar">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center p-1.5 border border-primary/20">
+                                <img src="../assets/ccslogo.png" alt="CCS Logo" class="w-full h-full object-contain" />
+                            </div>
+                        </div>
+                        <a class="text-xl font-black tracking-tight"><span class="text-primary">CCS</span> SIT-IN MONITORING</a>
+                    </div>
+
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:flex flex-none items-center gap-1">
+                        <a href="/admin" class="btn btn-ghost btn-sm">Home</a>
+                        <a href="/students" class="btn btn-ghost btn-sm">Students</a>
+                        <a href="/sit-in" class="btn btn-ghost btn-sm">Sit-in</a>
+                        <a href="/sit-in-records" class="btn btn-ghost btn-sm">Records</a>
+                        <a href="/sit-in-reports" class="btn btn-ghost btn-sm">Reports</a>
+                        <a href="/feedback-reports" class="btn btn-ghost btn-sm">Feedback</a>
+                        <a href="/reservations" class="btn btn-ghost btn-sm">Reservations</a>
+                        <a href="/admin/leaderboard" class="btn btn-ghost btn-sm"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a>
+                        <a href="/admin/analytics" class="btn btn-primary btn-sm"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a>
+
+                        <div class="dropdown dropdown-end ml-4">
+                            <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                                <i class="fa-solid fa-palette opacity-50"></i>
+                                Theme
+                                <i class="fa-solid fa-chevron-down text-[10px] opacity-50"></i>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow mt-2 max-h-96 overflow-y-auto">
+                                <li><button class="theme-controller" data-set-theme="light">Light</button></li>
+                                <li><button class="theme-controller" data-set-theme="dark">Dark</button></li>
+                                <li><button class="theme-controller" data-set-theme="cupcake">Cupcake</button></li>
+                                <li><button class="theme-controller" data-set-theme="bumblebee">Bumblebee</button></li>
+                                <li><button class="theme-controller" data-set-theme="emerald">Emerald</button></li>
+                                <li><button class="theme-controller" data-set-theme="corporate">Corporate</button></li>
+                                <li><button class="theme-controller" data-set-theme="synthwave">Synthwave</button></li>
+                                <li><button class="theme-controller" data-set-theme="retro">Retro</button></li>
+                                <li><button class="theme-controller" data-set-theme="cyberpunk">Cyberpunk</button></li>
+                                <li><button class="theme-controller" data-set-theme="valentine">Valentine</button></li>
+                                <li><button class="theme-controller" data-set-theme="halloween">Halloween</button></li>
+                                <li><button class="theme-controller" data-set-theme="garden">Garden</button></li>
+                                <li><button class="theme-controller" data-set-theme="forest">Forest</button></li>
+                                <li><button class="theme-controller" data-set-theme="aqua">Aqua</button></li>
+                                <li><button class="theme-controller" data-set-theme="lofi">Lofi</button></li>
+                                <li><button class="theme-controller" data-set-theme="pastel">Pastel</button></li>
+                                <li><button class="theme-controller" data-set-theme="fantasy">Fantasy</button></li>
+                                <li><button class="theme-controller" data-set-theme="wireframe">Wireframe</button></li>
+                                <li><button class="theme-controller" data-set-theme="black">Black</button></li>
+                                <li><button class="theme-controller" data-set-theme="luxury">Luxury</button></li>
+                                <li><button class="theme-controller" data-set-theme="dracula">Dracula</button></li>
+                                <li><button class="theme-controller" data-set-theme="cmyk">Cmyk</button></li>
+                                <li><button class="theme-controller" data-set-theme="autumn">Autumn</button></li>
+                                <li><button class="theme-controller" data-set-theme="business">Business</button></li>
+                                <li><button class="theme-controller" data-set-theme="acid">Acid</button></li>
+                                <li><button class="theme-controller" data-set-theme="lemonade">Lemonade</button></li>
+                                <li><button class="theme-controller" data-set-theme="night">Night</button></li>
+                            </ul>
+                        </div>
+                        
+                        <button onclick="logout()" class="btn btn-ghost btn-sm ml-4">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Page Content -->
+                <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700 text-base-content">
+                    <div class="flex flex-col gap-8">
+                        <!-- Header -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 class="text-3xl font-black tracking-tight">Analytics Dashboard</h1>
+                                <p class="opacity-60 font-medium">Visualizing laboratory usage and student engagement trends</p>
+                            </div>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-6 flex flex-col items-center justify-center">
+                                <i class="fa-solid fa-users text-primary text-3xl mb-2"></i>
+                                <span class="text-2xl font-black" id="stat-students">0</span>
+                                <span class="text-[10px] uppercase font-black opacity-60 tracking-widest text-center">Total Students</span>
+                            </div>
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-6 flex flex-col items-center justify-center">
+                                <i class="fa-solid fa-clipboard-user text-primary text-3xl mb-2"></i>
+                                <span class="text-2xl font-black" id="stat-sitins">0</span>
+                                <span class="text-[10px] uppercase font-black opacity-60 tracking-widest text-center">Total Sit-ins</span>
+                            </div>
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-6 flex flex-col items-center justify-center">
+                                <i class="fa-solid fa-star text-primary text-3xl mb-2"></i>
+                                <span class="text-2xl font-black" id="stat-feedbacks">0</span>
+                                <span class="text-[10px] uppercase font-black opacity-60 tracking-widest text-center">Feedbacks Received</span>
+                            </div>
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-6 flex flex-col items-center justify-center">
+                                <i class="fa-solid fa-calendar-check text-primary text-3xl mb-2"></i>
+                                <span class="text-2xl font-black" id="stat-reservations">0</span>
+                                <span class="text-[10px] uppercase font-black opacity-60 tracking-widest text-center">Reservations</span>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Lab Usage -->
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-8 border border-base-content/5">
+                                <h3 class="text-xl font-black mb-6 flex items-center gap-3">
+                                    <i class="fa-solid fa-flask text-primary"></i> Most Used Laboratories
+                                </h3>
+                                <div class="aspect-square max-h-[350px] mx-auto w-full">
+                                    <canvas id="chart-labs"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Purpose Usage -->
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-8 border border-base-content/5">
+                                <h3 class="text-xl font-black mb-6 flex items-center gap-3">
+                                    <i class="fa-solid fa-code text-primary"></i> Top Sit-in Purposes
+                                </h3>
+                                <div class="aspect-square max-h-[350px] mx-auto w-full">
+                                    <canvas id="chart-purposes"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Trends -->
+                            <div class="card bg-base-100 shadow-sm rounded-3xl p-8 border border-base-content/5 lg:col-span-2">
+                                <h3 class="text-xl font-black mb-6 flex items-center gap-3">
+                                    <i class="fa-solid fa-chart-line text-primary"></i> Daily Activity Trend (Last 7 Days)
+                                </h3>
+                                <div class="h-[300px] w-full">
+                                    <canvas id="chart-trends"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Sidebar (Mobile drawer) -->
+            <div class="drawer-side z-[200]">
+                <label for="my-drawer" class="drawer-overlay"></label>
+                <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
+                    <li class="menu-title flex flex-row items-center gap-3 py-4 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                        <span class="text-xl font-black">CCS SIT-IN MONITORING</span>
+                    </li>
+                    <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
+                    <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
+                    <li><a href="/sit-in"><i class="fa-solid fa-clipboard-user mr-2"></i>Sit-in Session</a></li>
+                    <li><a href="/sit-in-records"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Sit-in Records</a></li>
+                    <li><a href="/sit-in-reports"><i class="fa-solid fa-chart-line mr-2"></i>Sit-in Reports</a></li>
+                    <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
+                    <li><a href="/reservations"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
+                    <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/admin/analytics" class="active"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a></li>
+                    <li class="mt-auto">
+                        <button onclick="logout()" class="btn btn-error btn-outline mt-4">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Logout
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            // Helper to get resolved CSS variable colors for Chart.js
+            function getThemeColor(variable) {
+                const temp = document.createElement('div');
+                temp.style.color = `var(${variable})`;
+                document.body.appendChild(temp);
+                const color = window.getComputedStyle(temp).color;
+                document.body.removeChild(temp);
+                return color;
+            }
+
+            // Initial Theme Setup (Immediate to prevent flash)
+            const savedTheme = localStorage.getItem('theme') || 'forest';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            window.addEventListener('DOMContentLoaded', () => {
+                // Theme Switcher Logic
+                document.querySelectorAll(".theme-controller").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const theme = btn.getAttribute("data-set-theme");
+                        document.documentElement.setAttribute("data-theme", theme);
+                        localStorage.setItem("theme", theme);
+                        // Reload to re-render charts with new theme colors
+                        location.reload();
+                    });
+                });
+
+                fetchSummary();
+                renderCharts();
+            });
+
+            async function renderCharts() {
+                const textColor = getThemeColor('--color-base-content') || getThemeColor('--bc') || '#888';
+                const primaryColor = getThemeColor('--color-primary') || getThemeColor('--p') || '#5785f8';
+                const gridColor = 'rgba(128, 128, 128, 0.1)';
+
+                await Promise.all([
+                    renderLabChart(textColor),
+                    renderPurposeChart(textColor, primaryColor),
+                    renderTrendChart(textColor, primaryColor, gridColor)
+                ]);
+            }
+
+            async function fetchSummary() {
+                try {
+                    const res = await fetch('/api/admin/analytics/summary');
+                    const data = await res.json();
+                    document.getElementById('stat-students').innerText = data.totalStudents || 0;
+                    document.getElementById('stat-sitins').innerText = data.totalSitIns || 0;
+                    document.getElementById('stat-feedbacks').innerText = data.totalFeedbacks || 0;
+                    document.getElementById('stat-reservations').innerText = data.totalReservations || 0;
+                } catch (err) {
+                    console.error('Failed to fetch summary:', err);
+                }
+            }
+
+            async function renderLabChart(textColor) {
+                try {
+                    const res = await fetch('/api/admin/analytics/usage-by-lab');
+                    const data = await res.json();
+                    
+                    const ctx = document.getElementById('chart-labs').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.map(r => r.name),
+                            datasets: [{
+                                data: data.map(r => r.value),
+                                backgroundColor: [
+                                    '#5785f8', '#ff6b6b', '#3ae374', '#ff9f43', '#7d5fff'
+                                ],
+                                borderWidth: 0,
+                                borderRadius: 5,
+                                hoverOffset: 20
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: textColor,
+                                        font: { weight: 'bold', family: 'Inter' },
+                                        padding: 20,
+                                        usePointStyle: true
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (err) {
+                    console.error('Failed to render lab chart:', err);
+                }
+            }
+
+            async function renderPurposeChart(textColor, primaryColor) {
+                try {
+                    const res = await fetch('/api/admin/analytics/usage-by-purpose');
+                    const data = await res.json();
+                    
+                    const ctx = document.getElementById('chart-purposes').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(r => r.name),
+                            datasets: [{
+                                label: 'Visits',
+                                data: data.map(r => r.value),
+                                backgroundColor: primaryColor,
+                                borderRadius: 10,
+                                barThickness: 20
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { 
+                                    grid: { display: false },
+                                    ticks: { color: textColor }
+                                },
+                                y: { 
+                                    grid: { display: false },
+                                    ticks: { 
+                                        color: textColor,
+                                        font: { weight: 'bold' }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (err) {
+                    console.error('Failed to render purpose chart:', err);
+                }
+            }
+
+            async function renderTrendChart(textColor, primaryColor, gridColor) {
+                try {
+                    const res = await fetch('/api/admin/analytics/daily-trends');
+                    const data = await res.json();
+                    
+                    const ctx = document.getElementById('chart-trends').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(r => {
+                                const d = new Date(r.name);
+                                return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                            }),
+                            datasets: [{
+                                label: 'Sit-ins',
+                                data: data.map(r => r.value),
+                                borderColor: primaryColor,
+                                backgroundColor: primaryColor + '1A', // 10% opacity hex
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 4,
+                                pointRadius: 5,
+                                pointBackgroundColor: primaryColor
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: { 
+                                    grid: { display: false },
+                                    ticks: { color: textColor }
+                                },
+                                y: { 
+                                    beginAtZero: true,
+                                    grid: { 
+                                        color: gridColor,
+                                        drawBorder: false
+                                    },
+                                    ticks: { color: textColor }
+                                }
+                            }
+                        }
+                    });
+                } catch (err) {
+                    console.error('Failed to render trend chart:', err);
+                }
+            }
+
+            function logout() {
+                fetch("/logout", { method: "POST" })
+                    .then((r) => r.json())
+                    .then((d) => {
+                        if (d.success) window.location.href = d.redirectUrl;
+                    });
+            }
+        </script>
+    </body>
+</html>

@@ -35,7 +35,7 @@
             <div class="drawer-content flex flex-col">
                 <!-- Navbar -->
                 <div
-                    class="navbar bg-base-100/70 backdrop-blur-md sticky top-0 z-[100] px-4 md:px-8 border-b border-base-content/5"
+                    class="navbar bg-base-100/80 backdrop-blur-xl sticky top-0 z-[100] px-4 md:px-8 shadow-sm"
                 >
                     <div class="flex-none md:hidden">
                         <label for="my-drawer" class="btn btn-ghost btn-square">
@@ -102,6 +102,12 @@
                         </a>
                         <a href="/admin/leaderboard" class="btn btn-ghost btn-sm">
                             <i class="fa-solid fa-trophy mr-2"></i>Leaderboard
+                        </a>
+                        <a href="/admin/manage-dropdowns" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-sliders mr-2"></i>Manage
+                        </a>
+                        <a href="/admin/analytics" class="btn btn-ghost btn-sm">
+                            <i class="fa-solid fa-chart-pie mr-2"></i>Analytics
                         </a>
 
                         <div class="dropdown dropdown-end ml-2">
@@ -198,7 +204,7 @@
                             </div>
                             
                             <!-- Compact System Control Banner -->
-                            <div class="card bg-base-100 border border-base-content/10 shadow-sm overflow-hidden flex-none md:min-w-[400px]">
+                            <div class="card bg-base-100 shadow-sm overflow-hidden flex-none md:min-w-[400px] rounded-3xl">
                                 <div class="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-base-content/5">
                                     <!-- Reservation Toggle -->
                                     <div class="p-4 flex-1 flex items-center justify-between gap-6">
@@ -229,7 +235,7 @@
                         </div>
 
                         <!-- Search & Filter Toolbar -->
-                        <div class="card bg-base-100 border border-base-content/5 p-4">
+                        <div class="card bg-base-100/80 backdrop-blur-md p-4 rounded-3xl shadow-sm">
                             <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3">
 
                                 <!-- Search input -->
@@ -281,10 +287,10 @@
                         </div>
 
                         <!-- Reservations Table -->
-                        <div class="card bg-base-100 border border-base-content/5 overflow-hidden rounded-3xl">
+                        <div class="card bg-base-100 shadow-sm overflow-hidden rounded-3xl">
                             <div class="overflow-x-auto">
                                 <table class="table table-md w-full" id="reservations-table">
-                                    <thead class="bg-base-200">
+                                    <thead class="bg-base-200/50">
                                         <tr class="text-[10px] uppercase tracking-widest font-black opacity-50">
                                             <th>Student</th>
                                             <th>Laboratory</th>
@@ -316,14 +322,14 @@
                     class="menu p-4 w-80 min-h-full bg-base-100 text-base-content"
                 >
                     <li
-                        class="menu-title flex flex-row items-center gap-3 py-4 border-b border-base-content/5 mb-4"
+                        class="menu-title flex flex-row items-center gap-3 py-4 mb-4"
                     >
                         <div
                             class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content"
                         >
                             <i class="fa-solid fa-desktop"></i>
                         </div>
-                        <span class="text-xl font-black">CCS SIT-IN</span>
+                        <span class="text-xl font-black">CCS SIT-IN MONITORING</span>
                     </li>
                     <li><a href="/admin"><i class="fa-solid fa-house mr-2"></i>Dashboard</a></li>
                     <li><a href="/students"><i class="fa-solid fa-users mr-2"></i>Students</a></li>
@@ -333,6 +339,8 @@
                     <li><a href="/feedback-reports"><i class="fa-solid fa-comment-dots mr-2"></i>Feedback</a></li>
                     <li><a href="/reservations" class="active"><i class="fa-solid fa-calendar-check mr-2"></i>Reservations</a></li>
                     <li><a href="/admin/leaderboard"><i class="fa-solid fa-trophy mr-2"></i>Leaderboard</a></li>
+                    <li><a href="/admin/manage-dropdowns"><i class="fa-solid fa-sliders mr-2"></i>Manage Dropdowns</a></li>
+                    <li><a href="/admin/analytics"><i class="fa-solid fa-chart-pie mr-2"></i>Analytics</a></li>
 
                     <li class="mt-auto">
                         <button
