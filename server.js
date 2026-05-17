@@ -766,7 +766,7 @@ app.get('/api/studentinfo', (req, res) => {
         SELECT firstName, middleName, lastName,
         firstName || ' ' || (CASE WHEN middleName IS NOT NULL AND middleName != '' THEN middleName || ' ' ELSE '' END) || lastName AS name,
         email, profilePic, 
-        ${role === 'student' ? 'course, courseLevel, address, sessionLeft' : '"" as course, "" as courseLevel, "" as address, 0 as sessionLeft'}
+        ${role === 'student' ? 'idNumber, course, courseLevel, address, sessionLeft' : '"" as idNumber, "" as course, "" as courseLevel, "" as address, 0 as sessionLeft'}
         FROM ${table}
         WHERE id = ?
     `, [userId], (err, row) => {
