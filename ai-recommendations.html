@@ -461,9 +461,6 @@ function renderMessage(role, text, isHistory = false) {
                     <div>
                         Reservation requested for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>.
                     </div>
-                    <div class="text-[8px] opacity-50 italic mt-1">
-                        See the active Reservations tab to track current status.
-                    </div>
                 </div>
             `;
         } else {
@@ -524,9 +521,6 @@ async function executeConversationalReservation(payload, elementId) {
                 </div>
                 <div class="text-[10px] opacity-75 font-semibold text-base-content">
                     Your reservation for <strong>${payload.lab}</strong> (PC: <strong>${payload.pcNumber || 'Any'}</strong>) on <strong>${payload.date}</strong> at <strong>${payload.time}</strong> has been submitted successfully to the administrator!
-                </div>
-                <div class="mt-2 text-[9px] opacity-50 italic text-base-content/60">
-                    You can view its current status anytime inside the **Reservations** menu tab.
                 </div>
             `;
         } else {
