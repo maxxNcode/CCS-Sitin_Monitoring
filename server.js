@@ -1418,7 +1418,6 @@ app.get('/check-session', (req, res) => {
 
 // Serve main.html only if logged in
 
-// Root route - redirect based on session
 app.get('/', (req, res) => {
     if (req.session && req.session.userId) {
         if (req.session.role === 'admin') {
@@ -1428,6 +1427,11 @@ app.get('/', (req, res) => {
         }
     }
     res.redirect('/login');
+});
+
+// Serve static landing page
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Serve login and register pages
