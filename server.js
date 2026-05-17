@@ -930,52 +930,46 @@ app.get('/api/admin/sit-in-history', (req, res) => {
 });
 
 // Admin API: Logout / End a Sit-in Session
-app.post('/api/admin/sit-in/logout/:id', (req, res) => {
+app.post('/api/admin/sit-in/logout/:id', async (req, res) => {
     const recordId = req.params.id;
 
-    db.get('SELECT * FROM sitin_records WHERE id = ?', [recordId], (err, record) => {
-        if (err || !record) return res.status(404).json({ error: 'Record not found' });
+    try {
+        const record = await db.getAsync('SELECT * FROM sitin_records WHERE id = ?', [recordId]);
+        if (!record) return res.status(404).json({ error: 'Record not found' });
         if (record.status !== 'Active') return res.status(400).json({ error: 'Session already ended' });
 
-        db.serialize(() => {
-            db.run('BEGIN TRANSACTION');
+        // 1. Set status to Inactive
+        await db.runAsync('UPDATE sitin_records SET status = ? WHERE id = ?', ['Inactive', recordId]);
 
-            // Set status to Inactive
-            db.run('UPDATE sitin_records SET status = ? WHERE id = ?', ['Inactive', recordId]);
+        // 2. Decrement sessionLeft on logout and award points
+        await db.runAsync('UPDATE users SET sessionLeft = sessionLeft - 1, points = points + 10 WHERE idNumber = ?', [record.idNumber]);
 
-            // Decrement sessionLeft on logout and award points
-            db.run('UPDATE users SET sessionLeft = sessionLeft - 1, points = points + 10 WHERE idNumber = ?', [record.idNumber]);
+        // 3. Add record to student_history table
+        const loginTime = record.created_at;
+        const logoutTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+        const date = logoutTime.split(' ')[0]; // Extract YYYY-MM-DD
+        await db.runAsync(
+            'INSERT INTO student_history (studentName, idNumber, purpose, lab, pcNumber, loginTime, logoutTime, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [record.studentName, record.idNumber, record.purpose, record.lab, record.pcNumber || 'N/A', loginTime, logoutTime, date]
+        );
 
-            // Add record to student_history table
-            const loginTime = record.created_at;
-            const logoutTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
-            const date = logoutTime.split(' ')[0]; // Extract YYYY-MM-DD
-            db.run(
-                'INSERT INTO student_history (studentName, idNumber, purpose, lab, pcNumber, loginTime, logoutTime, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [record.studentName, record.idNumber, record.purpose, record.lab, record.pcNumber || 'N/A', loginTime, logoutTime, date]
-            );
-
-            db.run('COMMIT', (err) => {
-                if (err) return res.status(500).json({ error: 'Failed to end session' });
-
-                // Notify student about session end and remaining sessions
-                db.get('SELECT sessionLeft, points FROM users WHERE idNumber = ?', [record.idNumber], (err, student) => {
-                    if (!err && student) {
-                        const message = `Sit-in session ended! You earned +10 points. Remaining sessions: ${student.sessionLeft}`;
-                        db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)',
-                            [record.idNumber, message, 'success']);
-                        io.emit('notification:student', {
-                            idNumber: record.idNumber,
-                            message,
-                            type: 'success'
-                        });
-                    }
-                });
-
-                res.json({ success: true, message: 'Session ended successfully' });
+        // 4. Notify student about session end and remaining sessions
+        const student = await db.getAsync('SELECT sessionLeft, points FROM users WHERE idNumber = ?', [record.idNumber]);
+        if (student) {
+            const message = `Sit-in session ended! You earned +10 points. Remaining sessions: ${student.sessionLeft}`;
+            await db.runAsync('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', [record.idNumber, message, 'success']);
+            io.emit('notification:student', {
+                idNumber: record.idNumber,
+                message,
+                type: 'success'
             });
-        });
-    });
+        }
+
+        res.json({ success: true, message: 'Session ended successfully' });
+    } catch (err) {
+        console.error("Error during sit-in logout transaction:", err);
+        res.status(500).json({ error: 'Failed to end session' });
+    }
 });
 
 // Admin API: Delete a Sit-in Record
@@ -1293,57 +1287,41 @@ app.post('/api/admin/reservations/action', checkAdminAuth, (req, res) => {
 });
 
 // Admin API: Reservation Check-in
-app.post('/api/admin/reservations/check-in', checkAdminAuth, (req, res) => {
+app.post('/api/admin/reservations/check-in', checkAdminAuth, async (req, res) => {
     const { id } = req.body;
 
     if (!id) return res.status(400).json({ error: 'Reservation ID is required' });
 
-    db.get('SELECT * FROM reservations WHERE id = ?', [id], (err, reservation) => {
-        if (err || !reservation) return res.status(404).json({ error: 'Reservation not found' });
+    try {
+        const reservation = await db.getAsync('SELECT * FROM reservations WHERE id = ?', [id]);
+        if (!reservation) return res.status(404).json({ error: 'Reservation not found' });
         if (reservation.status !== 'Approved') return res.status(400).json({ error: 'Only approved reservations can be checked in' });
 
-        db.get('SELECT sessionLeft FROM users WHERE idNumber = ?', [reservation.idNumber], (err, user) => {
-            if (err || !user) return res.status(404).json({ error: 'Student not found' });
-            if (user.sessionLeft <= 0) return res.status(400).json({ error: 'Student has no sessions remaining' });
+        const user = await db.getAsync('SELECT sessionLeft FROM users WHERE idNumber = ?', [reservation.idNumber]);
+        if (!user) return res.status(404).json({ error: 'Student not found' });
+        if (user.sessionLeft <= 0) return res.status(400).json({ error: 'Student has no sessions remaining' });
 
-            // Ensure check-in is not before reservation time
-            const now = new Date();
-            const resDateTime = new Date(`${reservation.reservationDate}T${reservation.reservationTime}`);
-            if (resDateTime > now) {
-                return res.status(400).json({ 
-                    error: `Check-in is not yet allowed. Scheduled for ${reservation.reservationDate} at ${reservation.reservationTime}` 
-                });
-            }
-
-            db.serialize(() => {
-                db.run('BEGIN TRANSACTION');
-
-                // 1. Create active sit-in record
-                db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
-                    [reservation.studentName, reservation.idNumber, reservation.purpose, reservation.lab, user.sessionLeft.toString(), 'Active'],
-                    (err) => {
-                        if (err) {
-                            db.run('ROLLBACK');
-                            return res.status(500).json({ error: 'Failed to create sit-in record' });
-                        }
-
-                        // 2. Update reservation status
-                        db.run('UPDATE reservations SET status = ? WHERE id = ?', ['Checked In', id], (err) => {
-                            if (err) {
-                                db.run('ROLLBACK');
-                                return res.status(500).json({ error: 'Failed to update reservation status' });
-                            }
-
-                            db.run('COMMIT', (err) => {
-                                if (err) return res.status(500).json({ error: 'Transaction failed' });
-                                res.json({ success: true, message: 'Student checked in successfully' });
-                            });
-                        });
-                    }
-                );
+        // Ensure check-in is not before reservation time
+        const now = new Date();
+        const resDateTime = new Date(`${reservation.reservationDate}T${reservation.reservationTime}`);
+        if (resDateTime > now) {
+            return res.status(400).json({ 
+                error: `Check-in is not yet allowed. Scheduled for ${reservation.reservationDate} at ${reservation.reservationTime}` 
             });
-        });
-    });
+        }
+
+        // 1. Create active sit-in record
+        await db.runAsync(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
+            [reservation.studentName, reservation.idNumber, reservation.purpose, reservation.lab, user.sessionLeft.toString(), 'Active']);
+
+        // 2. Update reservation status
+        await db.runAsync('UPDATE reservations SET status = ? WHERE id = ?', ['Checked In', id]);
+
+        res.json({ success: true, message: 'Student checked in successfully' });
+    } catch (err) {
+        console.error("Error during reservation check-in transaction:", err);
+        res.status(500).json({ error: 'Failed to process check-in' });
+    }
 });
 
 // Generic API: Fetch Notifications
