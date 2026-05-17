@@ -2051,11 +2051,12 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
     let activeLabs = [];
     let studentPoints = 0;
     let studentRank = 1;
+    let totalStudents = 1;
     let leaderboard = [];
     let peakHours = [];
 
     try {
-        const [activeLabsRows, pointsRow, rankRow, leaderboardRows, peakHoursRows] = await Promise.all([
+        const [activeLabsRows, pointsRow, rankRow, totalRow, leaderboardRows, peakHoursRows] = await Promise.all([
             db.allAsync(`
                 SELECT lab, COUNT(*) as current_count
                 FROM sitin_records
@@ -2064,6 +2065,7 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
             `),
             db.getAsync('SELECT points FROM users WHERE idNumber = ?', [idNumber]),
             db.getAsync('SELECT COUNT(*) + 1 as rank FROM users WHERE points > (SELECT points FROM users WHERE idNumber = ?)', [idNumber]),
+            db.getAsync('SELECT COUNT(*) as totalStudents FROM users'),
             db.allAsync('SELECT firstName, lastName, points FROM users ORDER BY points DESC LIMIT 3'),
             db.allAsync("SELECT strftime('%H', loginTime) as hour, COUNT(*) as count FROM student_history GROUP BY hour ORDER BY count DESC LIMIT 3")
         ]);
@@ -2071,6 +2073,7 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         activeLabs = activeLabsRows || [];
         studentPoints = (pointsRow || {}).points || 0;
         studentRank = (rankRow || {}).rank || 1;
+        totalStudents = (totalRow || {}).totalStudents || 1;
         leaderboard = leaderboardRows || [];
         peakHours = peakHoursRows || [];
     } catch (err) {
@@ -2128,12 +2131,13 @@ Here is the exact truth and context about the CCS Laboratories:
      (Do not include any extra text inside the double brackets after the JSON string).
 
 6. LIVE STUDENT STATISTICS & LEADERBOARD DATA:
-   - Current Student Profile: Name is "${req.session.firstName} ${req.session.lastName}", ID Number is "${idNumber}".
-   - Current Session Balance: ${sessionBalance} sit-in sessions remaining.
-   - Current Accumulated Points: ${studentPoints} points.
-   - Current Leaderboard Rank: Ranked #${studentRank} out of all students.
-   - Overall Leaderboard Standings (Top 3): ${leaderboardStr || 'No data yet'}.
-   - *Behavior*: If the student asks about their personal stats, points, sessions, rank, or the top students on the leaderboard, read these exact variables and answer accurately.
+    - Current Student Profile: Name is "${req.session.firstName} ${req.session.lastName}", ID Number is "${idNumber}".
+    - Current Session Balance: ${sessionBalance} sit-in sessions remaining.
+    - Current Accumulated Points: ${studentPoints} points.
+    - Current Leaderboard Rank: Ranked #${studentRank} out of all ${totalStudents} students.
+    - Overall Leaderboard Standings (Top 3): ${leaderboardStr || 'No data yet'}.
+    - Total Registered Students Count: There are exactly ${totalStudents} students registered in the CCS Sit-in System.
+    - *Behavior*: If the student asks about their personal stats, points, sessions, rank, the top students on the leaderboard, or the total number of students in the system/database, read these exact variables and answer accurately.
 
 7. LABORATORY PEAK-HOURS ANALYSIS (HISTORICAL DATA):
    - Busiest Check-in Hours (Peak Hours): ${peakHoursStr || 'No data yet'}.
@@ -2307,13 +2311,18 @@ Lab 536 is our dedicated laboratory for databases, design frameworks, and server
 * **Database Management:** Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), pgAdmin 4 (v8.3)
 * **Servers & Runtimes:** XAMPP Server (v8.2.12), Visual Studio 2022, VS Code
 * **Ideal Use Cases:** Structuring SQL databases, hosting local servers, systems integration testing.`;
+    } else if (lastUserMsg.includes('how many students') || lastUserMsg.includes('total students') || lastUserMsg.includes('number of students') || lastUserMsg.includes('student count')) {
+        reply = `### 👥 Registered Student Count
+Straight from our live database, there are currently **${totalStudents}** students registered in the CCS Sit-in Monitoring System.
+
+You are currently ranked **#${studentRank}** out of the **${totalStudents}** total registered students!`;
     } else if (lastUserMsg.includes('points') || lastUserMsg.includes('rank') || lastUserMsg.includes('leaderboard') || lastUserMsg.includes('standing') || lastUserMsg.includes('score') || lastUserMsg.includes('top')) {
         reply = `### 🏆 Your Live Student Statistics & Standing
 Here are your active session details retrieved straight from the CCS Sit-in database:
 * **Student Name:** ${req.session.firstName} ${req.session.lastName} (ID: ${idNumber})
 * **Remaining Sessions:** **${sessionBalance}** sessions left
 * **Accumulated Points:** **${studentPoints}** points
-* **Leaderboard Standing:** Ranked **#${studentRank}** out of all students
+* **Leaderboard Standing:** Ranked **#${studentRank}** out of **${totalStudents}** total students
 
 #### 🥇 Leaderboard Top 3 Standings:
 ${leaderboard.length > 0 ? leaderboard.map((s, i) => `* **#${i + 1}** ${s.firstName} ${s.lastName} — **${s.points}** points`).join('\n') : "* No standings recorded yet."}`;
