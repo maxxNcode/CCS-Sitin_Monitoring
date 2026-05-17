@@ -851,8 +851,11 @@ app.post('/register', (req, res) => {
 // Admin API: Search Student by ID
 app.get('/api/admin/search-student/:idNumber', (req, res) => {
     const idNumber = req.params.idNumber;
-    db.get('SELECT firstName || " " || lastName as name, sessionLeft FROM users WHERE idNumber = ?', [idNumber], (err, row) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
+    db.get("SELECT firstName || ' ' || lastName as name, sessionLeft FROM users WHERE idNumber = ?", [idNumber], (err, row) => {
+        if (err) {
+            console.error("Student search database error:", err);
+            return res.status(500).json({ error: 'Database error' });
+        }
         if (!row) return res.status(404).json({ error: 'Student not found' });
         res.json(row);
     });
