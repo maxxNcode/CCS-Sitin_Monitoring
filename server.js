@@ -2031,22 +2031,47 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         return res.status(400).json({ error: 'Messages history is required' });
     }
 
-    // Fetch live active counts from the database in real-time
+    const idNumber = req.session.idNumber;
+    const sessionBalance = req.session.sessions || 30;
+
     let activeLabs = [];
+    let studentPoints = 0;
+    let studentRank = 1;
+    let leaderboard = [];
+    let peakHours = [];
+
     try {
-        activeLabs = await db.allAsync(`
-            SELECT lab, COUNT(*) as current_count
-            FROM sitin_records
-            WHERE status = 'Active'
-            GROUP BY lab
-        `);
+        const [activeLabsRows, pointsRow, rankRow, leaderboardRows, peakHoursRows] = await Promise.all([
+            db.allAsync(`
+                SELECT lab, COUNT(*) as current_count
+                FROM sitin_records
+                WHERE status = 'Active'
+                GROUP BY lab
+            `),
+            db.getAsync('SELECT points FROM students WHERE idNumber = ?', [idNumber]),
+            db.getAsync('SELECT COUNT(*) + 1 as rank FROM students WHERE points > (SELECT points FROM students WHERE idNumber = ?)', [idNumber]),
+            db.allAsync('SELECT firstName, lastName, points FROM students ORDER BY points DESC LIMIT 3'),
+            db.allAsync("SELECT strftime('%H', loginTime) as hour, COUNT(*) as count FROM student_history GROUP BY hour ORDER BY count DESC LIMIT 3")
+        ]);
+
+        activeLabs = activeLabsRows || [];
+        studentPoints = (pointsRow || {}).points || 0;
+        studentRank = (rankRow || {}).rank || 1;
+        leaderboard = leaderboardRows || [];
+        peakHours = peakHoursRows || [];
     } catch (err) {
-        console.error("Failed to query live lab occupancies for AI:", err);
+        console.error("Failed to query dynamic DB context for AI:", err);
     }
 
     const count524 = (activeLabs.find(a => a.lab === 'Lab 524') || {}).current_count || 0;
     const count530 = (activeLabs.find(a => a.lab === 'Lab 530') || {}).current_count || 0;
     const count536 = (activeLabs.find(a => a.lab === 'Lab 536') || {}).current_count || 0;
+
+    // Format top 3 leaderboard
+    const leaderboardStr = leaderboard.map((s, i) => `${i + 1}. ${s.firstName} ${s.lastName} (${s.points} pts)`).join(', ');
+
+    // Format peak hours
+    const peakHoursStr = peakHours.map(p => `${p.hour}:00 (${p.count} historical check-ins)`).join(', ');
 
     const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
 Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
@@ -2087,6 +2112,24 @@ Here is the exact truth and context about the CCS Laboratories:
      Confirm the details in your text reply and append EXACTLY this string on a new line at the very end of your response:
      [[RESERVE:{"lab":"Lab name","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
      (Do not include any extra text inside the double brackets after the JSON string).
+
+6. LIVE STUDENT STATISTICS & LEADERBOARD DATA:
+   - Current Student Profile: Name is "${req.session.firstName} ${req.session.lastName}", ID Number is "${idNumber}".
+   - Current Session Balance: ${sessionBalance} sit-in sessions remaining.
+   - Current Accumulated Points: ${studentPoints} points.
+   - Current Leaderboard Rank: Ranked #${studentRank} out of all students.
+   - Overall Leaderboard Standings (Top 3): ${leaderboardStr || 'No data yet'}.
+   - *Behavior*: If the student asks about their personal stats, points, sessions, rank, or the top students on the leaderboard, read these exact variables and answer accurately.
+
+7. LABORATORY PEAK-HOURS ANALYSIS (HISTORICAL DATA):
+   - Busiest Check-in Hours (Peak Hours): ${peakHoursStr || 'No data yet'}.
+   - *Behavior*: If the student asks about the best/quietest times to study or which hours are peak/busy, tell them that according to our history logs, peak hours occur at ${peakHoursStr || '10:00 AM and 2:00 PM'}. Recommend that they plan their sessions in the early morning (8:00 AM - 9:30 AM) or late afternoon (4:00 PM - 5:30 PM) for optimal seating!
+
+8. COURSE-TO-WORKSPACE MATCHER:
+   - When a student asks what laboratory room is best for a specific subject, class, compiler, or database engine:
+     * Suggest Lab 530 if they want to study introductory topics, C, C++, or Python scripting (since Quincy, Code::Blocks, and Python are pre-installed).
+     * Suggest Lab 524 if they want to study advanced development, Java backend, web applications, or advanced systems (since IntelliJ, VS Code, Node.js, and Git are pre-installed).
+     * Suggest Lab 536 if they want to study databases, SQL queries, servers, or systems design (since MSSQL Server, MySQL Workbench, pgAdmin 4, and XAMPP are pre-installed).
 
 Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
 
@@ -2250,12 +2293,43 @@ Lab 536 is our dedicated laboratory for databases, design frameworks, and server
 * **Database Management:** Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), pgAdmin 4 (v8.3)
 * **Servers & Runtimes:** XAMPP Server (v8.2.12), Visual Studio 2022, VS Code
 * **Ideal Use Cases:** Structuring SQL databases, hosting local servers, systems integration testing.`;
-    } else if (lastUserMsg.includes('hours') || lastUserMsg.includes('session') || lastUserMsg.includes('points') || lastUserMsg.includes('score')) {
-        reply = `### ⏱️ Sit-in Sessions & Points Guide
-Here is how your sit-in balance and rewards work:
-* **Starting Balance:** Every CCS student starts with a balance of **30 sessions** (1 session corresponds to a 1-hour time slot).
-* **Ending a Session:** When the administrator checks you out, 1 session is deducted, and you are awarded **+10 points**.
-* **Earning Points:** These points accumulate on your profile. The more productive sessions you complete, the higher you climb on the **Leaderboard**!`;
+    } else if (lastUserMsg.includes('points') || lastUserMsg.includes('rank') || lastUserMsg.includes('leaderboard') || lastUserMsg.includes('standing') || lastUserMsg.includes('score') || lastUserMsg.includes('top')) {
+        reply = `### 🏆 Your Live Student Statistics & Standing
+Here are your active session details retrieved straight from the CCS Sit-in database:
+* **Student Name:** ${req.session.firstName} ${req.session.lastName} (ID: ${idNumber})
+* **Remaining Sessions:** **${sessionBalance}** hours left
+* **Accumulated Points:** **${studentPoints}** points
+* **Leaderboard Standing:** Ranked **#${studentRank}** out of all students
+
+#### 🥇 Leaderboard Top 3 Standings:
+${leaderboard.length > 0 ? leaderboard.map((s, i) => `* **#${i + 1}** ${s.firstName} ${s.lastName} — **${s.points}** points`).join('\n') : "* No standings recorded yet."}`;
+    } else if (lastUserMsg.includes('busy') || lastUserMsg.includes('peak') || lastUserMsg.includes('best time') || lastUserMsg.includes('traffic') || lastUserMsg.includes('quiet') || lastUserMsg.includes('optimal') || lastUserMsg.includes('time')) {
+        reply = `### 📊 AI Peak-Hours & Lab Optimizer (Big Data Analysis)
+Based on our database of historical check-in logs, here are the busiest laboratory check-in periods:
+${peakHours.length > 0 ? peakHours.map(p => `* **${p.hour}:00** — ${p.count} historical check-ins`).join('\n') : "* No historical logins recorded yet."}
+
+#### 💡 My Optimal Recommendation:
+* **Busiest Hours:** The laboratories experience heavy student check-ins around **${peakHours.length > 0 ? peakHours[0].hour + ":00" : "10:00 AM - 12:00 PM"}**.
+* **Quiet Study Windows:** I highly recommend booking your sessions during **early morning hours (8:00 AM - 9:30 AM)** or **late afternoons (4:00 PM - 5:30 PM)** when computer availability is at its highest!`;
+    } else if (lastUserMsg.includes('sql') || lastUserMsg.includes('database') || lastUserMsg.includes('query') || lastUserMsg.includes('mysql') || lastUserMsg.includes('c++') || lastUserMsg.includes('quincy') || lastUserMsg.includes('code::blocks') || lastUserMsg.includes('java') || lastUserMsg.includes('node') || lastUserMsg.includes('intellij') || lastUserMsg.includes('web') || lastUserMsg.includes('python') || lastUserMsg.includes('subject') || lastUserMsg.includes('class') || lastUserMsg.includes('compiler')) {
+        let bestLab = "";
+        let matchReason = "";
+        if (lastUserMsg.includes('sql') || lastUserMsg.includes('database') || lastUserMsg.includes('query') || lastUserMsg.includes('mysql') || lastUserMsg.includes('xampp')) {
+            bestLab = "Lab 536 (Database Management Lab)";
+            matchReason = "It is pre-installed with Microsoft SQL Server, MySQL Workbench, pgAdmin 4, and XAMPP Server.";
+        } else if (lastUserMsg.includes('java') || lastUserMsg.includes('node') || lastUserMsg.includes('web') || lastUserMsg.includes('intellij')) {
+            bestLab = "Lab 524 (Advanced Systems & Programming Lab)";
+            matchReason = "It is pre-installed with IntelliJ IDEA, Node.js, Git, VS Code, and Visual Studio 2022.";
+        } else {
+            bestLab = "Lab 530 (Introductory & C/C++ Lab)";
+            matchReason = "It is pre-installed with Quincy 2005, Code::Blocks, Python 3, and Git, which are ideal for introductory classes.";
+        }
+        reply = `### 🛠️ AI Course-to-Workspace Matcher
+Based on your subject query, here is the optimal computer laboratory room:
+* **Recommended Room:** **${bestLab}**
+* **Reason:** ${matchReason}
+
+You can make a reservation in this lab directly by telling me: *"Can you reserve a slot in ${bestLab.substring(0,7)}?"*`;
     } else if (lastUserMsg.includes('hi') || lastUserMsg.includes('hello') || lastUserMsg.includes('hey') || lastUserMsg.includes('start')) {
         reply = `Hello! I am your **CCS Sit-in AI Assistant**! 👋
 I can help you answer any questions about our laboratory rooms, pre-installed software, sit-in rules, sessions, or programming syntax.
@@ -2263,7 +2337,8 @@ I can help you answer any questions about our laboratory rooms, pre-installed so
 **Try asking me:**
 * "What tools are installed in Lab 536?"
 * "What are the computer lab rules?"
-* "How do I earn points and manage my sessions?"`;
+* "How do I earn points and manage my sessions?"
+* "Which lab is best for coding in Java?"`;
     } else {
         reply = `I understand you're asking about the College of Computer Studies (CCS). As your CCS Lab Assistant, I can confirm that our computer labs (**Lab 524, Lab 530, and Lab 536**) are fully equipped with compilers, databases, and IDEs to support your sit-in sessions!
 
