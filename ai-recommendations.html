@@ -467,7 +467,7 @@ function renderMessage(role, text) {
                             <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
                         </div>
                         <div class="text-[10px] opacity-75 font-semibold text-base-content">
-                            Requesting booking for <strong>${reservationPayload.lab}</strong> on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>...
+                            Requesting booking for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>...
                         </div>
                     </div>
                 ` : ""}
@@ -503,7 +503,7 @@ async function executeConversationalReservation(payload, elementId) {
                     <i class="fa-solid fa-circle-check text-base"></i> Booking Confirmed!
                 </div>
                 <div class="text-[10px] opacity-75 font-semibold text-base-content">
-                    Your reservation for <strong>${payload.lab}</strong> on <strong>${payload.date}</strong> at <strong>${payload.time}</strong> has been submitted successfully to the administrator!
+                    Your reservation for <strong>${payload.lab}</strong> (PC: <strong>${payload.pcNumber || 'Any'}</strong>) on <strong>${payload.date}</strong> at <strong>${payload.time}</strong> has been submitted successfully to the administrator!
                 </div>
                 <div class="mt-2 text-[9px] opacity-50 italic text-base-content/60">
                     You can view its current status anytime inside the **Reservations** menu tab.

@@ -1182,7 +1182,7 @@ app.post('/api/student/reserve', checkAuth, (req, res) => {
             return res.status(403).json({ error: 'Reservations are currently disabled by the administrator.' });
         }
 
-        const { lab, purpose, date, time } = req.body;
+        const { lab, pcNumber, purpose, date, time } = req.body;
         const { idNumber, firstName, lastName } = req.session;
         const studentName = `${firstName} ${lastName}`;
 
@@ -1191,13 +1191,13 @@ app.post('/api/student/reserve', checkAuth, (req, res) => {
         }
 
         db.run(
-            `INSERT INTO reservations (idNumber, studentName, lab, purpose, reservationDate, reservationTime) VALUES (?, ?, ?, ?, ?, ?)`,
-            [idNumber, studentName, lab, purpose, date, time],
+            `INSERT INTO reservations (idNumber, studentName, lab, pcNumber, purpose, reservationDate, reservationTime) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [idNumber, studentName, lab, pcNumber || 'N/A', purpose, date, time],
             function (err) {
                 if (err) return res.status(500).json({ error: 'Failed to create reservation' });
                 
                 // Notify ADMIN about new reservation
-                const adminMessage = `${studentName} has requested a reservation for ${lab} on ${date}.`;
+                const adminMessage = `${studentName} has requested a reservation for ${lab} (PC: ${pcNumber || 'N/A'}) on ${date}.`;
                 db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', 
                     ['ADMIN', adminMessage, 'info']);
                 // Push via Socket.IO
@@ -2119,15 +2119,16 @@ Here is the exact truth and context about the CCS Laboratories:
 
 5. CONVERSATIONAL LAB RESERVATIONS (AGENT BOOKING PROTOCOL):
    - You have the capability to schedule / request sit-in reservations directly for the student.
-   - To register a reservation, you MUST collect exactly four slots:
+   - To register a reservation, you MUST collect exactly five slots:
      1. lab: Which lab they want to book (exactly 'Lab 524', 'Lab 530', or 'Lab 536').
-     2. purpose: The reason for their sit-in (e.g. C Programming, Python Scripting, Java, etc.).
-     3. date: The reservation date. Interpret dates like "May 20" or "tomorrow" and output strictly as YYYY-MM-DD (e.g. "2026-05-20").
-     4. time: The reservation time. Convert times like "10:30 AM" or "2 PM" into 24-hour style HH:MM format (e.g. "10:30" or "14:00").
-   - If a student requests a booking but any of these four details are missing, you MUST ask for the missing ones first.
-   - ONCE AND ONLY ONCE ALL 4 SLOTS ARE GIVEN by the user:
+     2. pcNumber: Which PC they want to occupy (exactly 'PC-01' through 'PC-30', e.g. 'PC-07').
+     3. purpose: The reason for their sit-in (e.g. C Programming, Python Scripting, Java, etc.).
+     4. date: The reservation date. Interpret dates like "May 20" or "tomorrow" and output strictly as YYYY-MM-DD (e.g. "2026-05-20").
+     5. time: The reservation time. Convert times like "10:30 AM" or "2 PM" into 24-hour style HH:MM format (e.g. "10:30" or "14:00").
+   - If a student requests a booking but any of these five details are missing, you MUST ask for the missing ones first.
+   - ONCE AND ONLY ONCE ALL 5 SLOTS ARE GIVEN by the user:
      Confirm the details in your text reply and append EXACTLY this string on a new line at the very end of your response:
-     [[RESERVE:{"lab":"Lab name","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
+     [[RESERVE:{"lab":"Lab name","pcNumber":"PC-XX","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
      (Do not include any extra text inside the double brackets after the JSON string).
 
 6. LIVE STUDENT STATISTICS & LEADERBOARD DATA:
@@ -2211,6 +2212,7 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
     if (lastUserMsg.includes('reserve') || lastUserMsg.includes('reservation') || lastUserMsg.includes('book')) {
         // Simple slot parsing from user message history
         let parsedLab = "";
+        let parsedPcNumber = "";
         let parsedPurpose = "";
         let parsedDate = "";
         let parsedTime = "";
@@ -2221,6 +2223,12 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
             if (txt.includes('524')) parsedLab = "Lab 524";
             else if (txt.includes('530')) parsedLab = "Lab 530";
             else if (txt.includes('536')) parsedLab = "Lab 536";
+
+            // Extract PC number (e.g. pc-01, pc 12, PC-23)
+            const pcMatch = txt.match(/pc[- ]?(\d{1,2})/);
+            if (pcMatch) {
+                parsedPcNumber = `PC-${pcMatch[1].padStart(2, '0')}`;
+            }
 
             if (txt.includes('c programming') || txt.includes('c language')) parsedPurpose = "C Programming";
             else if (txt.includes('java')) parsedPurpose = "Java Programming";
@@ -2253,6 +2261,7 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
         // Check which slots are missing
         const missing = [];
         if (!parsedLab) missing.push("Laboratory (Lab 524, 530, or 536)");
+        if (!parsedPcNumber) missing.push("PC Number (e.g. PC-01 to PC-30)");
         if (!parsedPurpose) missing.push("Sit-in Purpose (e.g. C Programming, Java)");
         if (!parsedDate) missing.push("Date (e.g. May 20 or YYYY-MM-DD)");
         if (!parsedTime) missing.push("Time (e.g. 10:30 AM or 10:30)");
@@ -2267,12 +2276,13 @@ Could you please provide these remaining details in your next message?`;
             reply = `### 📅 Reservation Request Prepared!
 Perfect! I have collected all the required details for your laboratory reservation:
 * **Laboratory:** ${parsedLab}
+* **PC Number:** ${parsedPcNumber}
 * **Purpose:** ${parsedPurpose}
 * **Date:** ${parsedDate}
 * **Time:** ${parsedTime}
 
 I am submitting this reservation request to the administration for you right now!
-\n\n[[RESERVE:{"lab":"${parsedLab}","purpose":"${parsedPurpose}","date":"${parsedDate}","time":"${parsedTime}"}]]`;
+\n\n[[RESERVE:{"lab":"${parsedLab}","pcNumber":"${parsedPcNumber}","purpose":"${parsedPurpose}","date":"${parsedDate}","time":"${parsedTime}"}]]`;
         }
     } else if (lastUserMsg.includes('available') || lastUserMsg.includes('active') || lastUserMsg.includes('occupancy') || lastUserMsg.includes('busy') || lastUserMsg.includes('session')) {
         reply = `### 🖥️ Real-time Laboratory Occupancy
