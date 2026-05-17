@@ -1983,6 +1983,129 @@ app.get('/api/ai-recommendations', checkAuth, (req, res) => {
     });
 });
 
+// AI Chatbot API (Groq AI powered with smart simulated fallback mode)
+app.post('/api/ai/chat', checkAuth, async (req, res) => {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: 'Messages history is required' });
+    }
+
+    const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
+Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
+
+Here is the exact truth and context about the CCS Laboratories:
+1. Laboratories & Pre-installed Software:
+   - Lab 524 (Advanced Systems & Programming Lab): Pre-installed with Visual Studio Code (v1.87.0), Visual Studio 2022 (v17.9.0), Node.js (v20.11.0), IntelliJ IDEA (v2023.3.4), Git (v2.43.0), and Notepad++ (v8.6.2).
+   - Lab 530 (Introductory & C/C++ Lab): Pre-installed with Quincy 2005 (v1.3), Code::Blocks (v20.03), Python (v3.12.2), Visual Studio Code (v1.87.0), Notepad++ (v8.6.2), and Git (v2.43.0).
+   - Lab 536 (Database Management & Systems Design Lab): Pre-installed with Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), Visual Studio Code (v1.87.0), XAMPP (v8.2.12), pgAdmin 4 (v8.3), Visual Studio 2022 (v17.9.0), and Notepad++ (v8.6.2).
+
+2. CCS Laboratory Rules & Guidelines:
+   - Always wear the correct school uniform to enter the labs.
+   - Absolutely NO food, drinks, or chewing gum allowed inside the computer labs.
+   - Maintain silence and respect others who are studying or working.
+   - You are NOT allowed to download, install, or play games or browse unauthorized sites.
+   - Keep your workspace neat. Push your chair back into place when leaving.
+
+3. Sit-in Sessions and Points Balance:
+   - Every student starts with 30 sit-in sessions (1 session = 1 hour).
+   - When a student checks out / logs out of their active sit-in, 1 session is decremented from their balance, and they are awarded +10 points.
+   - The Leaderboard shows the top students ranked by their accumulated points.
+
+Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
+
+    const groqKey = process.env.GROQ_API_KEY;
+
+    if (groqKey && groqKey.trim() !== '') {
+        try {
+            // Forward conversation history to Groq API
+            const groqMessages = [
+                { role: 'system', content: systemPrompt },
+                ...messages.map(m => ({ role: m.role, content: m.content }))
+            ];
+
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${groqKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-specdec',
+                    messages: groqMessages,
+                    temperature: 0.7,
+                    max_tokens: 800
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const reply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
+                return res.json({ success: true, reply });
+            } else {
+                console.error("Groq API error response status:", response.status);
+                throw new Error(`Groq API responded with status ${response.status}`);
+            }
+        } catch (err) {
+            console.error("Failed to query Groq AI:", err);
+            // Fall through to simulated mode if API fails
+        }
+    }
+
+    // Smart simulated fallback mode (runs if GROQ_API_KEY is missing or if connection fails)
+    const lastUserMsg = messages[messages.length - 1]?.content?.toLowerCase() || '';
+    let reply = "";
+
+    const simulatedNote = "\n\n*(💡 Running in CCS Local AI Mode. Connect a Groq API Key to enable the high-speed Llama 3 cloud module!)*";
+
+    if (lastUserMsg.includes('rules') || lastUserMsg.includes('guideline') || lastUserMsg.includes('dress') || lastUserMsg.includes('uniform') || lastUserMsg.includes('food')) {
+        reply = `### 📜 CCS Laboratory Rules & Guidelines
+Here are the essential rules you must follow when using the laboratories:
+* **Uniform Policy:** You must wear your complete, proper school uniform to enter.
+* **No Food or Drinks:** Strictly NO food, beverages, water bottles, or chewing gum allowed at the computer desks.
+* **Games Forbidden:** Downloading, installing, or playing games is strictly prohibited.
+* **Silence & Respect:** Keep noise to a minimum to respect other students' sessions.
+* **Neat Workspaces:** Always leave your area clean and push in your chairs after logging out.`;
+    } else if (lastUserMsg.includes('524')) {
+        reply = `### 🖥️ Lab 524 (Advanced Systems & Programming Lab)
+Lab 524 is optimized for advanced development and programming workflows. Here is the software currently installed:
+* **Code Editors & IDEs:** Visual Studio Code (v1.87.0), Visual Studio 2022 (v17.9.0), IntelliJ IDEA (v2023.3.4), Notepad++ (v8.6.2)
+* **Runtimes & Tools:** Node.js (v20.11.0), Git (v2.43.0)
+* **Ideal Use Cases:** Web application coding, Java/C# backend development, systems programming.`;
+    } else if (lastUserMsg.includes('530')) {
+        reply = `### 🖥️ Lab 530 (Introductory & C/C++ Lab)
+Lab 530 is tailored for students learning computer science foundations and initial programming languages:
+* **IDE & Editors:** Quincy 2005 (v1.3), Code::Blocks (v20.03), Visual Studio Code (v1.87.0), Notepad++ (v8.6.2)
+* **Languages & Version Control:** Python (v3.12.2), Git (v2.43.0)
+* **Ideal Use Cases:** Learning C/C++ concepts, scripting in Python, introductory algorithms.`;
+    } else if (lastUserMsg.includes('536')) {
+        reply = `### 🖥️ Lab 536 (Database Management & Systems Design Lab)
+Lab 536 is our dedicated laboratory for databases, design frameworks, and servers:
+* **Database Management:** Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), pgAdmin 4 (v8.3)
+* **Servers & Runtimes:** XAMPP Server (v8.2.12), Visual Studio 2022, VS Code
+* **Ideal Use Cases:** Structuring SQL databases, hosting local servers, systems integration testing.`;
+    } else if (lastUserMsg.includes('hours') || lastUserMsg.includes('session') || lastUserMsg.includes('points') || lastUserMsg.includes('score')) {
+        reply = `### ⏱️ Sit-in Sessions & Points Guide
+Here is how your sit-in balance and rewards work:
+* **Starting Balance:** Every CCS student starts with a balance of **30 sessions** (1 session corresponds to a 1-hour time slot).
+* **Ending a Session:** When the administrator checks you out, 1 session is deducted, and you are awarded **+10 points**.
+* **Earning Points:** These points accumulate on your profile. The more productive sessions you complete, the higher you climb on the **Leaderboard**!`;
+    } else if (lastUserMsg.includes('hi') || lastUserMsg.includes('hello') || lastUserMsg.includes('hey') || lastUserMsg.includes('start')) {
+        reply = `Hello! I am your **CCS Sit-in AI Assistant**! 👋
+I can help you answer any questions about our laboratory rooms, pre-installed software, sit-in rules, sessions, or programming syntax.
+
+**Try asking me:**
+* "What tools are installed in Lab 536?"
+* "What are the computer lab rules?"
+* "How do I earn points and manage my sessions?"`;
+    } else {
+        reply = `I understand you're asking about the College of Computer Studies (CCS). As your CCS Lab Assistant, I can confirm that our computer labs (**Lab 524, Lab 530, and Lab 536**) are fully equipped with compilers, databases, and IDEs to support your sit-in sessions!
+
+Please feel free to ask about specific labs, installed software (like VS Code, Quincy, MSSQL, or Python), lab rules, or sit-in session balance metrics!`;
+    }
+
+    res.json({ success: true, reply: reply + simulatedNote });
+});
+
 // Award points on feedback submission (5 bonus points)
 app.post('/api/student/feedback', checkAuth, (req, res) => {
     const { historyId, rating, comments } = req.body;

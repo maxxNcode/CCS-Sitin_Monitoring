@@ -95,11 +95,12 @@
 </div>
 </div>
 
-<main class="p-4 md:p-8 max-w-5xl mx-auto w-full animate-in fade-in duration-700">
+<main class="p-4 md:p-8 max-w-6xl mx-auto w-full animate-in fade-in duration-700">
+    <!-- Header Area -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-            <h1 class="text-4xl font-black tracking-tight italic uppercase">AI <span class="text-primary not-italic">Recommendations</span></h1>
-            <p class="opacity-60 font-medium">Smart suggestions based on your lab usage patterns and current availability.</p>
+            <h1 class="text-4xl font-black tracking-tight italic uppercase">CCS <span class="text-primary not-italic">AI Recommendations & Assistant</span></h1>
+            <p class="opacity-60 font-medium">Get live recommendations and chat with our smart AI assistant about lab schedules, rules, or programming support.</p>
         </div>
         <a href="/homepage" class="btn btn-ghost btn-sm gap-2 rounded-xl">
             <i class="fa-solid fa-arrow-left"></i>
@@ -107,14 +108,128 @@
         </a>
     </div>
 
-    <div id="recommendations" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="skeleton h-32 w-full opacity-10 rounded-3xl"></div>
-        <div class="skeleton h-32 w-full opacity-10 rounded-3xl"></div>
-        <div class="skeleton h-32 w-full opacity-10 rounded-3xl"></div>
-        <div class="skeleton h-32 w-full opacity-10 rounded-3xl"></div>
+    <!-- Dual Pane System -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+        
+        <!-- Left Side: Automated Recommendations Feed (4 Cols) -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            <div class="card bg-base-100/50 backdrop-blur-md border border-base-content/5 shadow-sm rounded-3xl">
+                <div class="card-body p-6">
+                    <h2 class="text-xs opacity-50 font-black tracking-widest uppercase mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-primary animate-pulse"></i> Smart Suggestions
+                    </h2>
+                    
+                    <div id="recommendations" class="flex flex-col gap-4">
+                        <!-- Recommendation Skeletons -->
+                        <div class="skeleton h-24 w-full opacity-10 rounded-2xl"></div>
+                        <div class="skeleton h-24 w-full opacity-10 rounded-2xl"></div>
+                        <div class="skeleton h-24 w-full opacity-10 rounded-2xl"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lab Rules Reference Quick Cards -->
+            <div class="card bg-base-100/30 backdrop-blur-md border border-base-content/5 shadow-sm rounded-3xl">
+                <div class="card-body p-6">
+                    <h2 class="text-xs opacity-50 font-black tracking-widest uppercase mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-secondary"></i> Quick Quick Rules
+                    </h2>
+                    <ul class="text-xs flex flex-col gap-3 font-medium opacity-80 leading-relaxed">
+                        <li class="flex gap-2 items-start"><span class="text-primary font-bold">1.</span> Wear complete uniform.</li>
+                        <li class="flex gap-2 items-start"><span class="text-primary font-bold">2.</span> No food, drinks, or gum inside.</li>
+                        <li class="flex gap-2 items-start"><span class="text-primary font-bold">3.</span> Maintain silence.</li>
+                        <li class="flex gap-2 items-start"><span class="text-primary font-bold">4.</span> Games and downloads are forbidden.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Interactive AI Chatbox Container (8 Cols) -->
+        <div class="lg:col-span-8 flex flex-col">
+            <div class="card bg-base-100/70 backdrop-blur-xl border border-base-content/5 shadow-lg rounded-3xl flex flex-col h-[650px] overflow-hidden">
+                
+                <!-- Chat Window Top Bar -->
+                <div class="px-6 py-4 bg-base-200/50 border-b border-base-content/5 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <div class="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
+                                <i class="fa-solid fa-robot text-lg animate-bounce"></i>
+                            </div>
+                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-base-100 animate-pulse"></span>
+                        </div>
+                        <div>
+                            <div class="font-black text-sm tracking-tight italic flex items-center gap-1.5">
+                                CCS LAB ASSISTANT <span class="badge badge-xs badge-primary font-black uppercase italic p-1.5 text-[8px]">PRO</span>
+                            </div>
+                            <div class="text-[10px] opacity-50 font-bold flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-success"></span> Online & Active (Groq Llama 3)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="clearChat()" class="btn btn-ghost btn-xs text-error gap-1.5 rounded-lg opacity-70 hover:opacity-100 font-bold">
+                        <i class="fa-solid fa-trash-can"></i> Clear Chat
+                    </button>
+                </div>
+
+                <!-- Chat Messages Screen -->
+                <div id="chatMessages" class="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
+                    <!-- Default Welcome/Empty State -->
+                    <div id="chatEmptyState" class="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto p-4">
+                        <div class="w-16 h-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-3xl mb-4 animate-pulse">
+                            <i class="fa-solid fa-comments"></i>
+                        </div>
+                        <h3 class="font-black italic uppercase text-lg tracking-tight mb-2">CCS Virtual Companion</h3>
+                        <p class="text-xs opacity-60 font-semibold mb-6 leading-relaxed">
+                            Hello! I am your AI assistant for the College of Computer Studies. Ask me anything about pre-installed software, rules, schedules, points, or session balances!
+                        </p>
+                        
+                        <div class="w-full flex flex-col gap-2">
+                            <button onclick="sendQuickPrompt('What software is installed in Lab 536?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                                <i class="fa-solid fa-magnifying-glass opacity-50 mr-2 text-primary"></i> What software is in Lab 536?
+                            </button>
+                            <button onclick="sendQuickPrompt('What are the computer lab rules?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                                <i class="fa-solid fa-scale-balanced opacity-50 mr-2 text-secondary"></i> What are the computer lab rules?
+                            </button>
+                            <button onclick="sendQuickPrompt('How do I earn points and manage my sessions?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                                <i class="fa-solid fa-clock-rotate-left opacity-50 mr-2 text-accent"></i> How do I earn points & sessions?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Typing Loader Dot Pulse (Hidden by default) -->
+                <div id="chatLoader" class="px-6 py-3 bg-base-200/20 border-t border-base-content/5 flex items-center gap-3 hidden">
+                    <div class="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
+                        <i class="fa-solid fa-robot text-sm animate-spin"></i>
+                    </div>
+                    <div class="flex gap-1 items-center bg-base-200 px-4 py-2.5 rounded-2xl text-xs font-semibold opacity-85">
+                        Assistant is analyzing
+                        <span class="inline-flex gap-0.5 ml-1">
+                            <span class="w-1.5 h-1.5 bg-base-content rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                            <span class="w-1.5 h-1.5 bg-base-content rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                            <span class="w-1.5 h-1.5 bg-base-content rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Chat Input Tray -->
+                <div class="p-4 bg-base-200/50 border-t border-base-content/5 shrink-0">
+                    <form onsubmit="submitMessage(event)" class="flex gap-3">
+                        <input type="text" id="chatInput" placeholder="Ask your lab assistant a question..." class="input input-bordered flex-1 rounded-2xl bg-base-100 border-base-content/5 focus:border-primary font-bold text-sm shadow-inner transition-all duration-300" autocomplete="off" />
+                        <button type="submit" class="btn btn-primary rounded-2xl font-black italic uppercase px-6">
+                            Send <i class="fa-solid fa-paper-plane ml-1.5"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 </main>
 </div>
+
 <div class="drawer-side z-[200]">
 <label for="my-drawer" class="drawer-overlay"></label>
 <ul class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
@@ -130,10 +245,14 @@
 </ul>
 </div>
 </div>
+
 <script>
 // Initial Theme Setup
 const savedTheme = localStorage.getItem("theme") || "forest";
 document.documentElement.setAttribute("data-theme", savedTheme);
+
+let chatHistory = [];
+let userSessionInfo = { firstName: "Student", lastName: "", idNumber: "" };
 
 window.addEventListener("DOMContentLoaded", () => {
     // Theme Switcher Logic
@@ -145,40 +264,209 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    fetch("/check-session").then(r => r.json()).then(data => { if (!data.loggedIn) window.location.href = "/login"; }).catch(() => window.location.href = "/login");
+    fetch("/check-session")
+        .then(r => r.json())
+        .then(data => { 
+            if (!data.loggedIn) {
+                window.location.href = "/login"; 
+            } else {
+                userSessionInfo = data;
+            }
+        })
+        .catch(() => window.location.href = "/login");
+        
     loadRecommendations();
 });
+
 function logout() {
-fetch("/logout", { method: "POST" }).then(r => r.json()).then(data => { if (data.success) window.location.href = data.redirectUrl; }).catch(err => console.error("Logout error:", err));
+    fetch("/logout", { method: "POST" })
+        .then(r => r.json())
+        .then(data => { if (data.success) window.location.href = data.redirectUrl; })
+        .catch(err => console.error("Logout error:", err));
 }
+
 async function loadRecommendations() {
-try {
-const res = await fetch("/api/ai-recommendations");
-const data = await res.json();
-const container = document.getElementById("recommendations");
-const typeColors = {
-lab: "text-primary",
-purpose: "text-secondary",
-lab_habit: "text-accent",
-welcome: "text-info",
-time: "text-warning"
-};
-container.innerHTML = data.map(rec => `
-<div class="card bg-base-100/80 backdrop-blur-xl ${typeColors[rec.type] || typeColors.welcome} shadow-sm rounded-3xl transition-all hover:-translate-y-1 overflow-hidden">
-<div class="card-body">
-<div class="flex items-start gap-4">
-<div class="w-12 h-12 rounded-2xl bg-base-content/5 flex items-center justify-center shrink-0"><i class="fa-solid ${rec.icon} text-xl"></i></div>
-<div>
-<h3 class="card-title text-lg font-black italic uppercase tracking-tight">${rec.title}</h3>
-<p class="text-sm opacity-80 mt-1 font-medium leading-relaxed">${rec.description}</p>
-</div>
-</div>
-</div>
-</div>
-`).join("");
-} catch (e) {
-console.error("Recommendations load error:", e);
+    try {
+        const res = await fetch("/api/ai-recommendations");
+        const data = await res.json();
+        const container = document.getElementById("recommendations");
+        const typeColors = {
+            lab: "text-primary border-primary/10 bg-primary/5",
+            purpose: "text-secondary border-secondary/10 bg-secondary/5",
+            lab_habit: "text-accent border-accent/10 bg-accent/5",
+            welcome: "text-info border-info/10 bg-info/5",
+            time: "text-warning border-warning/10 bg-warning/5"
+        };
+        const typeIcons = {
+            lab: "fa-computer",
+            purpose: "fa-code",
+            lab_habit: "fa-star",
+            welcome: "fa-hand-sparkles",
+            time: "fa-clock"
+        };
+        
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="p-6 text-center text-xs opacity-50 italic">
+                    No recommendations available yet. Use sit-ins to see magic recommendations!
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = data.map(rec => `
+            <div class="card border ${typeColors[rec.type] || typeColors.welcome} shadow-sm rounded-2xl overflow-hidden">
+                <div class="card-body p-4 flex flex-row items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-base-content/5 flex items-center justify-center shrink-0">
+                        <i class="fa-solid ${rec.icon || typeIcons[rec.type]} text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-black uppercase italic tracking-tight">${rec.title}</h3>
+                        <p class="text-[10px] opacity-70 mt-0.5 leading-relaxed font-bold">${rec.description}</p>
+                    </div>
+                </div>
+            </div>
+        `).join("");
+    } catch (e) {
+        console.error("Recommendations load error:", e);
+    }
 }
+
+// Simple parser to render AI markdown responses beautifully inside chat bubbles
+function parseMarkdown(text) {
+    let parsed = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+        
+    // Headers (e.g. ### Header)
+    parsed = parsed.replace(/^### (.*?)$/gm, '<h4 class="text-xs font-black uppercase italic tracking-tight text-primary mt-3 mb-1">$1</h4>');
+    
+    // Bold (e.g. **bold**)
+    parsed = parsed.replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-primary">$1</strong>');
+    
+    // Bullet Points (e.g. * Item)
+    parsed = parsed.replace(/^\* (.*?)$/gm, '<li class="ml-4 list-disc text-xs font-bold opacity-90">$1</li>');
+
+    return parsed;
+}
+
+function clearChat() {
+    chatHistory = [];
+    const container = document.getElementById("chatMessages");
+    container.innerHTML = `
+        <div id="chatEmptyState" class="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto p-4 animate-in fade-in duration-300">
+            <div class="w-16 h-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-3xl mb-4 animate-pulse">
+                <i class="fa-solid fa-comments"></i>
+            </div>
+            <h3 class="font-black italic uppercase text-lg tracking-tight mb-2">CCS Virtual Companion</h3>
+            <p class="text-xs opacity-60 font-semibold mb-6 leading-relaxed">
+                Hello! I am your AI assistant for the College of Computer Studies. Ask me anything about pre-installed software, rules, schedules, points, or session balances!
+            </p>
+            <div class="w-full flex flex-col gap-2">
+                <button onclick="sendQuickPrompt('What software is installed in Lab 536?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                    <i class="fa-solid fa-magnifying-glass opacity-50 mr-2 text-primary"></i> What software is in Lab 536?
+                </button>
+                <button onclick="sendQuickPrompt('What are the computer lab rules?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                    <i class="fa-solid fa-scale-balanced opacity-50 mr-2 text-secondary"></i> What are the computer lab rules?
+                </button>
+                <button onclick="sendQuickPrompt('How do I earn points and manage my sessions?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                    <i class="fa-solid fa-clock-rotate-left opacity-50 mr-2 text-accent"></i> How do I earn points & sessions?
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function scrollToBottom() {
+    const container = document.getElementById("chatMessages");
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+}
+
+function renderMessage(role, text) {
+    const container = document.getElementById("chatMessages");
+    const emptyState = document.getElementById("chatEmptyState");
+    if (emptyState) emptyState.remove();
+
+    const isUser = role === "user";
+    
+    const bubbleClass = isUser 
+        ? "bg-primary text-primary-content rounded-2xl rounded-tr-none font-bold" 
+        : "bg-base-200 border border-base-content/5 text-base-content rounded-2xl rounded-tl-none font-semibold leading-relaxed";
+
+    const alignClass = isUser ? "chat chat-end" : "chat chat-start";
+    
+    const avatarImg = isUser 
+        ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${userSessionInfo.firstName}`
+        : `/assets/ccslogo.png`;
+
+    const nameLabel = isUser 
+        ? `${userSessionInfo.firstName} ${userSessionInfo.lastName || ""}` 
+        : "CCS AI Assistant";
+
+    const formattedText = isUser ? text : parseMarkdown(text);
+
+    const messageHtml = `
+        <div class="${alignClass} animate-in slide-in-from-bottom duration-300">
+            <div class="chat-image avatar">
+                <div class="w-8 h-8 rounded-xl bg-base-content/5 p-1 border border-base-content/10">
+                    <img src="${avatarImg}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=CCS'" class="w-full h-full object-contain" />
+                </div>
+            </div>
+            <div class="chat-header text-[10px] opacity-40 font-bold uppercase tracking-wider mb-1">${nameLabel}</div>
+            <div class="chat-bubble ${bubbleClass} text-xs p-3.5 shadow-sm max-w-md break-words">${formattedText}</div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML("beforeend", messageHtml);
+    scrollToBottom();
+}
+
+async function sendQuickPrompt(promptText) {
+    document.getElementById("chatInput").value = promptText;
+    submitMessage(new Event("submit"));
+}
+
+async function submitMessage(e) {
+    if (e) e.preventDefault();
+    
+    const input = document.getElementById("chatInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = "";
+    
+    // Render user message
+    renderMessage("user", text);
+    chatHistory.push({ role: "user", content: text });
+
+    // Show loading pulse
+    const loader = document.getElementById("chatLoader");
+    loader.classList.remove("hidden");
+    scrollToBottom();
+
+    try {
+        const response = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: chatHistory })
+        });
+
+        const data = await response.json();
+        loader.classList.add("hidden");
+
+        if (response.ok && data.success) {
+            renderMessage("assistant", data.reply);
+            chatHistory.push({ role: "assistant", content: data.reply });
+        } else {
+            const errorMsg = data.error || "I experienced an error connecting to Groq. Please check the backend connection.";
+            renderMessage("assistant", `⚠️ **Error:** ${errorMsg}`);
+        }
+    } catch (err) {
+        console.error("AI chat error:", err);
+        loader.classList.add("hidden");
+        renderMessage("assistant", "⚠️ **Connection Error:** Failed to transmit message to the CCS server. Please make sure the server is active.");
+    }
 }
 </script>
 </body>
