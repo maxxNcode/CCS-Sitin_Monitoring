@@ -419,16 +419,29 @@ function renderMessage(role, text, isHistory = false) {
     
     // Check for Reservation trigger block inside assistant's response
     let reservationPayload = null;
+    let cancelPayload = null;
     let cleanText = text;
-    if (!isUser && text.includes("[[RESERVE:")) {
-        const match = text.match(/\[\[RESERVE:(\{.*?\})\]\]/);
-        if (match) {
-            try {
-                reservationPayload = JSON.parse(match[1]);
-                // Strip reservation trigger block out of the bubble text
-                cleanText = text.replace(/\[\[RESERVE:(\{.*?\})\]\]/, "").trim();
-            } catch (e) {
-                console.error("Failed to parse AI reservation trigger JSON:", e);
+
+    if (!isUser) {
+        if (text.includes("[[RESERVE:")) {
+            const match = text.match(/\[\[RESERVE:(\{.*?\})\]\]/);
+            if (match) {
+                try {
+                    reservationPayload = JSON.parse(match[1]);
+                    cleanText = text.replace(/\[\[RESERVE:(\{.*?\})\]\]/, "").trim();
+                } catch (e) {
+                    console.error("Failed to parse AI reservation trigger JSON:", e);
+                }
+            }
+        } else if (text.includes("[[CANCEL_RESERVE:")) {
+            const match = text.match(/\[\[CANCEL_RESERVE:(\{.*?\})\]\]/);
+            if (match) {
+                try {
+                    cancelPayload = JSON.parse(match[1]);
+                    cleanText = text.replace(/\[\[CANCEL_RESERVE:(\{.*?\})\]\]/, "").trim();
+                } catch (e) {
+                    console.error("Failed to parse AI cancellation trigger JSON:", e);
+                }
             }
         }
     }
@@ -477,6 +490,33 @@ function renderMessage(role, text, isHistory = false) {
         }
     }
 
+    let cancelCardHtml = "";
+    if (cancelPayload) {
+        if (isHistory) {
+            cancelCardHtml = `
+                <div class="mt-4 p-3 rounded-xl bg-base-100/50 text-[10px] opacity-75 font-semibold text-base-content flex flex-col gap-1 border border-base-content/5">
+                    <div class="text-error font-black uppercase tracking-wider text-[9px] flex items-center gap-1">
+                        <i class="fa-solid fa-circle-xmark"></i> Reservation Cancellation Handled
+                    </div>
+                    <div>
+                        Cancellation request executed for Reservation ID <strong>#${cancelPayload.id}</strong>.
+                    </div>
+                </div>
+            `;
+        } else {
+            cancelCardHtml = `
+                <div id="${transactionId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
+                    <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
+                        <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Cancellation...
+                    </div>
+                    <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                        Requesting cancellation for Reservation ID <strong>#${cancelPayload.id}</strong>...
+                    </div>
+                </div>
+            `;
+        }
+    }
+
     const messageHtml = `
         <div class="${alignClass} animate-in slide-in-from-bottom duration-300">
             <div class="chat-image avatar">
@@ -488,6 +528,7 @@ function renderMessage(role, text, isHistory = false) {
             <div class="chat-bubble ${bubbleClass} text-xs p-3.5 shadow-sm max-w-md break-words">
                 ${formattedText}
                 ${cardHtml}
+                ${cancelCardHtml}
             </div>
         </div>
     `;
@@ -497,6 +538,9 @@ function renderMessage(role, text, isHistory = false) {
 
     if (reservationPayload && !isHistory) {
         executeConversationalReservation(reservationPayload, transactionId);
+    }
+    if (cancelPayload && !isHistory) {
+        executeConversationalCancellation(cancelPayload, transactionId);
     }
 }
 
@@ -543,6 +587,53 @@ async function executeConversationalReservation(payload, elementId) {
             </div>
             <div class="text-[10px] opacity-75 font-semibold text-error">
                 Failed to communicate with reservation server. Please check connection.
+            </div>
+        `;
+    }
+}
+
+async function executeConversationalCancellation(payload, elementId) {
+    const statusCard = document.getElementById(elementId);
+    if (!statusCard) return;
+
+    try {
+        const response = await fetch("/api/student/reservations/toggle-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: parseInt(payload.id) })
+        });
+
+        const data = await response.json();
+
+        statusCard.classList.remove("animate-pulse");
+        if (response.ok && data.success) {
+            statusCard.innerHTML = `
+                <div class="flex items-center gap-2 text-success font-black uppercase tracking-wider text-[10px]">
+                    <i class="fa-solid fa-circle-check text-base"></i> Cancellation Confirmed!
+                </div>
+                <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                    Reservation ID <strong>#${payload.id}</strong> has been cancelled successfully.
+                </div>
+            `;
+        } else {
+            statusCard.innerHTML = `
+                <div class="flex items-center gap-2 text-error font-black uppercase tracking-wider text-[10px]">
+                    <i class="fa-solid fa-circle-xmark text-base"></i> Cancellation Failed
+                </div>
+                <div class="text-[10px] opacity-75 font-semibold text-error">
+                    Reason: ${data.error || 'Failed to update reservation status'}
+                </div>
+            `;
+        }
+    } catch (err) {
+        console.error("Conversational cancellation error:", err);
+        statusCard.classList.remove("animate-pulse");
+        statusCard.innerHTML = `
+            <div class="flex items-center gap-2 text-error font-black uppercase tracking-wider text-[10px]">
+                <i class="fa-solid fa-circle-xmark text-base"></i> Connection Error
+            </div>
+            <div class="text-[10px] opacity-75 font-semibold text-error">
+                Failed to communicate with cancellation server. Please check connection.
             </div>
         `;
     }

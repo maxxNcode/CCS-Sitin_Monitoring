@@ -2107,7 +2107,7 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
 
     // Format student reservations list
     const reservationsStr = studentReservations.length > 0 
-        ? studentReservations.map((r, i) => `${i + 1}. ${r.lab} (PC: ${r.pcNumber || 'Any'}) for ${r.purpose} on ${r.reservationDate} at ${r.reservationTime} [Status: ${r.status}]`).join('\n') 
+        ? studentReservations.map((r, i) => `${i + 1}. [Reservation ID: ${r.id}] ${r.lab} (PC: ${r.pcNumber || 'Any'}) for ${r.purpose} on ${r.reservationDate} at ${r.reservationTime} [Status: ${r.status}]`).join('\n') 
         : 'You have no current reservations recorded in the database.';
 
     const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
@@ -2137,7 +2137,7 @@ Here is the exact truth and context about the CCS Laboratories:
    - Lab 530: ${count530} student(s) currently active / checked in.
    - Lab 536: ${count536} student(s) currently active / checked in.
 
-5. CONVERSATIONAL LAB RESERVATIONS (AGENT BOOKING PROTOCOL):
+5. CONVERSATIONAL LAB RESERVATIONS & CANCELLATIONS (AGENT BOOKING PROTOCOL):
    - You have the capability to schedule / request sit-in reservations directly for the student.
    - To register a reservation, you MUST collect exactly five slots:
      1. lab: Which lab they want to book (exactly 'Lab 524', 'Lab 530', or 'Lab 536').
@@ -2150,6 +2150,12 @@ Here is the exact truth and context about the CCS Laboratories:
      Confirm the details in your text reply and append EXACTLY this string on a new line at the very end of your response:
      [[RESERVE:{"lab":"Lab name","pcNumber":"PC-XX","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
      (Do not include any extra text inside the double brackets after the JSON string).
+   - You also have the capability to cancel / delete sit-in reservations for the student.
+   - If the student requests to cancel/delete a reservation (e.g. "Cancel my reservation for Lab 530 on May 18" or "Cancel my reservation ID #12" or "Delete reservation 12"):
+     1. Identify the correct reservation from the "Student's Existing Reservations" list (section 6 below) that matches their request.
+     2. If you find the reservation and the request is clear, confirm the cancellation in your text reply and append EXACTLY this string on a new line at the very end of your response:
+        [[CANCEL_RESERVE:{"id":12}]]
+        (Replace 12 with the actual integer ID of the reservation. Do not include any extra text inside the double brackets).
 
 6. LIVE STUDENT STATISTICS & LEADERBOARD DATA:
     - Current Student Profile: Name is "${req.session.firstName} ${req.session.lastName}", ID Number is "${idNumber}".
@@ -2160,7 +2166,7 @@ Here is the exact truth and context about the CCS Laboratories:
     - Total Registered Students Count: There are exactly ${totalStudents} students registered in the CCS Sit-in System.
     - Student's Existing Reservations:
       ${reservationsStr}
-    - *Behavior*: If the student asks about their previous, current, pending, or existing reservations, check this exact list and reply with their reservations details, status, lab, PC number, and date/time accurately!
+    - *Behavior*: If the student asks about their previous, current, pending, or existing reservations, check this exact list and reply with their reservations details, status, lab, PC number, and date/time accurately! If they ask to cancel a reservation, read the list, locate the ID, and follow the cancellation protocol in section 5.
 
 7. LABORATORY PEAK-HOURS ANALYSIS (HISTORICAL DATA):
    - Busiest Check-in Hours (Peak Hours): ${peakHoursStr || 'No data yet'}.
