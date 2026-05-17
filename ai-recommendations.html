@@ -383,7 +383,7 @@ function renderMessage(role, text) {
     const alignClass = isUser ? "chat chat-end" : "chat chat-start";
     
     const avatarImg = isUser 
-        ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${userSessionInfo.firstName}`
+        ? (userSessionInfo.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userSessionInfo.firstName}`)
         : `/assets/ccslogo.png`;
 
     const nameLabel = isUser 
