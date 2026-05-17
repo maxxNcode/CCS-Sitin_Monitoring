@@ -2031,6 +2031,23 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         return res.status(400).json({ error: 'Messages history is required' });
     }
 
+    // Fetch live active counts from the database in real-time
+    let activeLabs = [];
+    try {
+        activeLabs = await db.allAsync(`
+            SELECT lab, COUNT(*) as current_count
+            FROM sitin_records
+            WHERE status = 'Active'
+            GROUP BY lab
+        `);
+    } catch (err) {
+        console.error("Failed to query live lab occupancies for AI:", err);
+    }
+
+    const count524 = (activeLabs.find(a => a.lab === 'Lab 524') || {}).current_count || 0;
+    const count530 = (activeLabs.find(a => a.lab === 'Lab 530') || {}).current_count || 0;
+    const count536 = (activeLabs.find(a => a.lab === 'Lab 536') || {}).current_count || 0;
+
     const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
 Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
 
@@ -2051,6 +2068,11 @@ Here is the exact truth and context about the CCS Laboratories:
    - Every student starts with 30 sit-in sessions (1 session = 1 hour).
    - When a student checks out / logs out of their active sit-in, 1 session is decremented from their balance, and they are awarded +10 points.
    - The Leaderboard shows the top students ranked by their accumulated points.
+
+4. REAL-TIME LABORATORY OCCUPANCY STATUS (LIVE DATABASE STATE):
+   - Lab 524: ${count524} student(s) currently active / checked in.
+   - Lab 530: ${count530} student(s) currently active / checked in.
+   - Lab 536: ${count536} student(s) currently active / checked in.
 
 Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
 
@@ -2111,7 +2133,17 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
 
     const simulatedNote = "\n\n*(💡 Running in CCS Local AI Mode. Connect a Groq API Key to enable the high-speed Llama 3 cloud module!)*";
 
-    if (lastUserMsg.includes('rules') || lastUserMsg.includes('guideline') || lastUserMsg.includes('dress') || lastUserMsg.includes('uniform') || lastUserMsg.includes('food')) {
+    if (lastUserMsg.includes('available') || lastUserMsg.includes('active') || lastUserMsg.includes('occupancy') || lastUserMsg.includes('busy') || lastUserMsg.includes('session')) {
+        reply = `### 🖥️ Real-time Laboratory Occupancy
+According to the live database, here is the current number of active students checked in:
+* **Lab 524 (Advanced Systems & Programming):** ${count524} active student(s) checked in
+* **Lab 530 (Introductory & C/C++):** ${count530} active student(s) checked in
+* **Lab 536 (Database Management & Systems):** ${count536} active student(s) checked in
+
+${(count524 === 0 && count530 === 0 && count536 === 0) 
+  ? "All computer laboratories are currently **100% empty and available**! Feel free to start a sit-in session!" 
+  : "Some computer laboratories are currently active. Check the sit-in system for reservation availability."}`;
+    } else if (lastUserMsg.includes('rules') || lastUserMsg.includes('guideline') || lastUserMsg.includes('dress') || lastUserMsg.includes('uniform') || lastUserMsg.includes('food')) {
         reply = `### 📜 CCS Laboratory Rules & Guidelines
 Here are the essential rules you must follow when using the laboratories:
 * **Uniform Policy:** You must wear your complete, proper school uniform to enter.
