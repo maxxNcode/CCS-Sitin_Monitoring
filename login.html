@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Login - CCS Sit-In Monitoring System</title>
-        <script src="/public/notify.js"></script>
+        <script src="/notify.js"></script>
         <link
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
             rel="stylesheet"
@@ -661,12 +661,17 @@
                         }
 
                         if (data.success) {
-                            showSuccessModal(
-                                "Login Successful",
-                                "Welcome back! Redirecting to your dashboard...",
-                                data.redirectUrl,
-                                5,
-                            );
+                            if (typeof showSuccessModal === "function") {
+                                showSuccessModal(
+                                    "Login Successful",
+                                    "Welcome back! Redirecting to your dashboard...",
+                                    data.redirectUrl,
+                                    5,
+                                );
+                            } else {
+                                alert("Login Successful! Welcome back!");
+                                window.location.href = data.redirectUrl;
+                            }
                         } else {
                             errorText.textContent =
                                 data.error || "Identity verification failed";

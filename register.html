@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Register - CCS Sit-In Monitoring System</title>
-        <script src="/public/notify.js"></script>
+        <script src="/notify.js"></script>
         <link
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
             rel="stylesheet"
@@ -895,11 +895,16 @@
                         }
 
                         if (data.success) {
-                            showSuccessModal(
-                                "Registration Successful",
-                                "Your account has been created. You can now log in.",
-                                data.redirectUrl,
-                            );
+                            if (typeof showSuccessModal === "function") {
+                                showSuccessModal(
+                                    "Registration Successful",
+                                    "Your account has been created. You can now log in.",
+                                    data.redirectUrl,
+                                );
+                            } else {
+                                alert("Registration Successful! Welcome!");
+                                window.location.href = data.redirectUrl;
+                            }
                         } else {
                             errorText.textContent =
                                 data.error ||
