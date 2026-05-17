@@ -355,19 +355,58 @@ async function loadRecommendations() {
 
 // Simple parser to render AI markdown responses beautifully inside chat bubbles
 function parseMarkdown(text) {
+    if (!text) return "";
+    
     let parsed = text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
         
-    // Headers (e.g. ### Header)
-    parsed = parsed.replace(/^### (.*?)$/gm, '<h4 class="text-xs font-black uppercase italic tracking-tight text-primary mt-3 mb-1">$1</h4>');
-    
-    // Bold (e.g. **bold**)
+    // Headers (### Header)
+    parsed = parsed.replace(/^###\s+(.*?)$/gm, '<h4 class="text-sm font-black uppercase italic tracking-tight text-primary mt-4 mb-2">$1</h4>');
+    parsed = parsed.replace(/^##\s+(.*?)$/gm, '<h3 class="text-base font-black uppercase italic tracking-tight text-primary mt-4 mb-2">$1</h3>');
+    parsed = parsed.replace(/^#\s+(.*?)$/gm, '<h2 class="text-lg font-black uppercase italic tracking-tight text-primary mt-4 mb-2">$1</h2>');
+
+    // Bold (**bold**)
     parsed = parsed.replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-primary">$1</strong>');
     
-    // Bullet Points (e.g. * Item)
-    parsed = parsed.replace(/^\* (.*?)$/gm, '<li class="ml-4 list-disc text-xs font-bold opacity-90">$1</li>');
+    // Status highlight formatting: e.g. [Status: Checked In] or [Status: Pending] or [Status: Cancelled] or [Status: Approved]
+    parsed = parsed.replace(/\[Status:\s*(.*?)\]/gi, (match, p1) => {
+        let badgeClass = "badge-neutral";
+        const status = p1.trim().toUpperCase();
+        if (status === 'PENDING') badgeClass = 'badge-warning';
+        else if (status === 'APPROVED' || status === 'SUCCESS') badgeClass = 'badge-success';
+        else if (status === 'CANCELLED' || status === 'REJECTED') badgeClass = 'badge-error';
+        else if (status === 'CHECKED IN' || status === 'ACTIVE') badgeClass = 'badge-info';
+        
+        return `<span class="badge ${badgeClass} badge-xs font-black italic uppercase px-2 py-1.5 ml-1">${p1}</span>`;
+    });
+
+    // Reservation ID highlights: e.g. [Reservation ID: 12] or [Reservation ID: undefined]
+    parsed = parsed.replace(/\[Reservation ID:\s*(.*?)\]/gi, (match, p1) => {
+        const idVal = p1.trim();
+        if (idVal === 'undefined' || idVal === 'null') {
+            return `<span class="font-black text-warning">[ID: Offline/New]</span>`;
+        }
+        return `<span class="font-black text-secondary">[ID: #${idVal}]</span>`;
+    });
+
+    // Unordered lists (* or -)
+    parsed = parsed.replace(/^\*\s+(.*?)$/gm, '<li class="ml-4 list-disc pl-1 mb-1 text-xs font-semibold opacity-90">$1</li>');
+    parsed = parsed.replace(/^-\s+(.*?)$/gm, '<li class="ml-4 list-disc pl-1 mb-1 text-xs font-semibold opacity-90">$1</li>');
+
+    // Numbered lists (1. 2. etc)
+    parsed = parsed.replace(/^\d+\.\s+(.*?)$/gm, '<li class="ml-5 list-decimal pl-1 mb-1 text-xs font-semibold opacity-90">$1</li>');
+
+    // Handle paragraphs / line breaks beautifully
+    const paragraphs = parsed.split(/\n{2,}/);
+    parsed = paragraphs.map(p => {
+        if (p.trim().startsWith('<li') || p.trim().startsWith('<h') || p.trim().startsWith('<ul') || p.trim().startsWith('<ol')) {
+            return p;
+        }
+        const formattedPara = p.replace(/\n/g, '<br>');
+        return `<p class="mb-3 last:mb-0 leading-relaxed text-xs">${formattedPara}</p>`;
+    }).join("");
 
     return parsed;
 }

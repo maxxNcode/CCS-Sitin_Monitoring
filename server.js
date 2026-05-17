@@ -2077,7 +2077,7 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
             db.allAsync('SELECT firstName, lastName, points FROM users ORDER BY points DESC LIMIT 3'),
             db.allAsync("SELECT strftime('%H', loginTime) as hour, COUNT(*) as count FROM student_history GROUP BY hour ORDER BY count DESC LIMIT 3"),
             db.allAsync(`
-                SELECT lab, pcNumber, purpose, reservationDate, reservationTime, status
+                SELECT id, lab, pcNumber, purpose, reservationDate, reservationTime, status
                 FROM reservations
                 WHERE idNumber = ?
                 ORDER BY reservationDate ASC, reservationTime ASC
@@ -2405,7 +2405,7 @@ Here are your active session details retrieved straight from the CCS Sit-in data
 ${leaderboard.length > 0 ? leaderboard.map((s, i) => `* **#${i + 1}** ${s.firstName} ${s.lastName} — **${s.points}** points`).join('\n') : "* No standings recorded yet."}`;
     } else if (lastUserMsg.includes('reservation') || lastUserMsg.includes('booking') || lastUserMsg.includes('schedule') || lastUserMsg.includes('previous') || lastUserMsg.includes('previews')) {
         const rList = studentReservations.length > 0 
-            ? studentReservations.map((r, i) => `* **#${i + 1}** ${r.lab} (PC: **${r.pcNumber || 'Any'}**) for *${r.purpose}* on **${r.reservationDate}** at **${r.reservationTime}** (Status: \`${r.status.toUpperCase()}\`)`).join('\n')
+            ? studentReservations.map((r, i) => `* **#${i + 1}** [Reservation ID: ${r.id}] ${r.lab} (PC: **${r.pcNumber || 'Any'}**) for *${r.purpose}* on **${r.reservationDate}** at **${r.reservationTime}** (Status: \`${r.status.toUpperCase()}\`)`).join('\n')
             : "* You have no current or previous reservations recorded in the database.";
         reply = `### 📅 Your Sit-in Reservations Registry
 Here are your active reservations retrieved straight from the CCS Sit-in database:
