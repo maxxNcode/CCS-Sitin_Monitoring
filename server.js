@@ -180,6 +180,17 @@ const PORT = process.env.PORT || 3000;
         `);
         console.log('Lab softwares table ready');
 
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS ai_chats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idNumber TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('AI chats table ready');
+
         // 2. Run migrations sequentially
         // Ensure points column exists in users
         try {
@@ -1888,104 +1899,129 @@ app.get('/api/admin/analytics/daily-trends', checkAdminAuth, (req, res) => {
     });
 });
 
-// AI Recommendations API (rule-based)
-app.get('/api/ai-recommendations', checkAuth, (req, res) => {
+// AI Recommendations API (rule-based) - Optimized using parallel queries
+app.get('/api/ai-recommendations', checkAuth, async (req, res) => {
     const idNumber = req.session.idNumber;
 
-    db.all(`
-        SELECT lab, purpose, COUNT(*) as frequency
-        FROM student_history
-        WHERE idNumber = ?
-        GROUP BY lab, purpose
-        ORDER BY frequency DESC
-        LIMIT 5
-    `, [idNumber], (err, history) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
+    try {
+        const [history, activeLabs, labRows] = await Promise.all([
+            db.allAsync(`
+                SELECT lab, purpose, COUNT(*) as frequency
+                FROM student_history
+                WHERE idNumber = ?
+                GROUP BY lab, purpose
+                ORDER BY frequency DESC
+                LIMIT 5
+            `, [idNumber]),
+            db.allAsync(`
+                SELECT lab, COUNT(*) as current_count
+                FROM sitin_records
+                WHERE status = 'Active'
+                GROUP BY lab
+            `),
+            db.allAsync('SELECT value FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order', ['lab'])
+        ]);
 
-        db.all(`
-            SELECT lab, COUNT(*) as current_count
-            FROM sitin_records
-            WHERE status = 'Active'
-            GROUP BY lab
-        `, [], async (err, activeLabs) => {
-            if (err) return res.status(500).json({ error: 'Database error' });
+        const recommendations = [];
+        const allLabs = labRows.length > 0 ? labRows.map(r => r.value) : ['Lab 524', 'Lab 530', 'Lab 536'];
+        const defaultCapacity = 30;
 
-            const recommendations = [];
-
-            // Dynamically get labs from dropdown_options
-            const labRows = await new Promise((resolve, reject) => {
-                db.all('SELECT value FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order', ['lab'], (err, rows) => {
-                    if (err) reject(err);
-                    else resolve(rows || []);
-                });
-            }).catch(() => []);
-            const allLabs = labRows.length > 0 ? labRows.map(r => r.value) : ['Lab 524', 'Lab 526', 'Lab 542', 'Mac Lab'];
-            const defaultCapacity = 30;
-
-            // Find least busy lab
-            let leastBusy = allLabs[0];
-            let minCount = Infinity;
-            allLabs.forEach(lab => {
-                const count = (activeLabs.find(a => a.lab === lab) || {}).current_count || 0;
-                if (count < minCount) {
-                    minCount = count;
-                    leastBusy = lab;
-                }
-            });
-
-            if (minCount < defaultCapacity) {
-                recommendations.push({
-                    type: 'lab',
-                    title: `Try ${leastBusy}`,
-                    description: `This lab currently has ${minCount} active users out of ${defaultCapacity} capacity. Great availability right now!`,
-                    icon: 'fa-computer'
-                });
+        // Find least busy lab
+        let leastBusy = allLabs[0];
+        let minCount = Infinity;
+        allLabs.forEach(lab => {
+            const count = (activeLabs.find(a => a.lab === lab) || {}).current_count || 0;
+            if (count < minCount) {
+                minCount = count;
+                leastBusy = lab;
             }
-
-            // Suggest based on history
-            if (history.length > 0) {
-                const topPurpose = history[0];
-                recommendations.push({
-                    type: 'purpose',
-                    title: `Continue ${topPurpose.purpose}`,
-                    description: `You've worked on "${topPurpose.purpose}" ${topPurpose.frequency} times. Keep up the momentum!`,
-                    icon: 'fa-code'
-                });
-
-                const topLab = history.reduce((acc, curr) => curr.frequency > acc.frequency ? curr : acc, history[0]);
-                recommendations.push({
-                    type: 'lab_habit',
-                    title: `Your Favorite Lab`,
-                    description: `You most frequently use ${topLab.lab}. It's your optimal workspace!`,
-                    icon: 'fa-star'
-                });
-            } else {
-                recommendations.push({
-                    type: 'welcome',
-                    title: 'Welcome!',
-                    description: 'Start using the labs to get personalized recommendations based on your usage patterns.',
-                    icon: 'fa-hand-sparkles'
-                });
-            }
-
-            // Time-based recommendation
-            const hour = new Date().getHours();
-            let timeLabel = 'afternoon';
-            if (hour < 12) timeLabel = 'morning';
-            else if (hour >= 17) timeLabel = 'evening';
-
-            recommendations.push({
-                type: 'time',
-                title: `Good ${timeLabel}!`,
-                description: hour >= 8 && hour <= 17
-                    ? 'Lab hours are active. Perfect time for focused work!'
-                    : 'Labs may be closing soon. Consider an early session tomorrow!',
-                icon: 'fa-clock'
-            });
-
-            res.json(recommendations);
         });
-    });
+
+        if (minCount < defaultCapacity) {
+            recommendations.push({
+                type: 'lab',
+                title: `Try ${leastBusy}`,
+                description: `This lab currently has ${minCount} active users out of ${defaultCapacity} capacity. Great availability right now!`,
+                icon: 'fa-computer'
+            });
+        }
+
+        // Suggest based on history
+        if (history.length > 0) {
+            const topPurpose = history[0];
+            recommendations.push({
+                type: 'purpose',
+                title: `Continue ${topPurpose.purpose}`,
+                description: `You've worked on "${topPurpose.purpose}" ${topPurpose.frequency} times. Keep up the momentum!`,
+                icon: 'fa-code'
+            });
+
+            const topLab = history.reduce((acc, curr) => curr.frequency > acc.frequency ? curr : acc, history[0]);
+            recommendations.push({
+                type: 'lab_habit',
+                title: `Your Favorite Lab`,
+                description: `You most frequently use ${topLab.lab}. It's your optimal workspace!`,
+                icon: 'fa-star'
+            });
+        } else {
+            recommendations.push({
+                type: 'welcome',
+                title: 'Welcome!',
+                description: 'Start using the labs to get personalized recommendations based on your usage patterns.',
+                icon: 'fa-hand-sparkles'
+            });
+        }
+
+        // Time-based recommendation
+        const hour = new Date().getHours();
+        let timeLabel = 'afternoon';
+        if (hour < 12) timeLabel = 'morning';
+        else if (hour >= 17) timeLabel = 'evening';
+
+        recommendations.push({
+            type: 'time',
+            title: `Good ${timeLabel}!`,
+            description: hour >= 8 && hour <= 17
+                ? 'Lab hours are active. Perfect time for focused work!'
+                : 'Labs may be closing soon. Consider an early session tomorrow!',
+            icon: 'fa-clock'
+        });
+
+        res.json(recommendations);
+    } catch (err) {
+        console.error("Failed to fetch recommendations:", err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// GET AI Chat History
+app.get('/api/ai/chat/history', checkAuth, async (req, res) => {
+    const idNumber = req.session.idNumber;
+    try {
+        const rows = await db.allAsync(`
+            SELECT role, content 
+            FROM ai_chats 
+            WHERE idNumber = ? 
+            ORDER BY created_at ASC 
+            LIMIT 50
+        `, [idNumber]);
+        res.json({ success: true, history: rows || [] });
+    } catch (err) {
+        console.error("Failed to load chat history:", err);
+        res.status(500).json({ error: "Failed to load chat history" });
+    }
+});
+
+// DELETE AI Chat History
+app.delete('/api/ai/chat/history', checkAuth, async (req, res) => {
+    const idNumber = req.session.idNumber;
+    try {
+        await db.runAsync(`DELETE FROM ai_chats WHERE idNumber = ?`, [idNumber]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Failed to clear chat history:", err);
+        res.status(500).json({ error: "Failed to clear chat history" });
+    }
 });
 
 // AI Chatbot API (Groq AI powered with smart simulated fallback mode)
@@ -2045,6 +2081,11 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
             if (response.ok) {
                 const data = await response.json();
                 const reply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
+                
+                // Save user message and reply to database asynchronously
+                db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
+                db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', reply]);
+                
                 return res.json({ success: true, reply });
             } else {
                 const errData = await response.json().catch(() => ({}));
@@ -2116,7 +2157,11 @@ I can help you answer any questions about our laboratory rooms, pre-installed so
 Please feel free to ask about specific labs, installed software (like VS Code, Quincy, MSSQL, or Python), lab rules, or sit-in session balance metrics!`;
     }
 
-    res.json({ success: true, reply: reply + simulatedNote });
+    const finalReply = reply + simulatedNote;
+    db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
+    db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', finalReply]);
+
+    res.json({ success: true, reply: finalReply });
 });
 
 // Award points on feedback submission (5 bonus points)

@@ -257,12 +257,37 @@ window.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "/login"; 
             } else {
                 userSessionInfo = data;
+                // Fetch AI chat history
+                loadChatHistory();
             }
         })
         .catch(() => window.location.href = "/login");
         
     loadRecommendations();
 });
+
+async function loadChatHistory() {
+    try {
+        const res = await fetch("/api/ai/chat/history");
+        const data = await res.json();
+        if (data.success && data.history && data.history.length > 0) {
+            chatHistory = data.history;
+            const container = document.getElementById("chatMessages");
+            container.innerHTML = ""; // Clear empty state
+            
+            chatHistory.forEach(msg => {
+                renderMessage(msg.role, msg.content);
+            });
+            
+            // Scroll to bottom
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+    } catch (err) {
+        console.error("Failed to load chat history:", err);
+    }
+}
 
 function logout() {
     fetch("/logout", { method: "POST" })
@@ -340,6 +365,12 @@ function parseMarkdown(text) {
 function clearChat() {
     chatHistory = [];
     const container = document.getElementById("chatMessages");
+    
+    fetch('/api/ai/chat/history', { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => { if (data.success) console.log("Database chat history cleared."); })
+        .catch(err => console.error("Failed to clear chat history from database:", err));
+
     container.innerHTML = `
         <div id="chatEmptyState" class="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto p-4 animate-in fade-in duration-300">
             <div class="w-16 h-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-3xl mb-4 animate-pulse">
