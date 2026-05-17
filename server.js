@@ -2074,6 +2074,19 @@ Here is the exact truth and context about the CCS Laboratories:
    - Lab 530: ${count530} student(s) currently active / checked in.
    - Lab 536: ${count536} student(s) currently active / checked in.
 
+5. CONVERSATIONAL LAB RESERVATIONS (AGENT BOOKING PROTOCOL):
+   - You have the capability to schedule / request sit-in reservations directly for the student.
+   - To register a reservation, you MUST collect exactly four slots:
+     1. lab: Which lab they want to book (exactly 'Lab 524', 'Lab 530', or 'Lab 536').
+     2. purpose: The reason for their sit-in (e.g. C Programming, Python Scripting, Java, etc.).
+     3. date: The reservation date. Interpret dates like "May 20" or "tomorrow" and output strictly as YYYY-MM-DD (e.g. "2026-05-20").
+     4. time: The reservation time. Convert times like "10:30 AM" or "2 PM" into 24-hour style HH:MM format (e.g. "10:30" or "14:00").
+   - If a student requests a booking but any of these four details are missing, you MUST ask for the missing ones first.
+   - ONCE AND ONLY ONCE ALL 4 SLOTS ARE GIVEN by the user:
+     Confirm the details in your text reply and append EXACTLY this string on a new line at the very end of your response:
+     [[RESERVE:{"lab":"Lab name","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
+     (Do not include any extra text inside the double brackets after the JSON string).
+
 Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
 
     const groqKey = process.env.GROQ_API_KEY;
@@ -2133,7 +2146,73 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
 
     const simulatedNote = "\n\n*(💡 Running in CCS Local AI Mode. Connect a Groq API Key to enable the high-speed Llama 3 cloud module!)*";
 
-    if (lastUserMsg.includes('available') || lastUserMsg.includes('active') || lastUserMsg.includes('occupancy') || lastUserMsg.includes('busy') || lastUserMsg.includes('session')) {
+    if (lastUserMsg.includes('reserve') || lastUserMsg.includes('reservation') || lastUserMsg.includes('book')) {
+        // Simple slot parsing from user message history
+        let parsedLab = "";
+        let parsedPurpose = "";
+        let parsedDate = "";
+        let parsedTime = "";
+
+        // Look through recent messages to accumulate slots
+        for (const msg of messages) {
+            const txt = msg.content.toLowerCase();
+            if (txt.includes('524')) parsedLab = "Lab 524";
+            else if (txt.includes('530')) parsedLab = "Lab 530";
+            else if (txt.includes('536')) parsedLab = "Lab 536";
+
+            if (txt.includes('c programming') || txt.includes('c language')) parsedPurpose = "C Programming";
+            else if (txt.includes('java')) parsedPurpose = "Java Programming";
+            else if (txt.includes('python')) parsedPurpose = "Python Programming";
+            else if (txt.includes('asp.net') || txt.includes('web')) parsedPurpose = "ASP.NET Web Development";
+            else if (txt.includes('sql') || txt.includes('database')) parsedPurpose = "Database Research";
+
+            // Extract date: looking for YYYY-MM-DD or Month DD (like "may 20")
+            const dateMatch = txt.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                parsedDate = dateMatch[1];
+            } else {
+                const monthDayMatch = txt.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* \d{1,2}/);
+                if (monthDayMatch) {
+                    const months = { jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06", jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12" };
+                    const words = monthDayMatch[0].split(' ');
+                    const m = months[words[0].substring(0, 3)];
+                    const d = words[1].padStart(2, '0');
+                    parsedDate = `2026-${m}-${d}`;
+                }
+            }
+
+            // Extract time: looking for HH:MM or HH:MM am/pm
+            const timeMatch = txt.match(/(\d{1,2}:\d{2})/);
+            if (timeMatch) {
+                parsedTime = timeMatch[1].padStart(5, '0');
+            }
+        }
+
+        // Check which slots are missing
+        const missing = [];
+        if (!parsedLab) missing.push("Laboratory (Lab 524, 530, or 536)");
+        if (!parsedPurpose) missing.push("Sit-in Purpose (e.g. C Programming, Java)");
+        if (!parsedDate) missing.push("Date (e.g. May 20 or YYYY-MM-DD)");
+        if (!parsedTime) missing.push("Time (e.g. 10:30 AM or 10:30)");
+
+        if (missing.length > 0) {
+            reply = `### 📅 Conversational Sit-in Reservation
+I'd be glad to help you book a sit-in reservation! However, I still need a few more details to schedule it:
+${missing.map(m => `* **${m}**`).join('\n')}
+
+Could you please provide these remaining details in your next message?`;
+        } else {
+            reply = `### 📅 Reservation Request Prepared!
+Perfect! I have collected all the required details for your laboratory reservation:
+* **Laboratory:** ${parsedLab}
+* **Purpose:** ${parsedPurpose}
+* **Date:** ${parsedDate}
+* **Time:** ${parsedTime}
+
+I am submitting this reservation request to the administration for you right now!
+\n\n[[RESERVE:{"lab":"${parsedLab}","purpose":"${parsedPurpose}","date":"${parsedDate}","time":"${parsedTime}"}]]`;
+        }
+    } else if (lastUserMsg.includes('available') || lastUserMsg.includes('active') || lastUserMsg.includes('occupancy') || lastUserMsg.includes('busy') || lastUserMsg.includes('session')) {
         reply = `### 🖥️ Real-time Laboratory Occupancy
 According to the live database, here is the current number of active students checked in:
 * **Lab 524 (Advanced Systems & Programming):** ${count524} active student(s) checked in

@@ -407,6 +407,22 @@ function renderMessage(role, text) {
 
     const isUser = role === "user";
     
+    // Check for Reservation trigger block inside assistant's response
+    let reservationPayload = null;
+    let cleanText = text;
+    if (!isUser && text.includes("[[RESERVE:")) {
+        const match = text.match(/\[\[RESERVE:(\{.*?\})\]\]/);
+        if (match) {
+            try {
+                reservationPayload = JSON.parse(match[1]);
+                // Strip reservation trigger block out of the bubble text
+                cleanText = text.replace(/\[\[RESERVE:(\{.*?\})\]\]/, "").trim();
+            } catch (e) {
+                console.error("Failed to parse AI reservation trigger JSON:", e);
+            }
+        }
+    }
+
     const bubbleClass = isUser 
         ? "bg-primary text-primary-content rounded-2xl rounded-tr-none font-bold" 
         : "bg-base-200 border border-base-content/5 text-base-content rounded-2xl rounded-tl-none font-semibold leading-relaxed";
@@ -421,7 +437,8 @@ function renderMessage(role, text) {
         ? `${userSessionInfo.firstName} ${userSessionInfo.lastName || ""}` 
         : "CCS AI Assistant";
 
-    const formattedText = isUser ? text : parseMarkdown(text);
+    const formattedText = isUser ? cleanText : parseMarkdown(cleanText);
+    const transactionId = "booking_" + Date.now();
 
     const messageHtml = `
         <div class="${alignClass} animate-in slide-in-from-bottom duration-300">
@@ -431,12 +448,80 @@ function renderMessage(role, text) {
                 </div>
             </div>
             <div class="chat-header text-[10px] opacity-40 font-bold uppercase tracking-wider mb-1">${nameLabel}</div>
-            <div class="chat-bubble ${bubbleClass} text-xs p-3.5 shadow-sm max-w-md break-words">${formattedText}</div>
+            <div class="chat-bubble ${bubbleClass} text-xs p-3.5 shadow-sm max-w-md break-words">
+                ${formattedText}
+                
+                ${reservationPayload ? `
+                    <div id="${transactionId}" class="mt-4 p-3 border rounded-xl bg-base-100 border-base-content/10 animate-pulse text-xs flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
+                        </div>
+                        <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                            Requesting booking for <strong>${reservationPayload.lab}</strong> on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>...
+                        </div>
+                    </div>
+                ` : ""}
+            </div>
         </div>
     `;
 
     container.insertAdjacentHTML("beforeend", messageHtml);
     scrollToBottom();
+
+    if (reservationPayload) {
+        executeConversationalReservation(reservationPayload, transactionId);
+    }
+}
+
+async function executeConversationalReservation(payload, elementId) {
+    const statusCard = document.getElementById(elementId);
+    if (!statusCard) return;
+
+    try {
+        const response = await fetch("/api/student/reserve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        statusCard.classList.remove("animate-pulse");
+        if (response.ok && data.success) {
+            statusCard.innerHTML = `
+                <div class="flex items-center gap-2 text-success font-black uppercase tracking-wider text-[10px]">
+                    <i class="fa-solid fa-circle-check text-base"></i> Booking Confirmed!
+                </div>
+                <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                    Your reservation for <strong>${payload.lab}</strong> on <strong>${payload.date}</strong> at <strong>${payload.time}</strong> has been submitted successfully to the administrator!
+                </div>
+                <div class="mt-2 text-[9px] opacity-50 italic text-base-content/60">
+                    You can view its current status anytime inside the **Reservations** menu tab.
+                </div>
+            `;
+        } else {
+            const errReason = data.error || "Reservations are currently disabled or unavailable.";
+            statusCard.innerHTML = `
+                <div class="flex items-center gap-2 text-error font-black uppercase tracking-wider text-[10px]">
+                    <i class="fa-solid fa-circle-xmark text-base"></i> Booking Failed
+                </div>
+                <div class="text-[10px] opacity-75 font-semibold text-error">
+                    Reason: ${errReason}
+                </div>
+            `;
+        }
+    } catch (err) {
+        console.error("Conversational reservation error:", err);
+        statusCard.classList.remove("animate-pulse");
+        statusCard.innerHTML = `
+            <div class="flex items-center gap-2 text-error font-black uppercase tracking-wider text-[10px]">
+                <i class="fa-solid fa-circle-xmark text-base"></i> Connection Error
+            </div>
+            <div class="text-[10px] opacity-75 font-semibold text-error">
+                Failed to communicate with reservation server. Please check connection.
+            </div>
+        `;
+    }
 }
 
 async function sendQuickPrompt(promptText) {
