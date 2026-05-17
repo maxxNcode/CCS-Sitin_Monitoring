@@ -2062,9 +2062,12 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
     let leaderboard = [];
     let peakHours = [];
     let studentReservations = [];
+    let dbLabs = [];
+    let dbSoftwares = [];
+    let dbPurposes = [];
 
     try {
-        const [activeLabsRows, pointsRow, rankRow, totalRow, leaderboardRows, peakHoursRows, reservationsRows] = await Promise.all([
+        const [activeLabsRows, pointsRow, rankRow, totalRow, leaderboardRows, peakHoursRows, reservationsRows, dbLabsRows, dbSoftwaresRows, dbPurposesRows] = await Promise.all([
             db.allAsync(`
                 SELECT lab, COUNT(*) as current_count
                 FROM sitin_records
@@ -2081,7 +2084,10 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
                 FROM reservations
                 WHERE idNumber = ?
                 ORDER BY reservationDate ASC, reservationTime ASC
-            `, [idNumber])
+            `, [idNumber]),
+            db.allAsync("SELECT value FROM dropdown_options WHERE category = 'lab' AND is_active = 1"),
+            db.allAsync("SELECT labName, softwareName, version FROM lab_softwares"),
+            db.allAsync("SELECT value FROM dropdown_options WHERE category = 'purpose' AND is_active = 1")
         ]);
 
         activeLabs = activeLabsRows || [];
@@ -2091,13 +2097,36 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         leaderboard = leaderboardRows || [];
         peakHours = peakHoursRows || [];
         studentReservations = reservationsRows || [];
+        dbLabs = dbLabsRows || [];
+        dbSoftwares = dbSoftwaresRows || [];
+        dbPurposes = dbPurposesRows || [];
     } catch (err) {
         console.error("Failed to query dynamic DB context for AI:", err);
     }
 
-    const count524 = (activeLabs.find(a => a.lab === 'Lab 524') || {}).current_count || 0;
-    const count530 = (activeLabs.find(a => a.lab === 'Lab 530') || {}).current_count || 0;
-    const count536 = (activeLabs.find(a => a.lab === 'Lab 536') || {}).current_count || 0;
+    const labsList = dbLabs.map(l => l.value);
+    const purposesList = dbPurposes.map(p => p.value);
+
+    // Dynamic grouping of software (with NO versions in prompt, as requested)
+    const softwareMap = {};
+    labsList.forEach(lab => {
+        softwareMap[lab] = [];
+    });
+    dbSoftwares.forEach(sw => {
+        const lab = sw.labName;
+        const name = sw.softwareName;
+        if (softwareMap[lab]) {
+            softwareMap[lab].push(name);
+        }
+    });
+
+    const softwareStr = labsList.map(lab => {
+        const list = softwareMap[lab] || [];
+        const listStr = list.length > 0 ? list.join(', ') : 'No pre-installed software recorded';
+        return `   - ${lab}: Pre-installed with ${listStr}.`;
+    }).join('\n');
+
+    const purposesStr = purposesList.length > 0 ? purposesList.map(p => `"${p}"`).join(', ') : '"Study/Research"';
 
     // Format top 3 leaderboard
     const leaderboardStr = leaderboard.map((s, i) => `${i + 1}. ${s.firstName} ${s.lastName} (${s.points} pts)`).join(', ');
@@ -2170,20 +2199,18 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         isoDateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     }
 
-    const systemPrompt = `You are the friendly, tech-savvy CCS Sit-in AI Assistant for the entire College of Computer Studies (representing all laboratories: Lab 524, Lab 530, and Lab 536).
+    const systemPrompt = `You are the friendly, tech-savvy CCS Sit-in AI Assistant for the entire College of Computer Studies (representing all active laboratories: ${labsList.join(', ')}).
 *BEHAVIOR*: Always chat naturally and conversationally. NEVER list rigid, robotic numbered menus or tell the user to "respond with the corresponding number". Keep replies engaging, clean, and helpful. Force all dates/times strictly to PHT (Philippines Standard Time, GMT+8).
 
-1. LAB SOFTWARE CONTEXT (Strict Truth):
-   - Lab 524 (Advanced Systems): VS Code (1.87.0), VS 2022 (17.9.0), Node.js (20.11.0), IntelliJ (2023.3.4), Git (2.43.0), Notepad++ (8.6.2). Ideal for web, Java/C# backend, advanced dev.
-   - Lab 530 (Introductory & C/C++): Quincy 2005, Code::Blocks, Python (3.12.2), VS Code, Notepad++, Git. Ideal for learning C/C++, Python scripting, foundations.
-   - Lab 536 (Databases & Systems): MS SSMS (19.3), MySQL Workbench, pgAdmin 4, XAMPP (8.2.12), VS 2022, VS Code, Notepad++. Ideal for SQL, servers, database courses.
+1. LAB SOFTWARE CONTEXT (Strict Dynamic Truth):
+${softwareStr}
 2. OFFICIAL RULES:
    - Camaraderie & Decorum: Respect all. Silence & Discipline: Minimize noise. GAME RESTRICTIONS: Strictly NO games (computer/card). Internet surfing only for academics with instructor permission. Equipment care: NO food/drink/gum near computers. Push chairs, logout before leaving. Do not share credentials.
 3. SESSIONS & LEADERBOARD:
    - Start: 30 sessions. Each check-out decrements 1 session, awards +10 points. Leaderboard ranks students by points.
-4. LAB OCCUPANCY: Lab 524: ${count524} active, Lab 530: ${count530} active, Lab 536: ${count536} active.
+4. LAB OCCUPANCY: ${labsList.map(lab => `${lab}: ${(activeLabs.find(a => a.lab === lab) || {}).current_count || 0} active`).join(', ')}.
 5. CONVERSATIONAL BOOKING:
-   - To book, collect: lab ('Lab 524'/'Lab 530'/'Lab 536'), pcNumber ('PC-01' to 'PC-30'), purpose, date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
+   - To book, collect: lab (must be exactly one of: ${labsList.map(l => `'${l}'`).join(', ')}), pcNumber ('PC-01' to 'PC-30'), purpose (must be exactly one of: ${purposesList.map(p => `'${p}'`).join(', ')}), date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
    - Once all 5 slots are collected, append EXACTLY at the end of your text response: [[RESERVE:{"lab":"Lab name","pcNumber":"PC-XX","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
 6. CANCELLATION:
    - To cancel, read student's existing reservations (Section 7). Find matching reservation ID, confirm, and append EXACTLY at the end of response: [[CANCEL_RESERVE:{"id":ID}]] (Replace ID with integer).
@@ -2350,9 +2377,20 @@ ${rList}`;
         // Look through recent messages to accumulate slots
         for (const msg of messages) {
             const txt = msg.content.toLowerCase();
-            if (txt.includes('524')) parsedLab = "Lab 524";
-            else if (txt.includes('530')) parsedLab = "Lab 530";
-            else if (txt.includes('536')) parsedLab = "Lab 536";
+            
+            // Dynamically match lab name from user input
+            for (const lab of labsList) {
+                if (txt.includes(lab.toLowerCase().replace(/\s+/g, ''))) {
+                    parsedLab = lab;
+                    break;
+                } else {
+                    const numMatch = lab.match(/\d+/);
+                    if (numMatch && txt.includes(numMatch[0])) {
+                        parsedLab = lab;
+                        break;
+                    }
+                }
+            }
 
             // Extract PC number (e.g. pc-01, pc 12, PC-23)
             const pcMatch = txt.match(/pc[- ]?(\d{1,2})/);
@@ -2360,11 +2398,13 @@ ${rList}`;
                 parsedPcNumber = `PC-${pcMatch[1].padStart(2, '0')}`;
             }
 
-            if (txt.includes('c programming') || txt.includes('c language')) parsedPurpose = "C Programming";
-            else if (txt.includes('java')) parsedPurpose = "Java Programming";
-            else if (txt.includes('python')) parsedPurpose = "Python Programming";
-            else if (txt.includes('asp.net') || txt.includes('web')) parsedPurpose = "ASP.NET Web Development";
-            else if (txt.includes('sql') || txt.includes('database')) parsedPurpose = "Database Research";
+            // Dynamically match purpose from user input
+            for (const p of purposesList) {
+                if (txt.includes(p.toLowerCase())) {
+                    parsedPurpose = p;
+                    break;
+                }
+            }
 
             // Extract date: looking for YYYY-MM-DD or Month DD (like "may 20")
             const dateMatch = txt.match(/(\d{4}-\d{2}-\d{2})/);
@@ -2390,9 +2430,9 @@ ${rList}`;
 
         // Check which slots are missing
         const missing = [];
-        if (!parsedLab) missing.push("Laboratory (Lab 524, 530, or 536)");
+        if (!parsedLab) missing.push(`Laboratory (choose from: ${labsList.join(', ')})`);
         if (!parsedPcNumber) missing.push("PC Number (e.g. PC-01 to PC-30)");
-        if (!parsedPurpose) missing.push("Sit-in Purpose (e.g. C Programming, Java)");
+        if (!parsedPurpose) missing.push(`Sit-in Purpose (choose from: ${purposesList.join(', ')})`);
         if (!parsedDate) missing.push("Date (e.g. May 20 or YYYY-MM-DD)");
         if (!parsedTime) missing.push("Time (e.g. 10:30 AM or 10:30)");
 
@@ -2415,15 +2455,42 @@ I am submitting this reservation request to the administration for you right now
 \n\n[[RESERVE:{"lab":"${parsedLab}","pcNumber":"${parsedPcNumber}","purpose":"${parsedPurpose}","date":"${parsedDate}","time":"${parsedTime}"}]]`;
         }
     } else if (lastUserMsg.includes('available') || lastUserMsg.includes('active') || lastUserMsg.includes('occupancy') || lastUserMsg.includes('busy') || lastUserMsg.includes('session')) {
+        let occStr = labsList.map(lab => {
+            const count = (activeLabs.find(a => a.lab === lab) || {}).current_count || 0;
+            return `* **${lab}:** ${count} active student(s) checked in`;
+        }).join('\n');
+        
+        const totalActive = activeLabs.reduce((sum, a) => sum + a.current_count, 0);
+
         reply = `### 🖥️ Real-time Laboratory Occupancy
 According to the live database, here is the current number of active students checked in:
-* **Lab 524 (Advanced Systems & Programming):** ${count524} active student(s) checked in
-* **Lab 530 (Introductory & C/C++):** ${count530} active student(s) checked in
-* **Lab 536 (Database Management & Systems):** ${count536} active student(s) checked in
+${occStr}
 
-${(count524 === 0 && count530 === 0 && count536 === 0) 
+${totalActive === 0 
   ? "All computer laboratories are currently **100% empty and available**! Feel free to start a sit-in session!" 
   : "Some computer laboratories are currently active. Check the sit-in system for reservation availability."}`;
+    } else if (labsList.some(lab => {
+        const numMatch = lab.match(/\d+/);
+        return lastUserMsg.includes(lab.toLowerCase()) || (numMatch && lastUserMsg.includes(numMatch[0]));
+    })) {
+        // Dynamic matching of laboratory details in fallback
+        let matchedLabDetail = null;
+        for (const lab of labsList) {
+            const numMatch = lab.match(/\d+/);
+            if (lastUserMsg.includes(lab.toLowerCase()) || (numMatch && lastUserMsg.includes(numMatch[0]))) {
+                matchedLabDetail = lab;
+                break;
+            }
+        }
+
+        const list = softwareMap[matchedLabDetail] || [];
+        const listStr = list.length > 0 ? list.join(', ') : 'No pre-installed software recorded';
+        const activeCount = (activeLabs.find(a => a.lab === matchedLabDetail) || {}).current_count || 0;
+        reply = `### 🖥️ ${matchedLabDetail} Details & Software
+Here is the current dynamic information for **${matchedLabDetail}** retrieved directly from the live database:
+* **Active checked-in students:** **${activeCount}** active student(s) right now.
+* **Pre-installed Software:** ${listStr} (no version specifics listed).
+* **Ideal Use:** Use this space to complete your programming assessments and practice tasks.`;
     } else if (lastUserMsg.includes('rules') || lastUserMsg.includes('guideline') || lastUserMsg.includes('dress') || lastUserMsg.includes('uniform') || lastUserMsg.includes('food')) {
         reply = `### 📜 CCS Official Laboratory Rules & Guidelines
 Here are the official rules from the student dashboard:
@@ -2433,24 +2500,6 @@ Here are the official rules from the student dashboard:
 * **Internet Usage Policy:** Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.
 * **Equipment Care:** Handle all computer equipment with care. Strictly NO food, drinks, or gum near the computers. Log off properly and push in your chair when leaving.
 * **Security & Privacy:** Do not share login credentials. Log out of all accounts before leaving the lab. Do not attempt to access restricted systems or networks.`;
-    } else if (lastUserMsg.includes('524')) {
-        reply = `### 🖥️ Lab 524 (Advanced Systems & Programming Lab)
-Lab 524 is optimized for advanced development and programming workflows. Here is the software currently installed:
-* **Code Editors & IDEs:** Visual Studio Code (v1.87.0), Visual Studio 2022 (v17.9.0), IntelliJ IDEA (v2023.3.4), Notepad++ (v8.6.2)
-* **Runtimes & Tools:** Node.js (v20.11.0), Git (v2.43.0)
-* **Ideal Use Cases:** Web application coding, Java/C# backend development, systems programming.`;
-    } else if (lastUserMsg.includes('530')) {
-        reply = `### 🖥️ Lab 530 (Introductory & C/C++ Lab)
-Lab 530 is tailored for students learning computer science foundations and initial programming languages:
-* **IDE & Editors:** Quincy 2005 (v1.3), Code::Blocks (v20.03), Visual Studio Code (v1.87.0), Notepad++ (v8.6.2)
-* **Languages & Version Control:** Python (v3.12.2), Git (v2.43.0)
-* **Ideal Use Cases:** Learning C/C++ concepts, scripting in Python, introductory algorithms.`;
-    } else if (lastUserMsg.includes('536')) {
-        reply = `### 🖥️ Lab 536 (Database Management & Systems Design Lab)
-Lab 536 is our dedicated laboratory for databases, design frameworks, and servers:
-* **Database Management:** Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), pgAdmin 4 (v8.3)
-* **Servers & Runtimes:** XAMPP Server (v8.2.12), Visual Studio 2022, VS Code
-* **Ideal Use Cases:** Structuring SQL databases, hosting local servers, systems integration testing.`;
     } else if (lastUserMsg.includes('how many students') || lastUserMsg.includes('total students') || lastUserMsg.includes('number of students') || lastUserMsg.includes('student count')) {
         reply = `### 👥 Registered Student Count
 Straight from our live database, there are currently **${totalStudents}** students registered in the CCS Sit-in Monitoring System.
@@ -2482,24 +2531,44 @@ ${peakHours.length > 0 ? peakHours.map(p => `* **${p.hour}:00** — ${p.count} h
 * **Busiest Hours:** The laboratories experience heavy student check-ins around **${peakHours.length > 0 ? peakHours[0].hour + ":00" : "10:00 AM - 12:00 PM"}**.
 * **Quiet Study Windows:** I highly recommend booking your sessions during **early morning hours (8:00 AM - 9:30 AM)** or **late afternoons (4:00 PM - 5:30 PM)** when computer availability is at its highest!`;
     } else if (lastUserMsg.includes('sql') || lastUserMsg.includes('database') || lastUserMsg.includes('query') || lastUserMsg.includes('mysql') || lastUserMsg.includes('c++') || lastUserMsg.includes('quincy') || lastUserMsg.includes('code::blocks') || lastUserMsg.includes('java') || lastUserMsg.includes('node') || lastUserMsg.includes('intellij') || lastUserMsg.includes('web') || lastUserMsg.includes('python') || lastUserMsg.includes('subject') || lastUserMsg.includes('class') || lastUserMsg.includes('compiler')) {
+        // Dynamic Workspace Matcher
         let bestLab = "";
         let matchReason = "";
-        if (lastUserMsg.includes('sql') || lastUserMsg.includes('database') || lastUserMsg.includes('query') || lastUserMsg.includes('mysql') || lastUserMsg.includes('xampp')) {
-            bestLab = "Lab 536 (Database Management Lab)";
-            matchReason = "It is pre-installed with Microsoft SQL Server, MySQL Workbench, pgAdmin 4, and XAMPP Server.";
-        } else if (lastUserMsg.includes('java') || lastUserMsg.includes('node') || lastUserMsg.includes('web') || lastUserMsg.includes('intellij')) {
-            bestLab = "Lab 524 (Advanced Systems & Programming Lab)";
-            matchReason = "It is pre-installed with IntelliJ IDEA, Node.js, Git, VS Code, and Visual Studio 2022.";
-        } else {
-            bestLab = "Lab 530 (Introductory & C/C++ Lab)";
-            matchReason = "It is pre-installed with Quincy 2005, Code::Blocks, Python 3, and Git, which are ideal for introductory classes.";
+        
+        // Loop through labs and see which lab has the matched software keywords
+        let bestLabMatch = null;
+        for (const lab of labsList) {
+            const list = (softwareMap[lab] || []).map(s => s.toLowerCase());
+            const matches = list.filter(swName => {
+                if (lastUserMsg.includes('sql') || lastUserMsg.includes('database') || lastUserMsg.includes('query') || lastUserMsg.includes('mysql')) {
+                    return swName.includes('sql') || swName.includes('mysql') || swName.includes('db') || swName.includes('postgres') || swName.includes('pgadmin');
+                } else if (lastUserMsg.includes('java') || lastUserMsg.includes('node') || lastUserMsg.includes('web') || lastUserMsg.includes('intellij')) {
+                    return swName.includes('java') || swName.includes('intellij') || swName.includes('node') || swName.includes('code') || swName.includes('studio');
+                } else {
+                    return swName.includes('quincy') || swName.includes('blocks') || swName.includes('python') || swName.includes('cpp') || swName.includes('gcc');
+                }
+            });
+            if (matches.length > 0) {
+                bestLabMatch = lab;
+                break;
+            }
         }
+
+        if (bestLabMatch) {
+            bestLab = bestLabMatch;
+            const list = softwareMap[bestLabMatch] || [];
+            matchReason = `It is dynamic pre-installed with your requested software assets, including: ${list.join(', ')} (no versions listed).`;
+        } else {
+            bestLab = labsList[0] || "Lab 524";
+            matchReason = `It is equipped to support all core coding operations and sit-in requirements.`;
+        }
+
         reply = `### 🛠️ AI Course-to-Workspace Matcher
 Based on your subject query, here is the optimal computer laboratory room:
 * **Recommended Room:** **${bestLab}**
 * **Reason:** ${matchReason}
 
-You can make a reservation in this lab directly by telling me: *"Can you reserve a slot in ${bestLab.substring(0,7)}?"*`;
+You can make a reservation in this lab directly by telling me: *"Can you reserve a slot in ${bestLab}?"*`;
     } else if (lastUserMsg.includes('hi') || lastUserMsg.includes('hello') || lastUserMsg.includes('hey') || lastUserMsg.includes('start')) {
         reply = `Hello! I am your **CCS Sit-in AI Assistant**! 👋
 I can help you answer any questions about our laboratory rooms, pre-installed software, sit-in rules, sessions, or programming syntax.
