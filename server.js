@@ -560,16 +560,8 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
 
-// Multer generic upload config
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadsDir)
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
-    }
-});
-const upload = multer({ storage: storage });
+// Multer generic upload config using memory storage for stateless Vercel compatibility
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use('/uploads', express.static(uploadsDir));
 
@@ -772,7 +764,7 @@ app.get('/api/studentinfo', (req, res) => {
 });
 
 // Update Profile API
-app.post('/api/update-profile', upload.single('profileImage'), (req, res) => {
+app.post('/api/update-profile', upload.single('profileImage'), async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { firstName, lastName, middleName, email, profilePic, course, courseLevel, address } = req.body;
@@ -781,32 +773,33 @@ app.post('/api/update-profile', upload.single('profileImage'), (req, res) => {
 
     let finalProfilePic = profilePic;
     if (req.file) {
-        finalProfilePic = '/uploads/' + req.file.filename;
+        const base64Data = req.file.buffer.toString('base64');
+        finalProfilePic = `data:${req.file.mimetype};base64,${base64Data}`;
     }
 
-    if (role === 'admin') {
-        db.run(`UPDATE admins SET firstName = ?, lastName = ?, middleName = ?, email = ?, profilePic = ? WHERE id = ?`,
-            [firstName, lastName, middleName, email, finalProfilePic, userId], function(err) {
-                if (err) return res.status(500).json({ error: 'Update failed' });
-                req.session.firstName = firstName;
-                req.session.lastName = lastName;
-                res.json({ success: true, profilePic: finalProfilePic });
-            });
-    } else {
-        db.run(`UPDATE users SET firstName = ?, lastName = ?, middleName = ?, email = ?, course = ?, courseLevel = ?, address = ?, profilePic = ? WHERE id = ?`,
-            [firstName, lastName, middleName, email, course, courseLevel, address, finalProfilePic, userId], function(err) {
-                if (err) return res.status(500).json({ error: 'Update failed' });
-                req.session.firstName = firstName;
-                req.session.lastName = lastName;
+    try {
+        if (role === 'admin') {
+            await db.runAsync(`UPDATE admins SET firstName = ?, lastName = ?, middleName = ?, email = ?, profilePic = ? WHERE id = ?`,
+                [firstName, lastName, middleName, email, finalProfilePic, userId]);
+            req.session.firstName = firstName;
+            req.session.lastName = lastName;
+            res.json({ success: true, profilePic: finalProfilePic });
+        } else {
+            await db.runAsync(`UPDATE users SET firstName = ?, lastName = ?, middleName = ?, email = ?, course = ?, courseLevel = ?, address = ?, profilePic = ? WHERE id = ?`,
+                [firstName, lastName, middleName, email, course, courseLevel, address, finalProfilePic, userId]);
+            req.session.firstName = firstName;
+            req.session.lastName = lastName;
 
-                // Notify admin that a student updated their profile
-                const adminMsg = `${firstName} ${lastName} (${req.session.idNumber}) has updated their profile.`;
-                db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)',
-                    ['ADMIN', adminMsg, 'info']);
-                io.emit('notification:admin', { message: adminMsg, type: 'info' });
+            // Notify admin that a student updated their profile
+            const adminMsg = `${firstName} ${lastName} (${req.session.idNumber}) has updated their profile.`;
+            await db.runAsync("INSERT INTO notifications (idNumber, message, type) VALUES ('ADMIN', ?, 'info')", [adminMsg]);
+            io.emit('notification:admin', { message: adminMsg, type: 'info' });
 
-                res.json({ success: true, profilePic: finalProfilePic });
-            });
+            res.json({ success: true, profilePic: finalProfilePic });
+        }
+    } catch (err) {
+        console.error("Error during profile update transaction:", err);
+        res.status(500).json({ error: 'Update failed' });
     }
 });
 // Register route
