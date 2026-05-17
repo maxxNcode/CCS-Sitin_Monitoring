@@ -13,7 +13,13 @@ function showToast(message, type = "info", duration = 3000) {
         container.setAttribute("popover", "manual");
         container.className = "toast toast-top toast-end bg-transparent border-none p-0 overflow-visible";
         document.body.appendChild(container);
-        container.showPopover();
+        if (typeof container.showPopover === "function") {
+            try {
+                container.showPopover();
+            } catch (e) {
+                console.warn("Failed to invoke showPopover on toast container:", e);
+            }
+        }
     }
 
     const typeClasses = {

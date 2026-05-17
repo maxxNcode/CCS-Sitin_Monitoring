@@ -1,13 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const session = require('express-session');
 const bodyParser = require('body-parser');
-const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { Server } = require('socket.io');
+const db = require('./db');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,14 +18,18 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Initialize Database
-const db = new sqlite3.Database('./database.db', (err) => {
-    if (err) {
-        console.error('Database connection error:', err);
-    } else {
-        console.log('Connected to SQLite database');
+// Initialize Database and start server
+(async () => {
+    try {
+        await db.initDb();
+        console.log('Database connection established');
+
+        // Small delay to ensure connection is ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Create all tables in order
         initializeDatabase();
         createTableAnnouncements();
         createTableSitInRecords();
@@ -34,8 +39,31 @@ const db = new sqlite3.Database('./database.db', (err) => {
         createTableReservations();
         createTableNotifications();
         createTableSystemSettings();
+        createTableDropdownOptions();
+        createTableLabSoftwares();
+
+        // Run migrations to keep schema in sync
+        ensureProfilePicColumn();
+        ensureSessionLeftColumn();
+        ensurePcNumberColumn();
+        ensurePointsColumn();
+        ensureMiddleNameColumn();
+        renameAnnouncementsTable();
+        ensureAnnouncementHiddenColumn();
+
+        // Seed database
+        seedDropdownOptions();
+        seedAnnouncements();
+
+        // Start listening only when DB is fully ready
+        server.listen(PORT, () => {
+            console.log(`Server running at http://localhost:${PORT}`);
+        });
+    } catch (err) {
+        console.error('Failed to initialize database:', err);
+        process.exit(1);
     }
-});
+})();
 
 // Initialize database schema
 function initializeDatabase() {
@@ -168,10 +196,37 @@ function createTableNotifications() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             idNumber TEXT NOT NULL,
             message TEXT NOT NULL,
+            type TEXT DEFAULT 'info',
             isRead INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-    `)
+    `, (err) => {
+        if (!err) {
+            db.all("PRAGMA table_info(notifications)", (err, columns) => {
+                if (!err && columns) {
+                    if (!columns.some(c => c.name === 'type')) {
+                        db.run("ALTER TABLE notifications ADD COLUMN type TEXT DEFAULT 'info'", (err) => {
+                            if (!err) console.log('Added type column to notifications table');
+                        });
+                    }
+                    if (!columns.some(c => c.name === 'created_at')) {
+                        db.run("ALTER TABLE notifications ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
+                            if (!err) {
+                                console.log('Added created_at column to notifications table');
+                                db.run("UPDATE notifications SET created_at = createdAt WHERE created_at IS NULL AND createdAt IS NOT NULL");
+                            }
+                        });
+                    }
+                    if (!columns.some(c => c.name === 'createdAt')) {
+                        db.run("ALTER TABLE notifications ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
+                            if (!err) console.log('Added createdAt column to notifications table');
+                        });
+                    }
+                }
+            });
+        }
+    });
 }
 
 function createTableSystemSettings() {
@@ -290,7 +345,7 @@ app.use('/uploads', express.static(uploadsDir));
 
 // Session configuration
 app.use(session({
-    secret: 'ccs-sitin-monitoring-secret',
+    secret: process.env.SESSION_SECRET || 'ccs-sitin-monitoring-secret',
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
@@ -353,7 +408,7 @@ app.post('/api/announcements', checkAdminAuth, (req, res) => {
                             [s.idNumber, notifMsg, 'info']);
                     });
                     // Push via Socket.IO to all connected students
-                    io.emit('notification:student', { message: notifMsg, type: 'info' });
+                    io.emit('notification:student', { message: notifMsg, type: 'info', category: 'announcement' });
                 }
             });
 
@@ -456,6 +511,10 @@ app.post('/api/announcements/toggle-hide/:id', checkAdminAuth, (req, res) => {
         const newStatus = row.isHidden === 1 ? 0 : 1;
         db.run('UPDATE Announcements SET isHidden = ? WHERE id = ?', [newStatus, id], (err) => {
             if (err) return res.status(500).json({ error: 'Failed to update' });
+            
+            // Push notification so active student homepages dynamically update their announcement list
+            io.emit('notification:student', { category: 'announcement', message: 'Announcements updated' });
+            
             res.json({ success: true, isHidden: newStatus });
         });
     });
@@ -1760,18 +1819,6 @@ app.get('/api/admin/feedbacks', checkAdminAuth, (req, res) => {
     });
 });
 
-createTableAnnouncements();
-createTableSitInRecords();
-createTableAdmins();
-createTableStudentHistory();
-createTableFeedbacks();
-createTableReservations();
-createTableNotifications();
-createTableDropdownOptions();
-createTableLabSoftwares();
-// Seed dropdown options after a short delay to ensure table is created
-setTimeout(seedDropdownOptions, 500);
-
 // Ensure profilePic column exists (Migration)
 function ensureProfilePicColumn() {
     db.all("PRAGMA table_info(users)", (err, columns) => {
@@ -1785,7 +1832,6 @@ function ensureProfilePicColumn() {
         }
     });
 }
-ensureProfilePicColumn();
 
 // Ensure sessionLeft column exists (Migration)
 function ensureSessionLeftColumn() {
@@ -1800,7 +1846,6 @@ function ensureSessionLeftColumn() {
         }
     });
 }
-ensureSessionLeftColumn();
 
 // Ensure pcNumber column exists (Migration)
 function ensurePcNumberColumn() {
@@ -1815,7 +1860,6 @@ function ensurePcNumberColumn() {
         }
     });
 }
-ensurePcNumberColumn();
 
 // Ensure points column exists (Migration)
 function ensurePointsColumn() {
@@ -1827,7 +1871,6 @@ function ensurePointsColumn() {
         }
     });
 }
-ensurePointsColumn();
 
 function ensureMiddleNameColumn() {
     db.all("PRAGMA table_info(users)", (err, columns) => {
@@ -1845,9 +1888,6 @@ function ensureMiddleNameColumn() {
         }
     });
 }
-ensureMiddleNameColumn();
-renameAnnouncementsTable();
-ensureAnnouncementHiddenColumn();
 
 function renameAnnouncementsTable() {
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='Annoucements'", (err, oldRow) => {
@@ -1882,11 +1922,13 @@ function ensureAnnouncementHiddenColumn() {
 }
 
 // Seed dummy announcement if empty
-db.get('SELECT COUNT(*) as count FROM Announcements', (err, row) => {
-    if (!err && row.count === 0) {
-        db.run('INSERT INTO Announcements (title, description) VALUES (?, ?)', ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
-    }
-});
+function seedAnnouncements() {
+    db.get('SELECT COUNT(*) as count FROM Announcements', (err, row) => {
+        if (!err && row && row.count === 0) {
+            db.run('INSERT INTO Announcements (title, description) VALUES (?, ?)', ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
+        }
+    });
+}
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {
@@ -1894,11 +1936,6 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('Socket disconnected:', socket.id);
     });
-});
-
-// Start server
-server.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
 });
 
 

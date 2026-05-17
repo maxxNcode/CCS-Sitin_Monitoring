@@ -87,7 +87,7 @@
             return;
         }
 
-        _socket = io();
+        _socket = io({ transports: ['websocket'] });
 
         _socket.on('connect', () => {
             console.log('Notification socket connected');
@@ -111,9 +111,17 @@
                 // If payload has a specific idNumber, only fire for that student
                 if (payload.idNumber && payload.idNumber !== _idNumber) return;
                 fetchNotifications();
+                
                 if (payload && payload.message) {
-                    showToast(payload.message, payload.type || 'info');
+                    // Silent refresh check - e.g. for simple announcement toggling
+                    const isSilent = payload.category === 'announcement' && !payload.message.startsWith('New announcement:');
+                    if (!isSilent) {
+                        showToast(payload.message, payload.type || 'info');
+                    }
                 }
+                
+                // Dispatch custom event for page-level dynamic updates (e.g. homepage announcements)
+                document.dispatchEvent(new CustomEvent('notification:student', { detail: payload }));
             });
         }
     }

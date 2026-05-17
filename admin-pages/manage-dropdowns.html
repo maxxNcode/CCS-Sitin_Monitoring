@@ -378,12 +378,37 @@
                 const v = document.getElementById('optionValue').value.trim();
                 const id = document.getElementById('optionId').value;
                 if (!v) return;
-                const res = id ? await fetch(`/api/admin/dropdown-options/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: v }) })
-                               : await fetch('/api/admin/dropdown-options', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category: currentTab, value: v }) });
-                if (res.ok) { showToast('Saved!', 'success'); document.getElementById('optionModal').close(); fetchOptions(); }
+                
+                try {
+                    const res = id ? await fetch(`/api/admin/dropdown-options/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ value: v }) })
+                                   : await fetch('/api/admin/dropdown-options', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ category: currentTab, value: v }) });
+                    
+                    if (res.ok) {
+                        try { showToast('Saved!', 'success'); } catch (e) { console.error('Toast error:', e); }
+                        document.getElementById('optionModal').close();
+                        fetchOptions();
+                    } else {
+                        const err = await res.json();
+                        try { showToast(err.error || 'Failed to save option', 'error'); } catch (e) { alert(err.error || 'Failed to save option'); }
+                    }
+                } catch (e) {
+                    console.error('Save option network error:', e);
+                    try { showToast('Connection/Network error', 'error'); } catch (err) { alert('Connection error occurred.'); }
+                }
             }
 
-            async function toggleOption(id) { await fetch(`/api/admin/dropdown-options/${id}/toggle`, { method: 'PUT' }); fetchOptions(); }
+            async function toggleOption(id) { 
+                try {
+                    const res = await fetch(`/api/admin/dropdown-options/${id}/toggle`, { method: 'PUT' }); 
+                    if (res.ok) {
+                        try { showToast('Visibility toggled!', 'success'); } catch (e) {}
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+                fetchOptions(); 
+            }
+            
             function deleteOption(id, name) {
                 document.getElementById('actionModalTitle').innerHTML = '<i class="fa-solid fa-trash-can text-error"></i> Delete <span class="text-base-content not-italic">Option</span>';
                 document.getElementById('actionModalMessage').innerHTML = `Are you sure you want to delete <span class="font-black text-base-content underline decoration-error decoration-2 underline-offset-2">${name}</span>? This will remove it from all relevant dropdown menus.`;
@@ -391,8 +416,17 @@
                 confirmBtn.className = "btn btn-error flex-1 rounded-2xl font-black italic uppercase";
                 confirmBtn.innerText = "Delete Option";
                 confirmBtn.onclick = async () => {
-                    await fetch(`/api/admin/dropdown-options/${id}`, { method: 'DELETE' });
-                    showToast('Deleted!', 'success');
+                    try {
+                        const res = await fetch(`/api/admin/dropdown-options/${id}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            try { showToast('Deleted!', 'success'); } catch (e) {}
+                        } else {
+                            const err = await res.json();
+                            try { showToast(err.error || 'Failed to delete option', 'error'); } catch (e) {}
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
                     document.getElementById('actionModal').close();
                     fetchOptions();
                 };
