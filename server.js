@@ -2110,6 +2110,17 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         ? studentReservations.map((r, i) => `${i + 1}. [Reservation ID: ${r.id}] ${r.lab} (PC: ${r.pcNumber || 'Any'}) for ${r.purpose} on ${r.reservationDate} at ${r.reservationTime} [Status: ${r.status}]`).join('\n') 
         : 'You have no current reservations recorded in the database.';
 
+    // Format dynamic system date and time for exact AI chronological context
+    const now = new Date();
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const dayName = days[now.getDay()];
+    const monthName = months[now.getMonth()];
+    const dateStr = `${dayName}, ${monthName} ${now.getDate()}, ${now.getFullYear()}`;
+    const time12Str = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const time24Str = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const isoDateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
     const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
 Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
 
@@ -2177,6 +2188,12 @@ Here is the exact truth and context about the CCS Laboratories:
      * Suggest Lab 530 if they want to study introductory topics, C, C++, or Python scripting (since Quincy, Code::Blocks, and Python are pre-installed).
      * Suggest Lab 524 if they want to study advanced development, Java backend, web applications, or advanced systems (since IntelliJ, VS Code, Node.js, and Git are pre-installed).
      * Suggest Lab 536 if they want to study databases, SQL queries, servers, or systems design (since MSSQL Server, MySQL Workbench, pgAdmin 4, and XAMPP are pre-installed).
+
+9. REAL-TIME SYSTEM CHRONOLOGY (TODAY'S EXACT DATE & TIME):
+   - Today's Date: **${dateStr}** (ISO Format: \`${isoDateStr}\`)
+   - Today's Day of the Week: **${dayName}**
+   - Current System Time: **${time12Str}** (24-hour format: \`${time24Str}\`)
+   - *Behavior*: You must always reference this real-time system context if the student asks what today's date, day, or time is. Always calculate relative days (e.g. "tomorrow", "next Tuesday") correctly based on this exact date.
 
 Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
 
