@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const session = require('express-session');
+const session = require('cookie-session');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const path = require('path');
@@ -21,39 +21,263 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 
 // Initialize Database and start server
+// Initialize Database and start server
 (async () => {
     try {
         await db.initDb();
         console.log('Database connection established');
 
         // Small delay to ensure connection is ready
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 200));
 
-        // Create all tables in order
-        initializeDatabase();
-        createTableAnnouncements();
-        createTableSitInRecords();
-        createTableAdmins();
-        createTableStudentHistory();
-        createTableFeedbacks();
-        createTableReservations();
-        createTableNotifications();
-        createTableSystemSettings();
-        createTableDropdownOptions();
-        createTableLabSoftwares();
+        // 1. Create all tables sequentially using runAsync to avoid race conditions on Turso
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idNumber TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                firstName TEXT NOT NULL,
+                lastName TEXT NOT NULL,
+                middleName TEXT,
+                courseLevel TEXT,
+                course TEXT,
+                address TEXT,
+                sessionLeft INTEGER DEFAULT 30,
+                points INTEGER DEFAULT 0,
+                profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky',
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Users table ready');
 
-        // Run migrations to keep schema in sync
-        ensureProfilePicColumn();
-        ensureSessionLeftColumn();
-        ensurePcNumberColumn();
-        ensurePointsColumn();
-        ensureMiddleNameColumn();
-        renameAnnouncementsTable();
-        ensureAnnouncementHiddenColumn();
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS Announcements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Announcements table ready');
 
-        // Seed database
-        seedDropdownOptions();
-        seedAnnouncements();
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS sitin_records (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                studentName TEXT NOT NULL,
+                idNumber TEXT NOT NULL,
+                purpose TEXT NOT NULL,
+                lab TEXT NOT NULL,
+                pcNumber TEXT,
+                session TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Sitin records table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS admins (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idNumber TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                firstName TEXT NOT NULL,
+                lastName TEXT NOT NULL,
+                middleName TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Admins table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS student_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                studentName TEXT NOT NULL,
+                idNumber TEXT NOT NULL,
+                purpose TEXT NOT NULL,
+                lab TEXT NOT NULL,
+                pcNumber TEXT,
+                session TEXT NOT NULL,
+                loginTime DATETIME DEFAULT CURRENT_TIMESTAMP,
+                logoutTime DATETIME,
+                pointsEarned INTEGER DEFAULT 0
+            )
+        `);
+        console.log('Student history table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS feedbacks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                historyId INTEGER,
+                idNumber TEXT NOT NULL,
+                studentName TEXT NOT NULL,
+                lab TEXT,
+                purpose TEXT,
+                rating INTEGER NOT NULL,
+                comments TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Feedbacks table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS reservations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                studentName TEXT NOT NULL,
+                idNumber TEXT NOT NULL,
+                lab TEXT NOT NULL,
+                pcNumber TEXT,
+                purpose TEXT NOT NULL,
+                reservationDate DATE NOT NULL,
+                reservationTime TIME NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Reservations table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                idNumber TEXT NOT NULL,
+                message TEXT NOT NULL,
+                type TEXT DEFAULT 'info',
+                isRead INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Notifications table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        `);
+        console.log('System settings table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS dropdown_options (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT NOT NULL,
+                value TEXT NOT NULL,
+                is_active INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(category, value)
+            )
+        `);
+        console.log('Dropdown options table ready');
+
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS lab_softwares (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                labName TEXT NOT NULL,
+                softwareName TEXT NOT NULL,
+                version TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Lab softwares table ready');
+
+        // 2. Run migrations sequentially
+        // Ensure points column exists in users
+        try {
+            await db.runAsync("ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0");
+            console.log('Migration: Checked/Added points column to users table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure profilePic column exists in users
+        try {
+            await db.runAsync("ALTER TABLE users ADD COLUMN profilePic TEXT DEFAULT 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky'");
+            console.log('Migration: Checked/Added profilePic column to users table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure sessionLeft column exists in users
+        try {
+            await db.runAsync("ALTER TABLE users ADD COLUMN sessionLeft INTEGER DEFAULT 30");
+            console.log('Migration: Checked/Added sessionLeft column to users table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure pcNumber column exists in sitin_records
+        try {
+            await db.runAsync("ALTER TABLE sitin_records ADD COLUMN pcNumber TEXT DEFAULT 'N/A'");
+            console.log('Migration: Checked/Added pcNumber column to sitin_records table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure pcNumber column exists in student_history
+        try {
+            await db.runAsync("ALTER TABLE student_history ADD COLUMN pcNumber TEXT DEFAULT 'N/A'");
+            console.log('Migration: Checked/Added pcNumber column to student_history table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure pointsEarned column exists in student_history
+        try {
+            await db.runAsync("ALTER TABLE student_history ADD COLUMN pointsEarned INTEGER DEFAULT 0");
+            console.log('Migration: Checked/Added pointsEarned column to student_history table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure middleName column exists in users
+        try {
+            await db.runAsync("ALTER TABLE users ADD COLUMN middleName TEXT");
+            console.log('Migration: Checked/Added middleName column to users table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure middleName column exists in admins
+        try {
+            await db.runAsync("ALTER TABLE admins ADD COLUMN middleName TEXT");
+            console.log('Migration: Checked/Added middleName column to admins table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Ensure isHidden column exists in Announcements
+        try {
+            await db.runAsync("ALTER TABLE Announcements ADD COLUMN isHidden INTEGER DEFAULT 0");
+            await db.runAsync("UPDATE Announcements SET isHidden = 0 WHERE isHidden IS NULL");
+            console.log('Migration: Checked/Added isHidden column to Announcements table');
+        } catch (e) { /* ignore if already exists */ }
+
+        // Rename Annoucements table if needed
+        try {
+            const oldTable = await db.getAsync("SELECT name FROM sqlite_master WHERE type='table' AND name='Annoucements'");
+            if (oldTable) {
+                const countRow = await db.getAsync("SELECT COUNT(*) as count FROM Announcements");
+                if (countRow && countRow.count === 0) {
+                    await db.runAsync("DROP TABLE Announcements");
+                    await db.runAsync("ALTER TABLE Annoucements RENAME TO Announcements");
+                    console.log('Migration: Renamed Annoucements table to Announcements');
+                }
+            }
+        } catch (e) { console.error('Migration error renaming table:', e.message); }
+
+        // 3. Seed database sequentially
+        // Seed default dropdown options if empty
+        const countDropdowns = await db.getAsync("SELECT COUNT(*) as count FROM dropdown_options");
+        if (countDropdowns && countDropdowns.count === 0) {
+            const defaults = [
+                { cat: 'lab', val: 'Lab 524' },
+                { cat: 'lab', val: 'Lab 526' },
+                { cat: 'lab', val: 'Lab 528' },
+                { cat: 'lab', val: 'Lab 530' },
+                { cat: 'purpose', val: 'C-Programming Assignment' },
+                { cat: 'purpose', val: 'Java Project Development' },
+                { cat: 'purpose', val: 'Web Systems Exam' },
+                { cat: 'purpose', val: 'Database Management Lab' },
+                { cat: 'course', val: 'BSIT' },
+                { cat: 'course', val: 'BSCS' },
+                { cat: 'course', val: 'BSCPE' }
+            ];
+            for (const item of defaults) {
+                await db.runAsync("INSERT OR IGNORE INTO dropdown_options (category, value) VALUES (?, ?)", [item.cat, item.val]);
+            }
+            console.log('Seeded default dropdown options');
+        }
+
+        // Seed default announcements if empty
+        const countAnnouncements = await db.getAsync("SELECT COUNT(*) as count FROM Announcements");
+        if (countAnnouncements && countAnnouncements.count === 0) {
+            await db.runAsync("INSERT INTO Announcements (title, description) VALUES (?, ?)", ['Welcome!', 'Welcome to the CCS Sit-In Monitoring System.']);
+            console.log('Seeded default announcements');
+        }
 
         // Start listening only when DB is fully ready (skip server.listen on Vercel)
         if (!process.env.VERCEL) {
@@ -349,12 +573,11 @@ const upload = multer({ storage: storage });
 
 app.use('/uploads', express.static(uploadsDir));
 
-// Session configuration
+// Session configuration (using cookie-session for serverless session persistence on Vercel)
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'ccs-sitin-monitoring-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    name: 'session',
+    keys: [process.env.SESSION_SECRET || 'ccs-sitin-monitoring-secret'],
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 

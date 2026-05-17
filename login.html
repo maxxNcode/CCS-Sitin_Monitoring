@@ -650,7 +650,15 @@
                             body: JSON.stringify({ idNumber, password }),
                         });
 
-                        const data = await response.json();
+                        let data;
+                        try {
+                            data = await response.json();
+                        } catch (jsonErr) {
+                            const rawText = await response.text();
+                            const errorMatch = rawText.match(/Error: (.*?)<br>/) || rawText.match(/<pre>(.*?)<\/pre>/);
+                            const errMsg = errorMatch ? errorMatch[1] : `Server returned status ${response.status}`;
+                            throw new Error(errMsg);
+                        }
 
                         if (data.success) {
                             showSuccessModal(
@@ -667,8 +675,10 @@
                             btn.innerHTML = originalContent;
                         }
                     } catch (err) {
-                        errorText.textContent =
-                            "Connection error. Please check your network.";
+                        console.error("Login request failed:", err);
+                        errorText.textContent = err.message.includes("TURSO_DATABASE_URL")
+                            ? "Database Connection Error: Please make sure your Turso database credentials are added as Environment Variables in Vercel settings."
+                            : `Connection Error: ${err.message || "Please check your network connection."}`;
                         errorDiv.classList.remove("hidden");
                         btn.disabled = false;
                         btn.innerHTML = originalContent;

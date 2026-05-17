@@ -13,6 +13,9 @@ const initDb = async () => {
   initPromise = (async () => {
     try {
       console.log('Initializing Turso connection...');
+      if (!process.env.TURSO_DATABASE_URL) {
+        throw new Error('TURSO_DATABASE_URL environment variable is missing! Please configure TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in your Vercel Project Dashboard (Settings -> Environment Variables) to enable the database connection on the cloud.');
+      }
       client = createClient({
         url: process.env.TURSO_DATABASE_URL,
         authToken: process.env.TURSO_AUTH_TOKEN,
@@ -171,6 +174,33 @@ const prepare = function(sql) {
   };
 };
 
+const runAsync = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    run(sql, params, function(err) {
+      if (err) reject(err);
+      else resolve(this);
+    });
+  });
+};
+
+const getAsync = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    get(sql, params, function(err, row) {
+      if (err) reject(err);
+      else resolve(row);
+    });
+  });
+};
+
+const allAsync = (sql, params = []) => {
+  return new Promise((resolve, reject) => {
+    all(sql, params, function(err, rows) {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+};
+
 module.exports = {
   initDb,
   run,
@@ -179,4 +209,7 @@ module.exports = {
   serialize,
   exec,
   prepare,
+  runAsync,
+  getAsync,
+  allAsync,
 };
