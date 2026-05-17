@@ -432,11 +432,11 @@ app.post('/login', (req, res) => {
 
     // First check in admins table
     db.get('SELECT * FROM admins WHERE idNumber = ?', [idNumber], (err, admin) => {
-        if (err) return res.status(500).json({ error: 'Server error' });
+        if (err) return res.status(500).json({ error: err.message || 'Server error' });
 
         if (admin) {
             bcrypt.compare(password, admin.password, (err, isMatch) => {
-                if (err) return res.status(500).json({ error: 'Server error' });
+                if (err) return res.status(500).json({ error: err.message || 'Server error' });
                 if (!isMatch) return res.status(401).json({ error: 'Invalid ID Number or Password' });
 
                 req.session.userId = admin.id;
@@ -456,14 +456,14 @@ app.post('/login', (req, res) => {
         } else {
             // If not found in admins, check in users (students)
             db.get('SELECT * FROM users WHERE idNumber = ?', [idNumber], (err, user) => {
-                if (err) return res.status(500).json({ error: 'Server error' });
+                if (err) return res.status(500).json({ error: err.message || 'Server error' });
 
                 if (!user) {
                     return res.status(401).json({ error: 'Invalid ID Number or Password' });
                 }
 
                 bcrypt.compare(password, user.password, (err, isMatch) => {
-                    if (err) return res.status(500).json({ error: 'Server error' });
+                    if (err) return res.status(500).json({ error: err.message || 'Server error' });
                     if (!isMatch) return res.status(401).json({ error: 'Invalid ID Number or Password' });
 
                     req.session.userId = user.id;
@@ -610,7 +610,7 @@ app.post('/register', (req, res) => {
                     if (err.message.includes('UNIQUE constraint failed')) {
                         return res.status(400).json({ error: 'ID Number or Email already exists' });
                     }
-                    return res.status(500).json({ error: 'Server error' });
+                    return res.status(500).json({ error: err.message || 'Server error' });
                 }
 
                 // Notify admin about new student registration
