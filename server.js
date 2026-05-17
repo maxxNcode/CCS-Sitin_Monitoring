@@ -2105,7 +2105,7 @@ Here is the exact truth and context about the CCS Laboratories:
    - Security & Privacy: Do not share login credentials. Log out of all accounts before leaving the lab. Do not attempt to access restricted systems or networks.
 
 3. Sit-in Sessions and Points Balance:
-   - Every student starts with 30 sit-in sessions (1 session = 1 hour).
+   - Every student starts with 30 sit-in sessions. A session represents one single sit-in transaction (from check-in to check-out), regardless of the actual length of time spent.
    - When a student checks out / logs out of their active sit-in, 1 session is decremented from their balance, and they are awarded +10 points.
    - The Leaderboard shows the top students ranked by their accumulated points.
 
@@ -2311,7 +2311,7 @@ Lab 536 is our dedicated laboratory for databases, design frameworks, and server
         reply = `### 🏆 Your Live Student Statistics & Standing
 Here are your active session details retrieved straight from the CCS Sit-in database:
 * **Student Name:** ${req.session.firstName} ${req.session.lastName} (ID: ${idNumber})
-* **Remaining Sessions:** **${sessionBalance}** hours left
+* **Remaining Sessions:** **${sessionBalance}** sessions left
 * **Accumulated Points:** **${studentPoints}** points
 * **Leaderboard Standing:** Ranked **#${studentRank}** out of all students
 
