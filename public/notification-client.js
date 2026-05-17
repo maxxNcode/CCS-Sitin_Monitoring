@@ -83,7 +83,6 @@
     // ─── Socket.IO Setup ────────────────────────────────────────────
     function initSocket() {
         if (typeof io === 'undefined') {
-            console.warn('Socket.IO client not loaded, falling back to polling only');
             return;
         }
 
@@ -127,28 +126,44 @@
     }
 
     // ─── Initialize ─────────────────────────────────────────────────
-    function init() {
+    async function init() {
         if (_initialized) return;
         _initialized = true;
 
-        // Determine role from session
-        fetch('/check-session')
-            .then(r => r.json())
-            .then(data => {
-                if (!data.loggedIn) return;
-                _role = data.role;
-                _idNumber = data.idNumber;
+        try {
+            const r = await fetch('/check-session');
+            const data = await r.json();
+            if (!data.loggedIn) return;
+            _role = data.role;
+            _idNumber = data.idNumber;
 
-                // Initial fetch
-                fetchNotifications();
+            // Initial fetch
+            fetchNotifications();
 
-                // Socket.IO for instant push
-                initSocket();
+            // Dynamic Socket.IO script loading only for local development
+            const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+            if (isLocal) {
+                const loaded = await new Promise((resolve) => {
+                    const script = document.createElement('script');
+                    script.src = '/socket.io/socket.io.js';
+                    script.onload = () => resolve(true);
+                    script.onerror = () => resolve(false);
+                    document.head.appendChild(script);
+                });
+                if (loaded) {
+                    initSocket();
+                } else {
+                    console.warn('Socket.IO script failed to load locally, polling fallback active.');
+                }
+            } else {
+                console.log('Production cloud environment: Notification polling fallback active.');
+            }
 
-                // Polling fallback
-                _pollTimer = setInterval(fetchNotifications, POLL_INTERVAL);
-            })
-            .catch(() => {});
+            // Polling fallback
+            _pollTimer = setInterval(fetchNotifications, POLL_INTERVAL);
+        } catch (e) {
+            console.error('Notification client initialization failed:', e);
+        }
     }
 
     // Auto-initialize on DOMContentLoaded
