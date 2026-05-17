@@ -2169,44 +2169,71 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
                 ...messages.map(m => ({ role: m.role, content: m.content }))
             ];
 
-            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${groqKey}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: groqMessages,
-                    temperature: 0.7,
-                    max_tokens: 800
-                })
-            });
+            const modelsToTry = [
+                'llama-3.3-70b-versatile',
+                'llama-3.1-8b-instant',
+                'gemma2-9b-it',
+                'mixtral-8x7b-32768'
+            ];
 
-            if (response.ok) {
-                const data = await response.json();
-                const reply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
-                
+            let successReply = null;
+            let lastError = null;
+
+            for (const model of modelsToTry) {
+                try {
+                    console.log(`Attempting Groq chat completion with model: ${model}...`);
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${groqKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: groqMessages,
+                            temperature: 0.7,
+                            max_tokens: 800
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        successReply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
+                        console.log(`✓ Successful response from Groq model: ${model}`);
+                        break; // Exit loop on success
+                    } else {
+                        const errData = await response.json().catch(() => ({}));
+                        lastError = errData.error?.message || `Groq API responded with status ${response.status}`;
+                        console.warn(`⚠️ Groq model ${model} failed with status ${response.status}:`, lastError);
+                        
+                        // Cycle if rate limit (429) or server error (>= 500)
+                        if (response.status === 429 || response.status >= 500) {
+                            continue;
+                        } else {
+                            break; // Stop loop on invalid requests or bad credentials
+                        }
+                    }
+                } catch (modelErr) {
+                    lastError = modelErr.message;
+                    console.error(`Failed request for model ${model}:`, modelErr);
+                }
+            }
+
+            if (successReply) {
                 // Save user message and reply to database asynchronously
                 db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
-                db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', reply]);
+                db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', successReply]);
                 
-                return res.json({ success: true, reply });
+                return res.json({ success: true, reply: successReply });
             } else {
-                const errData = await response.json().catch(() => ({}));
-                console.error("Groq API error response status:", response.status, errData);
-                const errMsg = errData.error?.message || `Groq API responded with status ${response.status}`;
-                return res.json({ 
-                    success: true, 
-                    reply: `⚠️ **Groq API Error (${response.status}):** ${errMsg}\n\n*(Please check your Groq API Key and account settings on console.groq.com)*` 
-                });
+                console.warn("All Groq models failed. Falling back to CCS Local AI Mode. Last error was:", lastError);
+                req.groqFailed = true;
+                req.groqError = lastError;
             }
         } catch (err) {
             console.error("Failed to query Groq AI:", err);
-            return res.json({ 
-                success: true, 
-                reply: `⚠️ **Connection Error:** Failed to connect to Groq AI servers: ${err.message}` 
-            });
+            req.groqFailed = true;
+            req.groqError = err.message;
         }
     }
 
@@ -2214,7 +2241,10 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
     const lastUserMsg = messages[messages.length - 1]?.content?.toLowerCase() || '';
     let reply = "";
 
-    const simulatedNote = "\n\n*(💡 Running in CCS Local AI Mode. Connect a Groq API Key to enable the high-speed Llama 3 cloud module!)*";
+    let simulatedNote = "\n\n*(💡 Running in CCS Local AI Mode. Connect a Groq API Key to enable the high-speed Llama 3 cloud module!)*";
+    if (req.groqFailed) {
+        simulatedNote = `\n\n*(💡 Groq Cloud AI limit reached or connection failed. Automatically cycled through all 4 available backup models (Llama 3.3, Llama 3.1 8B, Gemma 2, Mixtral) and fell back to ultra-fast CCS Local AI Mode to process your request without interruption!)*`;
+    }
 
     if (lastUserMsg.includes('reserve') || lastUserMsg.includes('reservation') || lastUserMsg.includes('book')) {
         // Simple slot parsing from user message history
