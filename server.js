@@ -2159,9 +2159,14 @@ Here is the exact truth and context about the CCS Laboratories:
 
 Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
 
-    const groqKey = process.env.GROQ_API_KEY;
+    const groqKeys = [
+        process.env.GROQ_API_KEY,
+        process.env.GROQ_API_KEY_2,
+        process.env.GROQ_API_KEY_3,
+        process.env.GROQ_API_KEY_4
+    ].filter(k => k && k.trim() !== '');
 
-    if (groqKey && groqKey.trim() !== '') {
+    if (groqKeys.length > 0) {
         try {
             // Forward conversation history to Groq API
             const groqMessages = [
@@ -2179,43 +2184,47 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
             let successReply = null;
             let lastError = null;
 
-            for (const model of modelsToTry) {
-                try {
-                    console.log(`Attempting Groq chat completion with model: ${model}...`);
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${groqKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: groqMessages,
-                            temperature: 0.7,
-                            max_tokens: 800
-                        })
-                    });
+            for (const key of groqKeys) {
+                if (successReply) break;
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        successReply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
-                        console.log(`✓ Successful response from Groq model: ${model}`);
-                        break; // Exit loop on success
-                    } else {
-                        const errData = await response.json().catch(() => ({}));
-                        lastError = errData.error?.message || `Groq API responded with status ${response.status}`;
-                        console.warn(`⚠️ Groq model ${model} failed with status ${response.status}:`, lastError);
-                        
-                        // Cycle if rate limit (429) or server error (>= 500)
-                        if (response.status === 429 || response.status >= 500) {
-                            continue;
+                for (const model of modelsToTry) {
+                    try {
+                        console.log(`Attempting Groq chat completion with model: ${model} using key: ${key.substring(0, 12)}...`);
+                        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${key}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                model: model,
+                                messages: groqMessages,
+                                temperature: 0.7,
+                                max_tokens: 800
+                            })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            successReply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
+                            console.log(`✓ Successful response from Groq model: ${model} using key: ${key.substring(0, 12)}`);
+                            break; // Exit models loop on success
                         } else {
-                            break; // Stop loop on invalid requests or bad credentials
+                            const errData = await response.json().catch(() => ({}));
+                            lastError = errData.error?.message || `Groq API responded with status ${response.status}`;
+                            console.warn(`⚠️ Groq model ${model} failed with key ${key.substring(0, 12)} (status ${response.status}):`, lastError);
+                            
+                            // Cycle if rate limit (429) or server error (>= 500)
+                            if (response.status === 429 || response.status >= 500) {
+                                continue;
+                            } else {
+                                break; // Stop loop on invalid requests or bad credentials
+                            }
                         }
+                    } catch (modelErr) {
+                        lastError = modelErr.message;
+                        console.error(`Failed request for model ${model} using key: ${key.substring(0, 12)}:`, modelErr);
                     }
-                } catch (modelErr) {
-                    lastError = modelErr.message;
-                    console.error(`Failed request for model ${model}:`, modelErr);
                 }
             }
 
@@ -2226,7 +2235,7 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
                 
                 return res.json({ success: true, reply: successReply });
             } else {
-                console.warn("All Groq models failed. Falling back to CCS Local AI Mode. Last error was:", lastError);
+                console.warn("All Groq keys and models failed. Falling back to CCS Local AI Mode. Last error was:", lastError);
                 req.groqFailed = true;
                 req.groqError = lastError;
             }
@@ -2407,8 +2416,27 @@ I can help you answer any questions about our laboratory rooms, pre-installed so
 **Try asking me:**
 * "What tools are installed in Lab 536?"
 * "What are the computer lab rules?"
-* "How do I earn points and manage my sessions?"
-* "Which lab is best for coding in Java?"`;
+* "How do I earn points and manage my sessions?"`;
+    } else if (lastUserMsg.includes('what day today') || lastUserMsg.includes('today\'s date') || lastUserMsg.includes('what date') || lastUserMsg.includes('what is today') || lastUserMsg.includes('current date') || lastUserMsg.includes('day today')) {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const now = new Date();
+        const dayName = days[now.getDay()];
+        const monthName = months[now.getMonth()];
+        const dateStr = `${dayName}, ${monthName} ${now.getDate()}, ${now.getFullYear()}`;
+        reply = `### 📅 Current Date
+Today is **${dateStr}**. You can proceed with scheduling any sit-in reservations!`;
+    } else if (lastUserMsg === 'continue' || lastUserMsg === 'yes' || lastUserMsg === 'ok' || lastUserMsg === 'sure' || lastUserMsg.includes('next day') || lastUserMsg.includes('same pc')) {
+        reply = `### 📅 Conversational Booking Action
+Sure! I can help you continue with your booking or schedule another sit-in reservation.
+
+Could you please specify:
+1. **Laboratory** (Lab 524, Lab 530, or Lab 536)
+2. **PC Number** (e.g. PC-01 to PC-30)
+3. **Purpose** (e.g. Java Programming, C++, Python)
+4. **Date & Time** (e.g. Tomorrow at 8 AM)
+
+Or let me know if you would like me to replicate your last reservation!`;
     } else {
         reply = `I understand you're asking about the College of Computer Studies (CCS). As your CCS Lab Assistant, I can confirm that our computer labs (**Lab 524, Lab 530, and Lab 536**) are fully equipped with compilers, databases, and IDEs to support your sit-in sessions!
 
