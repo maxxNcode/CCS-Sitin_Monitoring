@@ -284,7 +284,7 @@ async function loadChatHistory() {
             container.innerHTML = ""; // Clear empty state
             
             chatHistory.forEach(msg => {
-                renderMessage(msg.role, msg.content);
+                renderMessage(msg.role, msg.content, true);
             });
             
             // Scroll to bottom
@@ -410,7 +410,7 @@ function scrollToBottom() {
     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
 }
 
-function renderMessage(role, text) {
+function renderMessage(role, text, isHistory = false) {
     const container = document.getElementById("chatMessages");
     const emptyState = document.getElementById("chatEmptyState");
     if (emptyState) emptyState.remove();
@@ -448,7 +448,37 @@ function renderMessage(role, text) {
         : "CCS AI Assistant";
 
     const formattedText = isUser ? cleanText : parseMarkdown(cleanText);
-    const transactionId = "booking_" + Date.now();
+    const transactionId = "booking_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+
+    let cardHtml = "";
+    if (reservationPayload) {
+        if (isHistory) {
+            cardHtml = `
+                <div class="mt-4 p-3 rounded-xl bg-base-100/50 text-[10px] opacity-75 font-semibold text-base-content flex flex-col gap-1 border border-base-content/5">
+                    <div class="text-success font-black uppercase tracking-wider text-[9px] flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> Conversational Booking Handled
+                    </div>
+                    <div>
+                        Reservation requested for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>.
+                    </div>
+                    <div class="text-[8px] opacity-50 italic mt-1">
+                        See the active Reservations tab to track current status.
+                    </div>
+                </div>
+            `;
+        } else {
+            cardHtml = `
+                <div id="${transactionId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
+                    <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
+                        <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
+                    </div>
+                    <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                        Requesting booking for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>...
+                    </div>
+                </div>
+            `;
+        }
+    }
 
     const messageHtml = `
         <div class="${alignClass} animate-in slide-in-from-bottom duration-300">
@@ -460,17 +490,7 @@ function renderMessage(role, text) {
             <div class="chat-header text-[10px] opacity-40 font-bold uppercase tracking-wider mb-1">${nameLabel}</div>
             <div class="chat-bubble ${bubbleClass} text-xs p-3.5 shadow-sm max-w-md break-words">
                 ${formattedText}
-                
-                ${reservationPayload ? `
-                    <div id="${transactionId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
-                        <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
-                            <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
-                        </div>
-                        <div class="text-[10px] opacity-75 font-semibold text-base-content">
-                            Requesting booking for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>...
-                        </div>
-                    </div>
-                ` : ""}
+                ${cardHtml}
             </div>
         </div>
     `;
@@ -478,7 +498,7 @@ function renderMessage(role, text) {
     container.insertAdjacentHTML("beforeend", messageHtml);
     scrollToBottom();
 
-    if (reservationPayload) {
+    if (reservationPayload && !isHistory) {
         executeConversationalReservation(reservationPayload, transactionId);
     }
 }
