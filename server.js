@@ -137,6 +137,13 @@ const PORT = process.env.PORT || 3000;
         `);
         console.log('Reservations table ready');
 
+        try {
+            await db.runAsync("ALTER TABLE reservations ADD COLUMN pcNumber TEXT");
+            console.log("Migrated reservations table: added pcNumber column");
+        } catch (e) {
+            // Column already exists or table didn't exist
+        }
+
         await db.runAsync(`
             CREATE TABLE IF NOT EXISTS notifications (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
