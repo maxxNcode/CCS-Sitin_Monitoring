@@ -1195,6 +1195,18 @@ app.get('/check-session', (req, res) => {
 
 // Serve main.html only if logged in
 
+// Root route - redirect based on session
+app.get('/', (req, res) => {
+    if (req.session && req.session.userId) {
+        if (req.session.role === 'admin') {
+            return res.redirect('/admin');
+        } else {
+            return res.redirect('/homepage');
+        }
+    }
+    res.redirect('/login');
+});
+
 // Serve login and register pages
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
