@@ -2170,81 +2170,29 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         isoDateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     }
 
-    const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
-Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
-
-Here is the exact truth and context about the CCS Laboratories:
-1. Laboratories & Pre-installed Software:
-   - Lab 524 (Advanced Systems & Programming Lab): Pre-installed with Visual Studio Code (v1.87.0), Visual Studio 2022 (v17.9.0), Node.js (v20.11.0), IntelliJ IDEA (v2023.3.4), Git (v2.43.0), and Notepad++ (v8.6.2).
-   - Lab 530 (Introductory & C/C++ Lab): Pre-installed with Quincy 2005 (v1.3), Code::Blocks (v20.03), Python (v3.12.2), Visual Studio Code (v1.87.0), Notepad++ (v8.6.2), and Git (v2.43.0).
-   - Lab 536 (Database Management & Systems Design Lab): Pre-installed with Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), Visual Studio Code (v1.87.0), XAMPP (v8.2.12), pgAdmin 4 (v8.3), Visual Studio 2022 (v17.9.0), and Notepad++ (v8.6.2).
-
-2. CCS Laboratory Rules & Guidelines (Official Dashboard Rules):
-   - Camaraderie & Decorum: Treat fellow students, instructors, and lab personnel with respect. Maintain proper decorum at all times and do not disrupt others.
-   - Silence & Discipline: Maintain silence and discipline inside the lab. Keep conversations to a minimum and at a low volume. Mobile phones/devices must be switched off or set to silent mode.
-   - Game Restrictions: Strictly NO games inside the laboratory (computer-related, card games, etc.). Entertainment/social media browsing should be limited to academic purposes only.
-   - Internet Usage Policy: Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.
-   - Equipment Care: Handle all computer equipment with care. Report malfunctioning units to the lab attendant immediately. Strictly NO food, drinks, or gum near the computers. Log off properly and push your chair in when leaving.
-   - Security & Privacy: Do not share login credentials. Log out of all accounts before leaving the lab. Do not attempt to access restricted systems or networks.
-
-3. Sit-in Sessions and Points Balance:
-   - Every student starts with 30 sit-in sessions. A session represents one single sit-in transaction (from check-in to check-out), regardless of the actual length of time spent.
-   - When a student checks out / logs out of their active sit-in, 1 session is decremented from their balance, and they are awarded +10 points.
-   - The Leaderboard shows the top students ranked by their accumulated points.
-
-4. REAL-TIME LABORATORY OCCUPANCY STATUS (LIVE DATABASE STATE):
-   - Lab 524: ${count524} student(s) currently active / checked in.
-   - Lab 530: ${count530} student(s) currently active / checked in.
-   - Lab 536: ${count536} student(s) currently active / checked in.
-
-5. CONVERSATIONAL LAB RESERVATIONS & CANCELLATIONS (AGENT BOOKING PROTOCOL):
-   - You have the capability to schedule / request sit-in reservations directly for the student.
-   - To register a reservation, you MUST collect exactly five slots:
-     1. lab: Which lab they want to book (exactly 'Lab 524', 'Lab 530', or 'Lab 536').
-     2. pcNumber: Which PC they want to occupy (exactly 'PC-01' through 'PC-30', e.g. 'PC-07').
-     3. purpose: The reason for their sit-in (e.g. C Programming, Python Scripting, Java, etc.).
-     4. date: The reservation date. Interpret dates like "May 20" or "tomorrow" and output strictly as YYYY-MM-DD (e.g. "2026-05-20").
-     5. time: The reservation time. Convert times like "10:30 AM" or "2 PM" into 24-hour style HH:MM format (e.g. "10:30" or "14:00").
-   - If a student requests a booking but any of these five details are missing, you MUST ask for the missing ones first.
-   - ONCE AND ONLY ONCE ALL 5 SLOTS ARE GIVEN by the user:
-     Confirm the details in your text reply and append EXACTLY this string on a new line at the very end of your response:
-     [[RESERVE:{"lab":"Lab name","pcNumber":"PC-XX","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
-     (Do not include any extra text inside the double brackets after the JSON string).
-   - You also have the capability to cancel / delete sit-in reservations for the student.
-   - If the student requests to cancel/delete a reservation (e.g. "Cancel my reservation for Lab 530 on May 18" or "Cancel my reservation ID #12" or "Delete reservation 12"):
-     1. Identify the correct reservation from the "Student's Existing Reservations" list (section 6 below) that matches their request.
-     2. If you find the reservation and the request is clear, confirm the cancellation in your text reply and append EXACTLY this string on a new line at the very end of your response:
-        [[CANCEL_RESERVE:{"id":12}]]
-        (Replace 12 with the actual integer ID of the reservation. Do not include any extra text inside the double brackets).
-
-6. LIVE STUDENT STATISTICS & LEADERBOARD DATA:
-    - Current Student Profile: Name is "${req.session.firstName} ${req.session.lastName}", ID Number is "${idNumber}".
-    - Current Session Balance: ${sessionBalance} sit-in sessions remaining.
-    - Current Accumulated Points: ${studentPoints} points.
-    - Current Leaderboard Rank: Ranked #${studentRank} out of all ${totalStudents} students.
-    - Overall Leaderboard Standings (Top 3): ${leaderboardStr || 'No data yet'}.
-    - Total Registered Students Count: There are exactly ${totalStudents} students registered in the CCS Sit-in System.
-    - Student's Existing Reservations:
-      ${reservationsStr}
-    - *Behavior*: If the student asks about their previous, current, pending, or existing reservations, check this exact list and reply with their reservations details, status, lab, PC number, and date/time accurately! If they ask to cancel a reservation, read the list, locate the ID, and follow the cancellation protocol in section 5.
-
-7. LABORATORY PEAK-HOURS ANALYSIS (HISTORICAL DATA):
-   - Busiest Check-in Hours (Peak Hours): ${peakHoursStr || 'No data yet'}.
-   - *Behavior*: If the student asks about the best/quietest times to study or which hours are peak/busy, tell them that according to our history logs, peak hours occur at ${peakHoursStr || '10:00 AM and 2:00 PM'}. Recommend that they plan their sessions in the early morning (8:00 AM - 9:30 AM) or late afternoon (4:00 PM - 5:30 PM) for optimal seating!
-
-8. COURSE-TO-WORKSPACE MATCHER:
-   - When a student asks what laboratory room is best for a specific subject, class, compiler, or database engine:
-     * Suggest Lab 530 if they want to study introductory topics, C, C++, or Python scripting (since Quincy, Code::Blocks, and Python are pre-installed).
-     * Suggest Lab 524 if they want to study advanced development, Java backend, web applications, or advanced systems (since IntelliJ, VS Code, Node.js, and Git are pre-installed).
-     * Suggest Lab 536 if they want to study databases, SQL queries, servers, or systems design (since MSSQL Server, MySQL Workbench, pgAdmin 4, and XAMPP are pre-installed).
-
-9. REAL-TIME SYSTEM CHRONOLOGY (TODAY'S EXACT DATE & TIME):
-   - Today's Date: **${dateStr}** (ISO Format: \`${isoDateStr}\`)
-   - Today's Day of the Week: **${dayName}**
-   - Current System Time: **${time12Str}** (24-hour format: \`${time24Str}\`)
-   - *Behavior*: You must always reference this real-time system context if the student asks what today's date, day, or time is. Always calculate relative days (e.g. "tomorrow", "next Tuesday") correctly based on this exact date.
-
-Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting like bullet points and bold titles when describing software or rules. Keep answers relatively concise and easy to read.`;
+    const systemPrompt = `You are the CCS Sit-in AI Assistant. Force all dynamic dates/times strictly to PHT (Philippines Standard Time, GMT+8).
+1. LAB SOFTWARE CONTEXT (Strict Truth):
+   - Lab 524 (Advanced Systems): VS Code (1.87.0), VS 2022 (17.9.0), Node.js (20.11.0), IntelliJ (2023.3.4), Git (2.43.0), Notepad++ (8.6.2). Ideal for web, Java/C# backend, advanced dev.
+   - Lab 530 (Introductory & C/C++): Quincy 2005, Code::Blocks, Python (3.12.2), VS Code, Notepad++, Git. Ideal for learning C/C++, Python scripting, foundations.
+   - Lab 536 (Databases & Systems): MS SSMS (19.3), MySQL Workbench, pgAdmin 4, XAMPP (8.2.12), VS 2022, VS Code, Notepad++. Ideal for SQL, servers, database courses.
+2. OFFICIAL RULES:
+   - Camaraderie & Decorum: Respect all. Silence & Discipline: Minimize noise. GAME RESTRICTIONS: Strictly NO games (computer/card). Internet surfing only for academics with instructor permission. Equipment care: NO food/drink/gum near computers. Push chairs, logout before leaving. Do not share credentials.
+3. SESSIONS & LEADERBOARD:
+   - Start: 30 sessions. Each check-out decrements 1 session, awards +10 points. Leaderboard ranks students by points.
+4. LAB OCCUPANCY: Lab 524: ${count524} active, Lab 530: ${count530} active, Lab 536: ${count536} active.
+5. CONVERSATIONAL BOOKING:
+   - To book, collect: lab ('Lab 524'/'Lab 530'/'Lab 536'), pcNumber ('PC-01' to 'PC-30'), purpose, date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
+   - Once all 5 slots are collected, append EXACTLY at the end of your text response: [[RESERVE:{"lab":"Lab name","pcNumber":"PC-XX","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
+6. CANCELLATION:
+   - To cancel, read student's existing reservations (Section 7). Find matching reservation ID, confirm, and append EXACTLY at the end of response: [[CANCEL_RESERVE:{"id":ID}]] (Replace ID with integer).
+7. LIVE STUDENT DATA:
+   - Profile: "${req.session.firstName} ${req.session.lastName}" (ID: ${idNumber}). Balance: ${sessionBalance} sessions, ${studentPoints} pts. Rank: #${studentRank}/${totalStudents}. Top 3 Leaderboard: ${leaderboardStr}. Total registered: ${totalStudents}.
+   - Existing Reservations:
+${reservationsStr}
+   - Peak Hours: ${peakHoursStr || '10:00 AM & 2:00 PM'}. Recommend early mornings (8-9:30 AM) or late afternoons (4-5:30 PM).
+8. REAL-TIME CHRONOLOGY (For PHT GMT+8 calculations):
+   - Today's Date: **${dateStr}** (ISO: \`${isoDateStr}\`). Day: **${dayName}**. Time: **${time12Str}** (24h: \`${time24Str}\`). Use this to accurately calculate relative dates (like "tomorrow").
+Keep replies concise, friendly, and helpful. Use formatting, bolds, and bullet points.`;
 
     const groqKeys = [
         process.env.GROQ_API_KEY,
@@ -2342,7 +2290,54 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
         simulatedNote = `\n\n*(💡 Groq Cloud AI limit reached or connection failed. Automatically cycled through all 4 available backup models (Llama 3.3, Llama 3.1 8B, Gemma 2, Mixtral) and fell back to ultra-fast CCS Local AI Mode to process your request without interruption!)*`;
     }
 
-    if (lastUserMsg.includes('reserve') || lastUserMsg.includes('reservation') || lastUserMsg.includes('book')) {
+    if (lastUserMsg.includes('cancel') || lastUserMsg.includes('delete') || lastUserMsg.includes('remove') || lastUserMsg.includes('cancle') || lastUserMsg.includes('cancellation')) {
+        // Try to parse an integer ID from the user's message
+        const idMatch = lastUserMsg.match(/(?:id|#)?\s*(\d+)/i);
+        let targetId = idMatch ? parseInt(idMatch[1]) : null;
+
+        // If no explicit ID is provided, but they asked to cancel "latest", "last", "newest"
+        if (!targetId && (lastUserMsg.includes('latest') || lastUserMsg.includes('last') || lastUserMsg.includes('newest') || lastUserMsg.includes('recent') || lastUserMsg.includes('cancel my latest'))) {
+            if (studentReservations.length > 0) {
+                const pendingRes = studentReservations.filter(r => r.status.toUpperCase() === 'PENDING' || r.status.toUpperCase() === 'APPROVED');
+                if (pendingRes.length > 0) {
+                    targetId = pendingRes[pendingRes.length - 1].id;
+                } else {
+                    targetId = studentReservations[studentReservations.length - 1].id;
+                }
+            }
+        }
+
+        if (targetId) {
+            const foundRes = studentReservations.find(r => r.id === targetId);
+            if (foundRes) {
+                reply = `### 📅 Conversational Reservation Cancellation
+I found your reservation under **Reservation ID #${targetId}** for **${foundRes.lab}** (PC: **${foundRes.pcNumber || 'Any'}**) on **${foundRes.reservationDate}** at **${foundRes.reservationTime}**. 
+
+I am processing the cancellation request for you right now!
+\n\n[[CANCEL_RESERVE:{"id":${targetId}}]]`;
+            } else {
+                reply = `### 📅 Reservation Cancellation
+I couldn't find a matching active reservation with **ID #${targetId}** in your records. 
+
+Please check your active reservations list by asking me for "my reservations" and provide the correct ID!`;
+            }
+        } else {
+            reply = `### 📅 Reservation Cancellation Request
+Which reservation would you like to cancel? Please provide the Reservation ID (e.g. *"Cancel reservation #12"*). 
+
+Here is your current reservations list to help you find the ID:
+${studentReservations.length > 0 
+    ? studentReservations.map(r => `* **[Reservation ID: ${r.id}]** ${r.lab} (PC: **${r.pcNumber || 'Any'}**) — **${r.status.toUpperCase()}**`).join('\n')
+    : "* You have no active reservations recorded."}`;
+        }
+    } else if (lastUserMsg.includes('history') || lastUserMsg.includes('registry') || lastUserMsg.includes('previous') || lastUserMsg.includes('previews') || lastUserMsg.includes('my reservations') || lastUserMsg.includes('show my reservation') || lastUserMsg.includes('show my resevation') || lastUserMsg.includes('list my') || (lastUserMsg.includes('reservation') && (lastUserMsg.includes('my') || lastUserMsg.includes('show') || lastUserMsg.includes('history') || lastUserMsg.includes('resevation')))) {
+        const rList = studentReservations.length > 0 
+            ? studentReservations.map((r, i) => `* **#${i + 1}** [Reservation ID: ${r.id}] ${r.lab} (PC: **${r.pcNumber || 'Any'}**) for *${r.purpose}* on **${r.reservationDate}** at **${r.reservationTime}** (Status: \`${r.status.toUpperCase()}\`)`).join('\n')
+            : "* You have no current or previous reservations recorded in the database.";
+        reply = `### 📅 Your Sit-in Reservations Registry
+Here are your active reservations retrieved straight from the CCS Sit-in database:
+${rList}`;
+    } else if (lastUserMsg.includes('reserve') || lastUserMsg.includes('reservation') || lastUserMsg.includes('resevation') || lastUserMsg.includes('booking') || lastUserMsg.includes('book')) {
         // Simple slot parsing from user message history
         let parsedLab = "";
         let parsedPcNumber = "";
@@ -2469,7 +2464,7 @@ Here are your active session details retrieved straight from the CCS Sit-in data
 
 #### 🥇 Leaderboard Top 3 Standings:
 ${leaderboard.length > 0 ? leaderboard.map((s, i) => `* **#${i + 1}** ${s.firstName} ${s.lastName} — **${s.points}** points`).join('\n') : "* No standings recorded yet."}`;
-    } else if (lastUserMsg.includes('reservation') || lastUserMsg.includes('booking') || lastUserMsg.includes('schedule') || lastUserMsg.includes('previous') || lastUserMsg.includes('previews')) {
+    } else if (lastUserMsg.includes('reservation') || lastUserMsg.includes('resevation') || lastUserMsg.includes('booking') || lastUserMsg.includes('schedule') || lastUserMsg.includes('previous') || lastUserMsg.includes('previews') || lastUserMsg.includes('history') || lastUserMsg.includes('registry') || lastUserMsg.includes('list') || lastUserMsg.includes('show') || lastUserMsg.includes('my')) {
         const rList = studentReservations.length > 0 
             ? studentReservations.map((r, i) => `* **#${i + 1}** [Reservation ID: ${r.id}] ${r.lab} (PC: **${r.pcNumber || 'Any'}**) for *${r.purpose}* on **${r.reservationDate}** at **${r.reservationTime}** (Status: \`${r.status.toUpperCase()}\`)`).join('\n')
             : "* You have no current or previous reservations recorded in the database.";
