@@ -113,7 +113,7 @@
         
         <!-- Left Side: Automated Recommendations Feed (4 Cols) -->
         <div class="lg:col-span-4 flex flex-col gap-6">
-            <div class="card bg-base-100/50 backdrop-blur-md border border-base-content/5 shadow-sm rounded-3xl">
+            <div class="card bg-base-100 shadow-sm rounded-3xl">
                 <div class="card-body p-6">
                     <h2 class="text-xs opacity-50 font-black tracking-widest uppercase mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles text-primary animate-pulse"></i> Smart Suggestions
@@ -132,10 +132,10 @@
 
         <!-- Right Side: Interactive AI Chatbox Container (8 Cols) -->
         <div class="lg:col-span-8 flex flex-col">
-            <div class="card bg-base-100/70 backdrop-blur-xl border border-base-content/5 shadow-lg rounded-3xl flex flex-col h-[650px] overflow-hidden">
+            <div class="card bg-base-100 shadow-sm rounded-3xl flex flex-col h-[650px] overflow-hidden">
                 
                 <!-- Chat Window Top Bar -->
-                <div class="px-6 py-4 bg-base-200/50 border-b border-base-content/5 flex items-center justify-between shrink-0">
+                <div class="px-6 py-4 bg-base-200/50 flex items-center justify-between shrink-0">
                     <div class="flex items-center gap-4">
                         <div class="relative">
                             <div class="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
@@ -171,13 +171,13 @@
                         </p>
                         
                         <div class="w-full flex flex-col gap-2">
-                            <button onclick="sendQuickPrompt('What software is installed in Lab 536?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                            <button onclick="sendQuickPrompt('What software is installed in Lab 536?')" class="btn btn-sm btn-ghost bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
                                 <i class="fa-solid fa-magnifying-glass opacity-50 mr-2 text-primary"></i> What software is in Lab 536?
                             </button>
-                            <button onclick="sendQuickPrompt('What are the computer lab rules?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                            <button onclick="sendQuickPrompt('What are the computer lab rules?')" class="btn btn-sm btn-ghost bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
                                 <i class="fa-solid fa-scale-balanced opacity-50 mr-2 text-secondary"></i> What are the computer lab rules?
                             </button>
-                            <button onclick="sendQuickPrompt('How do I earn points and manage my sessions?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                            <button onclick="sendQuickPrompt('How do I earn points and manage my sessions?')" class="btn btn-sm btn-ghost bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
                                 <i class="fa-solid fa-clock-rotate-left opacity-50 mr-2 text-accent"></i> How do I earn points & sessions?
                             </button>
                         </div>
@@ -185,7 +185,7 @@
                 </div>
 
                 <!-- Active Typing Loader Dot Pulse (Hidden by default) -->
-                <div id="chatLoader" class="px-6 py-3 bg-base-200/20 border-t border-base-content/5 flex items-center gap-3 hidden">
+                <div id="chatLoader" class="px-6 py-3 bg-base-200/20 flex items-center gap-3 hidden">
                     <div class="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
                         <i class="fa-solid fa-robot text-sm animate-spin"></i>
                     </div>
@@ -200,9 +200,9 @@
                 </div>
 
                 <!-- Chat Input Tray -->
-                <div class="p-4 bg-base-200/50 border-t border-base-content/5 shrink-0">
+                <div class="p-4 bg-base-200/50 shrink-0">
                     <form onsubmit="submitMessage(event)" class="flex gap-3">
-                        <input type="text" id="chatInput" placeholder="Ask your lab assistant a question..." class="input input-bordered flex-1 rounded-2xl bg-base-100 border-base-content/5 focus:border-primary font-bold text-sm shadow-inner transition-all duration-300" autocomplete="off" />
+                        <input type="text" id="chatInput" placeholder="Ask your lab assistant a question..." class="input input-bordered flex-1 rounded-2xl bg-base-100 border-none focus:border-primary font-bold text-sm shadow-inner transition-all duration-300" autocomplete="off" />
                         <button type="submit" class="btn btn-primary rounded-2xl font-black italic uppercase px-6">
                             Send <i class="fa-solid fa-paper-plane ml-1.5"></i>
                         </button>
@@ -302,11 +302,11 @@ async function loadRecommendations() {
         const data = await res.json();
         const container = document.getElementById("recommendations");
         const typeColors = {
-            lab: "text-primary border-primary/10 bg-primary/5",
-            purpose: "text-secondary border-secondary/10 bg-secondary/5",
-            lab_habit: "text-accent border-accent/10 bg-accent/5",
-            welcome: "text-info border-info/10 bg-info/5",
-            time: "text-warning border-warning/10 bg-warning/5"
+            lab: "text-primary bg-primary/10",
+            purpose: "text-secondary bg-secondary/10",
+            lab_habit: "text-accent bg-accent/10",
+            welcome: "text-info bg-info/10",
+            time: "text-warning bg-warning/10"
         };
         const typeIcons = {
             lab: "fa-computer",
@@ -326,14 +326,14 @@ async function loadRecommendations() {
         }
 
         container.innerHTML = data.map(rec => `
-            <div class="card border ${typeColors[rec.type] || typeColors.welcome} shadow-sm rounded-2xl overflow-hidden">
+            <div class="card ${typeColors[rec.type] || typeColors.welcome} shadow-sm rounded-2xl overflow-hidden">
                 <div class="card-body p-4 flex flex-row items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-base-content/5 flex items-center justify-center shrink-0">
                         <i class="fa-solid ${rec.icon || typeIcons[rec.type]} text-lg"></i>
                     </div>
                     <div>
                         <h3 class="text-xs font-black uppercase italic tracking-tight">${rec.title}</h3>
-                        <p class="text-[10px] opacity-70 mt-0.5 leading-relaxed font-bold">${rec.description}</p>
+                        <p class="text-[10px] opacity-75 mt-0.5 leading-relaxed font-bold">${rec.description}</p>
                     </div>
                 </div>
             </div>
@@ -381,13 +381,13 @@ function clearChat() {
                 Hello! I am your AI assistant for the College of Computer Studies. Ask me anything about pre-installed software, rules, schedules, points, or session balances!
             </p>
             <div class="w-full flex flex-col gap-2">
-                <button onclick="sendQuickPrompt('What software is installed in Lab 536?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                <button onclick="sendQuickPrompt('What software is installed in Lab 536?')" class="btn btn-sm btn-ghost bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
                     <i class="fa-solid fa-magnifying-glass opacity-50 mr-2 text-primary"></i> What software is in Lab 536?
                 </button>
-                <button onclick="sendQuickPrompt('What are the computer lab rules?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                <button onclick="sendQuickPrompt('What are the computer lab rules?')" class="btn btn-sm btn-ghost bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
                     <i class="fa-solid fa-scale-balanced opacity-50 mr-2 text-secondary"></i> What are the computer lab rules?
                 </button>
-                <button onclick="sendQuickPrompt('How do I earn points and manage my sessions?')" class="btn btn-sm btn-ghost border border-base-content/5 bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
+                <button onclick="sendQuickPrompt('How do I earn points and manage my sessions?')" class="btn btn-sm btn-ghost bg-base-200/30 hover:bg-base-200/80 rounded-2xl text-left justify-start font-bold text-xs p-3">
                     <i class="fa-solid fa-clock-rotate-left opacity-50 mr-2 text-accent"></i> How do I earn points & sessions?
                 </button>
             </div>
@@ -425,7 +425,7 @@ function renderMessage(role, text) {
 
     const bubbleClass = isUser 
         ? "bg-primary text-primary-content rounded-2xl rounded-tr-none font-bold" 
-        : "bg-base-200 border border-base-content/5 text-base-content rounded-2xl rounded-tl-none font-semibold leading-relaxed";
+        : "bg-base-200 text-base-content rounded-2xl rounded-tl-none font-semibold leading-relaxed";
 
     const alignClass = isUser ? "chat chat-end" : "chat chat-start";
     
@@ -443,7 +443,7 @@ function renderMessage(role, text) {
     const messageHtml = `
         <div class="${alignClass} animate-in slide-in-from-bottom duration-300">
             <div class="chat-image avatar">
-                <div class="w-8 h-8 rounded-xl bg-base-content/5 p-1 border border-base-content/10">
+                <div class="w-8 h-8 rounded-xl bg-base-content/5 p-1">
                     <img src="${avatarImg}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=CCS'" class="w-full h-full object-contain" />
                 </div>
             </div>
@@ -452,7 +452,7 @@ function renderMessage(role, text) {
                 ${formattedText}
                 
                 ${reservationPayload ? `
-                    <div id="${transactionId}" class="mt-4 p-3 border rounded-xl bg-base-100 border-base-content/10 animate-pulse text-xs flex flex-col gap-2">
+                    <div id="${transactionId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
                         <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
                             <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
                         </div>
