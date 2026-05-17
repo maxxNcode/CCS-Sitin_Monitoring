@@ -1904,7 +1904,7 @@ app.get('/api/ai-recommendations', checkAuth, async (req, res) => {
     const idNumber = req.session.idNumber;
 
     try {
-        const [history, activeLabs, labRows] = await Promise.all([
+        const [history, activeLabs, labRows, studentRow, nextRankRow] = await Promise.all([
             db.allAsync(`
                 SELECT lab, purpose, COUNT(*) as frequency
                 FROM student_history
@@ -1919,7 +1919,9 @@ app.get('/api/ai-recommendations', checkAuth, async (req, res) => {
                 WHERE status = 'Active'
                 GROUP BY lab
             `),
-            db.allAsync('SELECT value FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order', ['lab'])
+            db.allAsync('SELECT value FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order', ['lab']),
+            db.getAsync('SELECT points FROM students WHERE idNumber = ?', [idNumber]),
+            db.getAsync('SELECT points FROM students WHERE points > (SELECT points FROM students WHERE idNumber = ?) ORDER BY points ASC LIMIT 1')
         ]);
 
         const recommendations = [];
@@ -1971,6 +1973,18 @@ app.get('/api/ai-recommendations', checkAuth, async (req, res) => {
                 icon: 'fa-hand-sparkles'
             });
         }
+
+        // Leaderboard Challenge Card
+        const currentPoints = (studentRow || {}).points || 0;
+        const targetPoints = (nextRankRow || {}).points || (currentPoints + 10);
+        const pointsDiff = Math.max(10, targetPoints - currentPoints);
+
+        recommendations.push({
+            type: 'challenge',
+            title: `Boost Your Rank!`,
+            description: `You are only ${pointsDiff} points away from overtaking the next student in the standings! Attend a sit-in session today to claim your lead.`,
+            icon: 'fa-trophy'
+        });
 
         // Time-based recommendation
         const hour = new Date().getHours();
