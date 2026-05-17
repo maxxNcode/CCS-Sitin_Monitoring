@@ -2327,33 +2327,58 @@ Keep replies concise, friendly, and helpful. Use formatting, bolds, and bullet p
     }
 
     if (lastUserMsg.includes('cancel') || lastUserMsg.includes('delete') || lastUserMsg.includes('remove') || lastUserMsg.includes('cancle') || lastUserMsg.includes('cancellation')) {
-        // Try to parse an integer ID from the user's message
-        const idMatch = lastUserMsg.match(/(?:id|#)?\s*(\d+)/i);
-        let targetId = idMatch ? parseInt(idMatch[1]) : null;
+        // Try to parse all integer IDs from the user's message
+        const idMatches = [...lastUserMsg.matchAll(/(?:id|#)?\s*(\d+)/gi)];
+        let targetIds = idMatches.map(m => parseInt(m[1]));
 
         // If no explicit ID is provided, but they asked to cancel "latest", "last", "newest"
-        if (!targetId && (lastUserMsg.includes('latest') || lastUserMsg.includes('last') || lastUserMsg.includes('newest') || lastUserMsg.includes('recent') || lastUserMsg.includes('cancel my latest'))) {
+        if (targetIds.length === 0 && (lastUserMsg.includes('latest') || lastUserMsg.includes('last') || lastUserMsg.includes('newest') || lastUserMsg.includes('recent') || lastUserMsg.includes('cancel my latest'))) {
             if (studentReservations.length > 0) {
                 const pendingRes = studentReservations.filter(r => r.status.toUpperCase() === 'PENDING' || r.status.toUpperCase() === 'APPROVED');
                 if (pendingRes.length > 0) {
-                    targetId = pendingRes[pendingRes.length - 1].id;
+                    targetIds.push(pendingRes[pendingRes.length - 1].id);
                 } else {
-                    targetId = studentReservations[studentReservations.length - 1].id;
+                    targetIds.push(studentReservations[studentReservations.length - 1].id);
                 }
             }
         }
 
-        if (targetId) {
-            const foundRes = studentReservations.find(r => r.id === targetId);
-            if (foundRes) {
-                reply = `### 📅 Conversational Reservation Cancellation
-I found your reservation under **Reservation ID #${targetId}** for **${foundRes.lab}** (PC: **${foundRes.pcNumber || 'Any'}**) on **${foundRes.reservationDate}** at **${foundRes.reservationTime}**. 
+        // If they ask to cancel "both", "all", "two", or general "bookings" and we have pending reservations
+        if (targetIds.length === 0 && (lastUserMsg.includes('both') || lastUserMsg.includes('all') || lastUserMsg.includes('two') || lastUserMsg.includes('bookings') || lastUserMsg.includes('reservations'))) {
+            const pendingRes = studentReservations.filter(r => r.status.toUpperCase() === 'PENDING' || r.status.toUpperCase() === 'APPROVED');
+            if (pendingRes.length > 0) {
+                pendingRes.forEach(r => targetIds.push(r.id));
+            }
+        }
 
-I am processing the cancellation request for you right now!
-\n\n[[CANCEL_RESERVE:{"id":${targetId}}]]`;
+        if (targetIds.length > 0) {
+            let foundReplies = [];
+            let notFoundReplies = [];
+            let triggerTags = "";
+
+            targetIds.forEach(targetId => {
+                const foundRes = studentReservations.find(r => r.id === targetId);
+                if (foundRes) {
+                    foundReplies.push(`* **Reservation ID #${targetId}** for **${foundRes.lab}** (PC: **${foundRes.pcNumber || 'Any'}**) on **${foundRes.reservationDate}** at **${foundRes.reservationTime}**`);
+                    triggerTags += `[[CANCEL_RESERVE:{"id":${targetId}}]]`;
+                } else {
+                    notFoundReplies.push(targetId);
+                }
+            });
+
+            if (foundReplies.length > 0) {
+                reply = `### 📅 Conversational Reservation Cancellation
+I found the following reservation(s) to cancel:
+${foundReplies.join('\n')}
+
+I am processing the cancellation request(s) for you right now!`;
+                if (notFoundReplies.length > 0) {
+                    reply += `\n\n*(Note: Could not find Reservation ID(s): ${notFoundReplies.join(', ')} in your active records)*`;
+                }
+                reply += `\n\n${triggerTags}`;
             } else {
                 reply = `### 📅 Reservation Cancellation
-I couldn't find a matching active reservation with **ID #${targetId}** in your records. 
+I couldn't find any matching active reservations with **ID(s) #${targetIds.join(', ')}** in your records. 
 
 Please check your active reservations list by asking me for "my reservations" and provide the correct ID!`;
             }

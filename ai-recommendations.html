@@ -457,31 +457,40 @@ function renderMessage(role, text, isHistory = false) {
     const isUser = role === "user";
     
     // Check for Reservation trigger block inside assistant's response
-    let reservationPayload = null;
-    let cancelPayload = null;
+    let reservationPayloads = [];
+    let cancelPayloads = [];
     let cleanText = text;
 
     if (!isUser) {
         if (text.includes("[[RESERVE:")) {
-            const match = text.match(/\[\[RESERVE:(\{.*?\})\]\]/);
-            if (match) {
+            const matches = [...text.matchAll(/\[\[RESERVE:(\{.*?\})\]\]/g)];
+            for (const match of matches) {
                 try {
-                    reservationPayload = JSON.parse(match[1]);
-                    cleanText = text.replace(/\[\[RESERVE:(\{.*?\})\]\]/, "").trim();
+                    reservationPayloads.push(JSON.parse(match[1]));
                 } catch (e) {
                     console.error("Failed to parse AI reservation trigger JSON:", e);
                 }
             }
-        } else if (text.includes("[[CANCEL_RESERVE:")) {
-            const match = text.match(/\[\[CANCEL_RESERVE:(\{.*?\})\]\]/);
-            if (match) {
+            cleanText = text.replace(/\[\[RESERVE:(\{.*?\})\]\]/g, "").trim();
+        }
+        
+        if (text.includes("[[CANCEL_RESERVE:")) {
+            const matches = [...text.matchAll(/\[\[CANCEL_RESERVE:(\{.*?\})\]\]/g)];
+            for (const match of matches) {
                 try {
-                    cancelPayload = JSON.parse(match[1]);
-                    cleanText = text.replace(/\[\[CANCEL_RESERVE:(\{.*?\})\]\]/, "").trim();
+                    const parsed = JSON.parse(match[1]);
+                    if (parsed.ids && Array.isArray(parsed.ids)) {
+                        parsed.ids.forEach(id => cancelPayloads.push({ id }));
+                    } else if (parsed.id && Array.isArray(parsed.id)) {
+                        parsed.id.forEach(id => cancelPayloads.push({ id }));
+                    } else if (parsed.id) {
+                        cancelPayloads.push(parsed);
+                    }
                 } catch (e) {
                     console.error("Failed to parse AI cancellation trigger JSON:", e);
                 }
             }
+            cleanText = text.replace(/\[\[CANCEL_RESERVE:(\{.*?\})\]\]/g, "").trim();
         }
     }
 
@@ -503,57 +512,63 @@ function renderMessage(role, text, isHistory = false) {
     const transactionId = "booking_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
 
     let cardHtml = "";
-    if (reservationPayload) {
-        if (isHistory) {
-            cardHtml = `
-                <div class="mt-4 p-3 rounded-xl bg-base-100/50 text-[10px] opacity-75 font-semibold text-base-content flex flex-col gap-1 border border-base-content/5">
-                    <div class="text-success font-black uppercase tracking-wider text-[9px] flex items-center gap-1">
-                        <i class="fa-solid fa-circle-check"></i> Conversational Booking Handled
+    if (reservationPayloads.length > 0) {
+        reservationPayloads.forEach((payload, index) => {
+            const currentTxId = `${transactionId}_res_${index}`;
+            if (isHistory) {
+                cardHtml += `
+                    <div class="mt-4 p-3 rounded-xl bg-base-100/50 text-[10px] opacity-75 font-semibold text-base-content flex flex-col gap-1 border border-base-content/5">
+                        <div class="text-success font-black uppercase tracking-wider text-[9px] flex items-center gap-1">
+                            <i class="fa-solid fa-circle-check"></i> Conversational Booking Handled
+                        </div>
+                        <div>
+                            Reservation requested for <strong>${payload.lab}</strong> (PC: <strong>${payload.pcNumber || 'Any'}</strong>) on <strong>${payload.date}</strong> at <strong>${payload.time}</strong>.
+                        </div>
                     </div>
-                    <div>
-                        Reservation requested for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>.
+                `;
+            } else {
+                cardHtml += `
+                    <div id="${currentTxId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
+                        </div>
+                        <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                            Requesting booking for <strong>${payload.lab}</strong> (PC: <strong>${payload.pcNumber || 'Any'}</strong>) on <strong>${payload.date}</strong> at <strong>${payload.time}</strong>...
+                        </div>
                     </div>
-                </div>
-            `;
-        } else {
-            cardHtml = `
-                <div id="${transactionId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
-                    <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
-                        <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Reservation...
-                    </div>
-                    <div class="text-[10px] opacity-75 font-semibold text-base-content">
-                        Requesting booking for <strong>${reservationPayload.lab}</strong> (PC: <strong>${reservationPayload.pcNumber || 'Any'}</strong>) on <strong>${reservationPayload.date}</strong> at <strong>${reservationPayload.time}</strong>...
-                    </div>
-                </div>
-            `;
-        }
+                `;
+            }
+        });
     }
 
     let cancelCardHtml = "";
-    if (cancelPayload) {
-        if (isHistory) {
-            cancelCardHtml = `
-                <div class="mt-4 p-3 rounded-xl bg-base-100/50 text-[10px] opacity-75 font-semibold text-base-content flex flex-col gap-1 border border-base-content/5">
-                    <div class="text-error font-black uppercase tracking-wider text-[9px] flex items-center gap-1">
-                        <i class="fa-solid fa-circle-xmark"></i> Reservation Cancellation Handled
+    if (cancelPayloads.length > 0) {
+        cancelPayloads.forEach((payload, index) => {
+            const currentTxId = `${transactionId}_cancel_${index}`;
+            if (isHistory) {
+                cancelCardHtml += `
+                    <div class="mt-4 p-3 rounded-xl bg-base-100/50 text-[10px] opacity-75 font-semibold text-base-content flex flex-col gap-1 border border-base-content/5">
+                        <div class="text-error font-black uppercase tracking-wider text-[9px] flex items-center gap-1">
+                            <i class="fa-solid fa-circle-xmark"></i> Reservation Cancellation Handled
+                        </div>
+                        <div>
+                            Cancellation request executed for Reservation ID <strong>#${payload.id}</strong>.
+                        </div>
                     </div>
-                    <div>
-                        Cancellation request executed for Reservation ID <strong>#${cancelPayload.id}</strong>.
+                `;
+            } else {
+                cancelCardHtml += `
+                    <div id="${currentTxId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Cancellation...
+                        </div>
+                        <div class="text-[10px] opacity-75 font-semibold text-base-content">
+                            Requesting cancellation for Reservation ID <strong>#${payload.id}</strong>...
+                        </div>
                     </div>
-                </div>
-            `;
-        } else {
-            cancelCardHtml = `
-                <div id="${transactionId}" class="mt-4 p-3 rounded-xl bg-base-100 animate-pulse text-xs flex flex-col gap-2">
-                    <div class="flex items-center gap-2 text-warning font-bold uppercase tracking-wider text-[10px]">
-                        <i class="fa-solid fa-circle-notch animate-spin"></i> Processing Cancellation...
-                    </div>
-                    <div class="text-[10px] opacity-75 font-semibold text-base-content">
-                        Requesting cancellation for Reservation ID <strong>#${cancelPayload.id}</strong>...
-                    </div>
-                </div>
-            `;
-        }
+                `;
+            }
+        });
     }
 
     const messageHtml = `
@@ -575,11 +590,13 @@ function renderMessage(role, text, isHistory = false) {
     container.insertAdjacentHTML("beforeend", messageHtml);
     scrollToBottom();
 
-    if (reservationPayload && !isHistory) {
-        executeConversationalReservation(reservationPayload, transactionId);
-    }
-    if (cancelPayload && !isHistory) {
-        executeConversationalCancellation(cancelPayload, transactionId);
+    if (!isHistory) {
+        reservationPayloads.forEach((payload, index) => {
+            executeConversationalReservation(payload, `${transactionId}_res_${index}`);
+        });
+        cancelPayloads.forEach((payload, index) => {
+            executeConversationalCancellation(payload, `${transactionId}_cancel_${index}`);
+        });
     }
 }
 
