@@ -2110,16 +2110,65 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         ? studentReservations.map((r, i) => `${i + 1}. [Reservation ID: ${r.id}] ${r.lab} (PC: ${r.pcNumber || 'Any'}) for ${r.purpose} on ${r.reservationDate} at ${r.reservationTime} [Status: ${r.status}]`).join('\n') 
         : 'You have no current reservations recorded in the database.';
 
-    // Format dynamic system date and time for exact AI chronological context
+    // Format dynamic system date and time for exact AI chronological context (forced strictly to Philippines Time, GMT+8)
     const now = new Date();
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const dayName = days[now.getDay()];
-    const monthName = months[now.getMonth()];
-    const dateStr = `${dayName}, ${monthName} ${now.getDate()}, ${now.getFullYear()}`;
-    const time12Str = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const time24Str = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-    const isoDateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    let dateStr = "";
+    let isoDateStr = "";
+    let dayName = "";
+    let time12Str = "";
+    let time24Str = "";
+
+    try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Manila',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            weekday: 'long',
+            hour12: false
+        });
+        
+        const parts = formatter.formatToParts(now);
+        const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+        
+        dayName = partMap.weekday;
+        const monthNum = String(partMap.month).padStart(2, '0');
+        const dayNum = String(partMap.day).padStart(2, '0');
+        const yearNum = partMap.year;
+        
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthName = months[parseInt(partMap.month) - 1];
+        
+        dateStr = `${dayName}, ${monthName} ${partMap.day}, ${yearNum}`;
+        isoDateStr = `${yearNum}-${monthNum}-${dayNum}`;
+        
+        time12Str = now.toLocaleTimeString('en-US', {
+            timeZone: 'Asia/Manila',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+        
+        time24Str = now.toLocaleTimeString('en-US', {
+            timeZone: 'Asia/Manila',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    } catch (e) {
+        console.error("Intl timezone error, falling back to local system clock:", e);
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        dayName = days[now.getDay()];
+        const monthName = months[now.getMonth()];
+        dateStr = `${dayName}, ${monthName} ${now.getDate()}, ${now.getFullYear()}`;
+        time12Str = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        time24Str = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        isoDateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    }
 
     const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
 Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
