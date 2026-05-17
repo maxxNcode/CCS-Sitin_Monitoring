@@ -1197,6 +1197,23 @@ app.post('/api/student/reserve', checkAuth, (req, res) => {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
+        // Prevent database pollution from literal template placeholders in AI conversational booking
+        if (
+            lab === 'Lab name' || 
+            pcNumber === 'PC-XX' || 
+            purpose === 'Purpose' || 
+            date === 'YYYY-MM-DD' || 
+            time === 'HH:MM' ||
+            /actual/i.test(lab) ||
+            /actual/i.test(pcNumber) ||
+            /actual/i.test(purpose) ||
+            /actual/i.test(date) ||
+            /actual/i.test(time) ||
+            /placeholder/i.test(lab)
+        ) {
+            return res.status(400).json({ error: 'Invalid reservation details. Template placeholders detected.' });
+        }
+
         db.run(
             `INSERT INTO reservations (idNumber, studentName, lab, pcNumber, purpose, reservationDate, reservationTime) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [idNumber, studentName, lab, pcNumber || 'N/A', purpose, date, time],
@@ -1250,6 +1267,13 @@ app.post('/api/student/reservations/toggle-status', checkAuth, (req, res) => {
             
             db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', ['ADMIN', adminMsg, 'warning']);
             io.emit('notification:admin', { message: adminMsg, type: 'warning' });
+
+            // Create notification for student
+            const studentMsg = `You have successfully ${actionVerb} your reservation for ${row.lab} on ${row.reservationDate}.`;
+            const studentNotifType = newStatus === 'Cancelled' ? 'warning' : 'success';
+            db.run('INSERT INTO notifications (idNumber, message, type) VALUES (?, ?, ?)', [idNumber, studentMsg, studentNotifType]);
+            // Push via Socket.IO to the student's channel
+            io.emit('notification:student', { idNumber, message: studentMsg, type: studentNotifType });
 
             res.json({ 
                 success: true, 
@@ -2218,7 +2242,7 @@ ${softwareStr}
 4. LAB OCCUPANCY: ${labsList.map(lab => `${lab}: ${(activeLabs.find(a => a.lab === lab) || {}).current_count || 0} active`).join(', ')}.
 5. CONVERSATIONAL BOOKING:
    - To book, collect: lab (must be exactly one of: ${labsList.map(l => `'${l}'`).join(', ')}), pcNumber ('PC-01' to 'PC-30'), purpose (must be exactly one of: ${purposesList.map(p => `'${p}'`).join(', ')}), date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
-   - Once all 5 slots are collected, append EXACTLY at the end of your text response: [[RESERVE:{"lab":"Lab name","pcNumber":"PC-XX","purpose":"Purpose","date":"YYYY-MM-DD","time":"HH:MM"}]]
+   - Once all 5 slots are collected, append the reservation trigger tag using the student's chosen details EXACTLY at the end of your response: [[RESERVE:{"lab":"CHOSEN_LAB","pcNumber":"CHOSEN_PC","purpose":"CHOSEN_PURPOSE","date":"CHOSEN_DATE","time":"CHOSEN_TIME"}]] (Replace CHOSEN_LAB, CHOSEN_PC, CHOSEN_PURPOSE, CHOSEN_DATE, and CHOSEN_TIME with the student's actual confirmed details, e.g. [[RESERVE:{"lab":"Lab 524","pcNumber":"PC-13","purpose":"Capstone Project","date":"2026-05-20","time":"13:30"}]]). IMPORTANT: Do NOT output this trigger block or explain it if any slot values are missing or unconfirmed.
 6. CANCELLATION:
    - To cancel, read student's existing reservations (Section 7). Find matching reservation ID, confirm, and append EXACTLY at the end of response: [[CANCEL_RESERVE:{"id":ID}]] (Replace ID with integer).
 7. LIVE STUDENT DATA:
