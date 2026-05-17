@@ -2086,7 +2086,12 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
                 ORDER BY reservationDate ASC, reservationTime ASC
             `, [idNumber]),
             db.allAsync("SELECT value FROM dropdown_options WHERE category = 'lab' AND is_active = 1"),
-            db.allAsync("SELECT labName, softwareName, version FROM lab_softwares"),
+            db.allAsync(`
+                SELECT l.value AS labName, s.software_name AS softwareName
+                FROM lab_softwares s
+                JOIN dropdown_options l ON s.lab_id = l.id
+                WHERE l.category = 'lab' AND l.is_active = 1
+            `),
             db.allAsync("SELECT value FROM dropdown_options WHERE category = 'purpose' AND is_active = 1")
         ]);
 
@@ -2114,8 +2119,10 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
     });
     dbSoftwares.forEach(sw => {
         const lab = sw.labName;
-        const name = sw.softwareName;
-        if (softwareMap[lab]) {
+        const rawName = sw.softwareName || "";
+        // Strip out version info like "v1.87.0" or "v8.6.2" or "v2023.3.4"
+        const name = rawName.replace(/\s+v?\d+(\.\d+)*/i, '').replace(/\s+v\d+/i, '').trim();
+        if (softwareMap[lab] && !softwareMap[lab].includes(name)) {
             softwareMap[lab].push(name);
         }
     });
