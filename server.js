@@ -2061,9 +2061,10 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
     let totalStudents = 1;
     let leaderboard = [];
     let peakHours = [];
+    let studentReservations = [];
 
     try {
-        const [activeLabsRows, pointsRow, rankRow, totalRow, leaderboardRows, peakHoursRows] = await Promise.all([
+        const [activeLabsRows, pointsRow, rankRow, totalRow, leaderboardRows, peakHoursRows, reservationsRows] = await Promise.all([
             db.allAsync(`
                 SELECT lab, COUNT(*) as current_count
                 FROM sitin_records
@@ -2074,7 +2075,13 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
             db.getAsync('SELECT COUNT(*) + 1 as rank FROM users WHERE points > (SELECT points FROM users WHERE idNumber = ?)', [idNumber]),
             db.getAsync('SELECT COUNT(*) as totalStudents FROM users'),
             db.allAsync('SELECT firstName, lastName, points FROM users ORDER BY points DESC LIMIT 3'),
-            db.allAsync("SELECT strftime('%H', loginTime) as hour, COUNT(*) as count FROM student_history GROUP BY hour ORDER BY count DESC LIMIT 3")
+            db.allAsync("SELECT strftime('%H', loginTime) as hour, COUNT(*) as count FROM student_history GROUP BY hour ORDER BY count DESC LIMIT 3"),
+            db.allAsync(`
+                SELECT lab, pcNumber, purpose, reservationDate, reservationTime, status
+                FROM reservations
+                WHERE idNumber = ?
+                ORDER BY reservationDate ASC, reservationTime ASC
+            `, [idNumber])
         ]);
 
         activeLabs = activeLabsRows || [];
@@ -2083,6 +2090,7 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
         totalStudents = (totalRow || {}).totalStudents || 1;
         leaderboard = leaderboardRows || [];
         peakHours = peakHoursRows || [];
+        studentReservations = reservationsRows || [];
     } catch (err) {
         console.error("Failed to query dynamic DB context for AI:", err);
     }
@@ -2096,6 +2104,11 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
 
     // Format peak hours
     const peakHoursStr = peakHours.map(p => `${p.hour}:00 (${p.count} historical check-ins)`).join(', ');
+
+    // Format student reservations list
+    const reservationsStr = studentReservations.length > 0 
+        ? studentReservations.map((r, i) => `${i + 1}. ${r.lab} (PC: ${r.pcNumber || 'Any'}) for ${r.purpose} on ${r.reservationDate} at ${r.reservationTime} [Status: ${r.status}]`).join('\n') 
+        : 'You have no current reservations recorded in the database.';
 
     const systemPrompt = `You are the CCS Sit-in AI Assistant, a friendly, intelligent, and highly knowledgeable virtual guide for the College of Computer Studies (CCS) Sit-in Monitoring System.
 Your job is to assist computer science and IT students with queries about computer labs, schedules, rules, pre-installed software, and debugging programming questions.
@@ -2145,7 +2158,9 @@ Here is the exact truth and context about the CCS Laboratories:
     - Current Leaderboard Rank: Ranked #${studentRank} out of all ${totalStudents} students.
     - Overall Leaderboard Standings (Top 3): ${leaderboardStr || 'No data yet'}.
     - Total Registered Students Count: There are exactly ${totalStudents} students registered in the CCS Sit-in System.
-    - *Behavior*: If the student asks about their personal stats, points, sessions, rank, the top students on the leaderboard, or the total number of students in the system/database, read these exact variables and answer accurately.
+    - Student's Existing Reservations:
+      ${reservationsStr}
+    - *Behavior*: If the student asks about their previous, current, pending, or existing reservations, check this exact list and reply with their reservations details, status, lab, PC number, and date/time accurately!
 
 7. LABORATORY PEAK-HOURS ANALYSIS (HISTORICAL DATA):
    - Busiest Check-in Hours (Peak Hours): ${peakHoursStr || 'No data yet'}.
@@ -2382,6 +2397,13 @@ Here are your active session details retrieved straight from the CCS Sit-in data
 
 #### 🥇 Leaderboard Top 3 Standings:
 ${leaderboard.length > 0 ? leaderboard.map((s, i) => `* **#${i + 1}** ${s.firstName} ${s.lastName} — **${s.points}** points`).join('\n') : "* No standings recorded yet."}`;
+    } else if (lastUserMsg.includes('reservation') || lastUserMsg.includes('booking') || lastUserMsg.includes('schedule') || lastUserMsg.includes('previous') || lastUserMsg.includes('previews')) {
+        const rList = studentReservations.length > 0 
+            ? studentReservations.map((r, i) => `* **#${i + 1}** ${r.lab} (PC: **${r.pcNumber || 'Any'}**) for *${r.purpose}* on **${r.reservationDate}** at **${r.reservationTime}** (Status: \`${r.status.toUpperCase()}\`)`).join('\n')
+            : "* You have no current or previous reservations recorded in the database.";
+        reply = `### 📅 Your Sit-in Reservations Registry
+Here are your active reservations retrieved straight from the CCS Sit-in database:
+${rList}`;
     } else if (lastUserMsg.includes('busy') || lastUserMsg.includes('peak') || lastUserMsg.includes('best time') || lastUserMsg.includes('traffic') || lastUserMsg.includes('quiet') || lastUserMsg.includes('optimal') || lastUserMsg.includes('time')) {
         reply = `### 📊 AI Peak-Hours & Lab Optimizer (Big Data Analysis)
 Based on our database of historical check-in logs, here are the busiest laboratory check-in periods:
