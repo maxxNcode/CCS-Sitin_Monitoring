@@ -12,6 +12,14 @@
       "dest": "/assets/$1"
     },
     {
+      "src": "/notify.js",
+      "dest": "/public/notify.js"
+    },
+    {
+      "src": "/notification-client.js",
+      "dest": "/public/notification-client.js"
+    },
+    {
       "src": "/public/(.*)",
       "dest": "/public/$1"
     },
