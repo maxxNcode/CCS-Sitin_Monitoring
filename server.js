@@ -55,13 +55,19 @@ const PORT = process.env.PORT || 3000;
         seedDropdownOptions();
         seedAnnouncements();
 
-        // Start listening only when DB is fully ready
-        server.listen(PORT, () => {
-            console.log(`Server running at http://localhost:${PORT}`);
-        });
+        // Start listening only when DB is fully ready (skip server.listen on Vercel)
+        if (!process.env.VERCEL) {
+            server.listen(PORT, () => {
+                console.log(`Server running at http://localhost:${PORT}`);
+            });
+        } else {
+            console.log('Running in Vercel serverless environment. Database initialized successfully.');
+        }
     } catch (err) {
         console.error('Failed to initialize database:', err);
-        process.exit(1);
+        if (!process.env.VERCEL) {
+            process.exit(1);
+        }
     }
 })();
 
@@ -1937,6 +1943,8 @@ io.on('connection', (socket) => {
         console.log('Socket disconnected:', socket.id);
     });
 });
+
+module.exports = app;
 
 
 
