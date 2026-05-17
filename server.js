@@ -2057,12 +2057,13 @@ Here is the exact truth and context about the CCS Laboratories:
    - Lab 530 (Introductory & C/C++ Lab): Pre-installed with Quincy 2005 (v1.3), Code::Blocks (v20.03), Python (v3.12.2), Visual Studio Code (v1.87.0), Notepad++ (v8.6.2), and Git (v2.43.0).
    - Lab 536 (Database Management & Systems Design Lab): Pre-installed with Microsoft SQL Server Management Studio (v19.3), MySQL Workbench (v8.0.36), Visual Studio Code (v1.87.0), XAMPP (v8.2.12), pgAdmin 4 (v8.3), Visual Studio 2022 (v17.9.0), and Notepad++ (v8.6.2).
 
-2. CCS Laboratory Rules & Guidelines:
-   - Always wear the correct school uniform to enter the labs.
-   - Absolutely NO food, drinks, or chewing gum allowed inside the computer labs.
-   - Maintain silence and respect others who are studying or working.
-   - You are NOT allowed to download, install, or play games or browse unauthorized sites.
-   - Keep your workspace neat. Push your chair back into place when leaving.
+2. CCS Laboratory Rules & Guidelines (Official Dashboard Rules):
+   - Camaraderie & Decorum: Treat fellow students, instructors, and lab personnel with respect. Maintain proper decorum at all times and do not disrupt others.
+   - Silence & Discipline: Maintain silence and discipline inside the lab. Keep conversations to a minimum and at a low volume. Mobile phones/devices must be switched off or set to silent mode.
+   - Game Restrictions: Strictly NO games inside the laboratory (computer-related, card games, etc.). Entertainment/social media browsing should be limited to academic purposes only.
+   - Internet Usage Policy: Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.
+   - Equipment Care: Handle all computer equipment with care. Report malfunctioning units to the lab attendant immediately. Strictly NO food, drinks, or gum near the computers. Log off properly and push your chair in when leaving.
+   - Security & Privacy: Do not share login credentials. Log out of all accounts before leaving the lab. Do not attempt to access restricted systems or networks.
 
 3. Sit-in Sessions and Points Balance:
    - Every student starts with 30 sit-in sessions (1 session = 1 hour).
@@ -2223,13 +2224,14 @@ ${(count524 === 0 && count530 === 0 && count536 === 0)
   ? "All computer laboratories are currently **100% empty and available**! Feel free to start a sit-in session!" 
   : "Some computer laboratories are currently active. Check the sit-in system for reservation availability."}`;
     } else if (lastUserMsg.includes('rules') || lastUserMsg.includes('guideline') || lastUserMsg.includes('dress') || lastUserMsg.includes('uniform') || lastUserMsg.includes('food')) {
-        reply = `### 📜 CCS Laboratory Rules & Guidelines
-Here are the essential rules you must follow when using the laboratories:
-* **Uniform Policy:** You must wear your complete, proper school uniform to enter.
-* **No Food or Drinks:** Strictly NO food, beverages, water bottles, or chewing gum allowed at the computer desks.
-* **Games Forbidden:** Downloading, installing, or playing games is strictly prohibited.
-* **Silence & Respect:** Keep noise to a minimum to respect other students' sessions.
-* **Neat Workspaces:** Always leave your area clean and push in your chairs after logging out.`;
+        reply = `### 📜 CCS Official Laboratory Rules & Guidelines
+Here are the official rules from the student dashboard:
+* **Camaraderie & Decorum:** Treat fellow students, instructors, and lab personnel with respect. Maintain proper decorum at all times and do not disrupt others.
+* **Silence & Discipline:** Maintain silence and discipline. Keep conversations to a minimum and at low volume. Mobile devices must be switched off or set to silent mode.
+* **Game Restrictions:** Strictly NO games inside the laboratory (computer-related, card games, etc.). Entertainment/social media browsing is prohibited.
+* **Internet Usage Policy:** Surfing the Internet is allowed only with the permission of the instructor. Downloading and installing of software are strictly prohibited.
+* **Equipment Care:** Handle all computer equipment with care. Strictly NO food, drinks, or gum near the computers. Log off properly and push in your chair when leaving.
+* **Security & Privacy:** Do not share login credentials. Log out of all accounts before leaving the lab. Do not attempt to access restricted systems or networks.`;
     } else if (lastUserMsg.includes('524')) {
         reply = `### 🖥️ Lab 524 (Advanced Systems & Programming Lab)
 Lab 524 is optimized for advanced development and programming workflows. Here is the software currently installed:
