@@ -453,8 +453,8 @@ function renderMessage(role, text) {
     const messageHtml = `
         <div class="${alignClass} animate-in slide-in-from-bottom duration-300">
             <div class="chat-image avatar">
-                <div class="w-8 h-8 rounded-xl bg-base-content/5 p-1">
-                    <img src="${avatarImg}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=CCS'" class="w-full h-full object-contain" />
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-base-content/5">
+                    <img src="${avatarImg}" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=CCS'" class="w-full h-full object-cover" />
                 </div>
             </div>
             <div class="chat-header text-[10px] opacity-40 font-bold uppercase tracking-wider mb-1">${nameLabel}</div>
