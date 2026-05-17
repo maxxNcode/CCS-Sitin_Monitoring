@@ -1920,8 +1920,8 @@ app.get('/api/ai-recommendations', checkAuth, async (req, res) => {
                 GROUP BY lab
             `),
             db.allAsync('SELECT value FROM dropdown_options WHERE category = ? AND is_active = 1 ORDER BY sort_order', ['lab']),
-            db.getAsync('SELECT points FROM students WHERE idNumber = ?', [idNumber]),
-            db.getAsync('SELECT points FROM students WHERE points > (SELECT points FROM students WHERE idNumber = ?) ORDER BY points ASC LIMIT 1')
+            db.getAsync('SELECT points FROM users WHERE idNumber = ?', [idNumber]),
+            db.getAsync('SELECT points FROM users WHERE points > (SELECT points FROM users WHERE idNumber = ?) ORDER BY points ASC LIMIT 1')
         ]);
 
         const recommendations = [];
@@ -2062,9 +2062,9 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
                 WHERE status = 'Active'
                 GROUP BY lab
             `),
-            db.getAsync('SELECT points FROM students WHERE idNumber = ?', [idNumber]),
-            db.getAsync('SELECT COUNT(*) + 1 as rank FROM students WHERE points > (SELECT points FROM students WHERE idNumber = ?)', [idNumber]),
-            db.allAsync('SELECT firstName, lastName, points FROM students ORDER BY points DESC LIMIT 3'),
+            db.getAsync('SELECT points FROM users WHERE idNumber = ?', [idNumber]),
+            db.getAsync('SELECT COUNT(*) + 1 as rank FROM users WHERE points > (SELECT points FROM users WHERE idNumber = ?)', [idNumber]),
+            db.allAsync('SELECT firstName, lastName, points FROM users ORDER BY points DESC LIMIT 3'),
             db.allAsync("SELECT strftime('%H', loginTime) as hour, COUNT(*) as count FROM student_history GROUP BY hour ORDER BY count DESC LIMIT 3")
         ]);
 
