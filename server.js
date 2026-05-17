@@ -2023,7 +2023,7 @@ app.get('/api/ai/chat/history', checkAuth, async (req, res) => {
             SELECT role, content 
             FROM ai_chats 
             WHERE idNumber = ? 
-            ORDER BY created_at ASC 
+            ORDER BY id ASC 
             LIMIT 50
         `, [idNumber]);
         res.json({ success: true, history: rows || [] });
@@ -2250,9 +2250,9 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
             }
 
             if (successReply) {
-                // Save user message and reply to database asynchronously
-                db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
-                db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', successReply]);
+                // Save user message and reply to database sequentially
+                await db.runAsync('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
+                await db.runAsync('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', successReply]);
                 
                 return res.json({ success: true, reply: successReply });
             } else {
@@ -2472,8 +2472,8 @@ Please feel free to ask about specific labs, installed software (like VS Code, Q
     }
 
     const finalReply = reply + simulatedNote;
-    db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
-    db.run('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', finalReply]);
+    await db.runAsync('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'user', messages[messages.length - 1]?.content || '']);
+    await db.runAsync('INSERT INTO ai_chats (idNumber, role, content) VALUES (?, ?, ?)', [req.session.idNumber, 'assistant', finalReply]);
 
     res.json({ success: true, reply: finalReply });
 });
