@@ -1393,7 +1393,7 @@ app.post('/api/admin/register', (req, res) => {
 // Logout route
 app.post('/logout', (req, res) => {
     req.session = null; // Clear cookie-session
-    res.json({ success: true, message: 'Logged out successfully', redirectUrl: '/login' });
+    res.json({ success: true, message: 'Logged out successfully', redirectUrl: '/login?logout=success' });
 });
 
 // Check session route

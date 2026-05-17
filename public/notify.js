@@ -165,3 +165,18 @@ function showConfirm(title, message, onConfirm) {
         if (onConfirm) onConfirm();
     });
 }
+
+// Global hook to show beautiful logout success modal automatically
+document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("logout") === "success") {
+        // Clean URL query parameters so it does not pop up again on refresh
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        // Show success modal
+        setTimeout(() => {
+            showSuccessModal("Logout Successful", "You have successfully logged out of your session.", null, 4);
+        }, 200);
+    }
+});
