@@ -257,8 +257,18 @@ window.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "/login"; 
             } else {
                 userSessionInfo = data;
-                // Fetch AI chat history
-                loadChatHistory();
+                // Fetch fresh student info to get the exact database profilePic!
+                fetch("/api/studentinfo")
+                    .then(r => r.json())
+                    .then(info => {
+                        if (info && info.profilePic) {
+                            userSessionInfo.profilePic = info.profilePic;
+                        }
+                        loadChatHistory();
+                    })
+                    .catch(() => {
+                        loadChatHistory();
+                    });
             }
         })
         .catch(() => window.location.href = "/login");
