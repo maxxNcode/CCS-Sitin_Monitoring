@@ -2030,7 +2030,7 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'llama-3.3-70b-specdec',
+                    model: 'llama-3.3-70b-versatile',
                     messages: groqMessages,
                     temperature: 0.7,
                     max_tokens: 800
@@ -2042,12 +2042,20 @@ Always respond in a helpful, encouraging, and tech-savvy tone. Use formatting li
                 const reply = data.choices?.[0]?.message?.content || "I couldn't process that response. Please try again.";
                 return res.json({ success: true, reply });
             } else {
-                console.error("Groq API error response status:", response.status);
-                throw new Error(`Groq API responded with status ${response.status}`);
+                const errData = await response.json().catch(() => ({}));
+                console.error("Groq API error response status:", response.status, errData);
+                const errMsg = errData.error?.message || `Groq API responded with status ${response.status}`;
+                return res.json({ 
+                    success: true, 
+                    reply: `⚠️ **Groq API Error (${response.status}):** ${errMsg}\n\n*(Please check your Groq API Key and account settings on console.groq.com)*` 
+                });
             }
         } catch (err) {
             console.error("Failed to query Groq AI:", err);
-            // Fall through to simulated mode if API fails
+            return res.json({ 
+                success: true, 
+                reply: `⚠️ **Connection Error:** Failed to connect to Groq AI servers: ${err.message}` 
+            });
         }
     }
 
