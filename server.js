@@ -677,7 +677,7 @@ app.post('/login', (req, res) => {
                 req.session.firstName = admin.firstName;
                 req.session.lastName = admin.lastName;
                 req.session.middleName = admin.middleName;
-                req.session.profilePic = admin.profilePic;
+                req.session.profilePic = admin.profilePic && admin.profilePic.startsWith('data:') ? 'uploaded' : admin.profilePic;
                 req.session.role = 'admin';
 
                 return res.json({ 
@@ -705,7 +705,7 @@ app.post('/login', (req, res) => {
                     req.session.firstName = user.firstName;
                     req.session.lastName = user.lastName;
                     req.session.middleName = user.middleName;
-                    req.session.profilePic = user.profilePic;
+                    req.session.profilePic = user.profilePic && user.profilePic.startsWith('data:') ? 'uploaded' : user.profilePic;
                     req.session.role = 'student';
 
                     return res.json({ 
@@ -803,14 +803,14 @@ app.post('/api/update-profile', upload.single('profileImage'), async (req, res) 
                 [firstName, lastName, middleName, email, finalProfilePic, userId]);
             req.session.firstName = firstName;
             req.session.lastName = lastName;
-            req.session.profilePic = finalProfilePic;
+            req.session.profilePic = finalProfilePic && finalProfilePic.startsWith('data:') ? 'uploaded' : finalProfilePic;
             res.json({ success: true, profilePic: finalProfilePic });
         } else {
             await db.runAsync(`UPDATE users SET firstName = ?, lastName = ?, middleName = ?, email = ?, course = ?, courseLevel = ?, address = ?, profilePic = ? WHERE id = ?`,
                 [firstName, lastName, middleName, email, course, courseLevel, address, finalProfilePic, userId]);
             req.session.firstName = firstName;
             req.session.lastName = lastName;
-            req.session.profilePic = finalProfilePic;
+            req.session.profilePic = finalProfilePic && finalProfilePic.startsWith('data:') ? 'uploaded' : finalProfilePic;
 
             // Notify admin that a student updated their profile
             const adminMsg = `${firstName} ${lastName} (${req.session.idNumber}) has updated their profile.`;
@@ -1426,7 +1426,7 @@ app.get('/check-session', (req, res) => {
             lastName: req.session.lastName,
             middleName: req.session.middleName,
             role: req.session.role,
-            profilePic: req.session.profilePic
+            profilePic: req.session.profilePic === 'uploaded' ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky' : req.session.profilePic
         });
     } else {
         res.json({ loggedIn: false });
