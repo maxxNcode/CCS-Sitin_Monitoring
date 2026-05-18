@@ -1233,6 +1233,53 @@ app.post('/api/student/reserve', checkAuth, (req, res) => {
     });
 });
 
+// Student API: Fetch Occupied PCs for a specific laboratory, date, and time
+app.get('/api/student/occupied-pcs', checkAuth, (req, res) => {
+    const { lab, date, time } = req.query;
+
+    if (!lab || !date || !time) {
+        return res.status(400).json({ error: 'Laboratory, Date, and Time are required' });
+    }
+
+    // Query both active sit-ins and approved/pending reservations on that date & time
+    const reservationsQuery = `
+        SELECT pcNumber FROM reservations 
+        WHERE lab = ? AND reservationDate = ? AND reservationTime = ? AND status != 'Cancelled'
+    `;
+    const sitinsQuery = `
+        SELECT pcNumber FROM sitin_records 
+        WHERE lab = ? AND status = 'Active'
+    `;
+
+    db.all(reservationsQuery, [lab, date, time], (err, resRows) => {
+        if (err) {
+            console.error('Error fetching occupied reservations:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        db.all(sitinsQuery, [lab], (err, sitinRows) => {
+            if (err) {
+                console.error('Error fetching occupied sit-ins:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            const occupied = new Set();
+            resRows.forEach(row => {
+                if (row.pcNumber && row.pcNumber !== 'N/A' && row.pcNumber !== 'Any') {
+                    occupied.add(row.pcNumber);
+                }
+            });
+            sitinRows.forEach(row => {
+                if (row.pcNumber && row.pcNumber !== 'N/A' && row.pcNumber !== 'Any') {
+                    occupied.add(row.pcNumber);
+                }
+            });
+
+            res.json(Array.from(occupied));
+        });
+    });
+});
+
 // Student API: Fetch Reservations
 app.get('/api/student/reservations', checkAuth, (req, res) => {
     const idNumber = req.session.idNumber;

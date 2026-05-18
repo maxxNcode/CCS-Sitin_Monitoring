@@ -226,6 +226,19 @@
                                             </div>
                                         </div>
 
+                                        <div class="form-control">
+                                            <label class="label pt-0">
+                                                <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Preferred Workstation (PC Number)</span>
+                                            </label>
+                                            <div class="flex gap-3">
+                                                <input type="text" id="resPcNumber" class="input input-bordered flex-1 rounded-2xl bg-base-200 focus:border-primary transition-all font-bold" placeholder="Please select a workstation..." readonly required />
+                                                <button type="button" onclick="openPcSelectionModal()" class="btn btn-neutral rounded-2xl font-bold uppercase tracking-tight flex gap-2">
+                                                    <i class="fa-solid fa-computer-mouse text-primary"></i>
+                                                    Select PC
+                                                </button>
+                                            </div>
+                                        </div>
+
                                         <div class="pt-4">
                                             <button type="submit" id="submitBtn" class="btn btn-primary w-full rounded-2xl font-black italic uppercase tracking-tighter text-lg shadow-sm shadow-primary/20">
                                                 Submit Reservation Request
@@ -352,6 +365,7 @@
                             <tr class="hover:bg-base-200/30 transition-colors">
                                 <td class="pl-6">
                                     <div class="font-black text-sm uppercase italic">${r.lab}</div>
+                                    <div class="text-[10px] opacity-50 font-bold uppercase tracking-wider">PC: ${r.pcNumber || 'N/A'}</div>
                                 </td>
                                 <td>
                                     <div class="text-[11px] font-bold opacity-60">${r.purpose}</div>
@@ -463,6 +477,7 @@
                 e.preventDefault();
                 const formData = {
                     lab: document.getElementById('resLab').value,
+                    pcNumber: document.getElementById('resPcNumber').value,
                     purpose: document.getElementById('resPurpose').value,
                     date: document.getElementById('resDate').value,
                     time: document.getElementById('resTime').value
@@ -518,6 +533,139 @@
                 );
             }
 
+            let selectedPc = null;
+
+            function openPcSelectionModal() {
+                const lab = document.getElementById('resLab').value;
+                const date = document.getElementById('resDate').value;
+                const time = document.getElementById('resTime').value;
+
+                if (!lab || !date || !time) {
+                    showToast('Please select Laboratory Room, Date, and Time first!', 'warning');
+                    return;
+                }
+
+                document.getElementById('modalLabName').innerText = lab;
+                document.getElementById('selectedPcBadge').innerText = selectedPc ? `Selected: ${selectedPc}` : 'No PC Selected';
+                document.getElementById('confirmPcBtn').disabled = !selectedPc;
+
+                const modal = document.getElementById('pcModal');
+                modal.showModal();
+
+                // Fetch occupied PCs
+                fetchOccupiedPcs(lab, date, time);
+            }
+
+            function closePcSelectionModal() {
+                document.getElementById('pcModal').close();
+            }
+
+            async function fetchOccupiedPcs(lab, date, time) {
+                const grid = document.getElementById('pcLayoutGrid');
+                grid.innerHTML = `
+                    <div class="col-span-7 text-center py-12">
+                        <span class="loading loading-spinner loading-lg text-primary animate-spin"></span>
+                        <p class="text-[10px] font-black uppercase opacity-40 tracking-widest mt-2">Scanning Workstation Layout...</p>
+                    </div>
+                `;
+
+                try {
+                    const res = await fetch(`/api/student/occupied-pcs?lab=${encodeURIComponent(lab)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`);
+                    const occupiedPcs = await res.json();
+                    
+                    grid.innerHTML = '';
+                    selectedPc = document.getElementById('resPcNumber').value || null;
+
+                    // Generate 7 rows x 7 cols (49 PCs)
+                    for (let r = 1; r <= 7; r++) {
+                        for (let c = 1; c <= 7; c++) {
+                            const index = (r - 1) * 7 + c;
+                            const pcName = `PC-${index.toString().padStart(2, '0')}`;
+                            const isOccupied = occupiedPcs.includes(pcName);
+                            const isSelected = selectedPc === pcName;
+
+                            const cell = document.createElement('button');
+                            cell.type = 'button';
+                            cell.dataset.pc = pcName;
+
+                            // Custom interactive styling classes
+                            let classes = [
+                                'flex', 'flex-col', 'items-center', 'justify-center', 'p-3', 'rounded-2xl', 
+                                'transition-all', 'duration-300', 'border', 'aspect-square', 'gap-1.5'
+                            ];
+
+                            if (isOccupied) {
+                                classes.push('bg-error/15', 'border-error/25', 'text-error/70', 'cursor-not-allowed', 'pointer-events-none');
+                                cell.innerHTML = `
+                                    <i class="fa-solid fa-lock text-sm"></i>
+                                    <span class="text-[9px] font-black tracking-tight">${pcName}</span>
+                                `;
+                            } else if (isSelected) {
+                                classes.push('bg-primary', 'border-primary', 'text-primary-content', 'scale-105', 'shadow-md', 'shadow-primary/20', 'animate-pulse');
+                                cell.innerHTML = `
+                                    <i class="fa-solid fa-desktop text-sm"></i>
+                                    <span class="text-[9px] font-black tracking-tight">${pcName}</span>
+                                `;
+                            } else {
+                                classes.push('bg-success/5', 'border-success/15', 'text-success', 'hover:bg-success/15', 'hover:scale-105', 'hover:shadow-sm');
+                                cell.innerHTML = `
+                                    <i class="fa-solid fa-desktop text-sm"></i>
+                                    <span class="text-[9px] font-black tracking-tight">${pcName}</span>
+                                `;
+                                cell.addEventListener('click', () => selectPcCell(pcName));
+                            }
+
+                            cell.className = classes.join(' ');
+                            grid.appendChild(cell);
+                        }
+                    }
+
+                    updateModalConfirmState();
+
+                } catch (err) {
+                    console.error('Error fetching occupied PCs:', err);
+                    grid.innerHTML = `
+                        <div class="col-span-7 text-center py-6 text-error">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+                            <p class="text-xs font-bold">Failed to load laboratory workstation layout</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function selectPcCell(pcName) {
+                selectedPc = pcName;
+                document.getElementById('selectedPcBadge').innerText = `Selected: ${pcName}`;
+                
+                // Re-render grid to update active selected styling
+                const buttons = document.querySelectorAll('#pcLayoutGrid button');
+                buttons.forEach(btn => {
+                    const btnPcName = btn.dataset.pc;
+                    if (btn.classList.contains('cursor-not-allowed')) return; // skip occupied
+
+                    if (btnPcName === pcName) {
+                        btn.className = 'flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 border aspect-square gap-1.5 bg-primary border-primary text-primary-content scale-105 shadow-md shadow-primary/20 animate-pulse';
+                    } else {
+                        btn.className = 'flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 border aspect-square gap-1.5 bg-success/5 border-success/15 text-success hover:bg-success/15 hover:scale-105 hover:shadow-sm';
+                    }
+                });
+
+                updateModalConfirmState();
+            }
+
+            function updateModalConfirmState() {
+                const confirmBtn = document.getElementById('confirmPcBtn');
+                confirmBtn.disabled = !selectedPc;
+            }
+
+            function confirmPcSelection() {
+                if (selectedPc) {
+                    document.getElementById('resPcNumber').value = selectedPc;
+                    closePcSelectionModal();
+                    showToast(`PC Number ${selectedPc} Selected!`, 'success');
+                }
+            }
+
             function logout() {
                 fetch("/logout", { method: "POST" })
                     .then((r) => r.json())
@@ -526,5 +674,62 @@
                     });
             }
         </script>
+
+        <!-- PC Selection Modal -->
+        <dialog id="pcModal" class="modal modal-bottom sm:modal-middle">
+            <div class="modal-box max-w-4xl rounded-3xl border border-base-content/5 bg-base-100 shadow-2xl p-6 relative">
+                <!-- Close Button -->
+                <button onclick="closePcSelectionModal()" class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+
+                <!-- Modal Header -->
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <i class="fa-solid fa-desktop text-primary text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black uppercase italic tracking-tight">Interactive <span class="text-primary not-italic">PC Layout</span></h3>
+                        <p class="text-[10px] opacity-40 font-bold uppercase tracking-widest mt-0.5">Select an available workstation in <span id="modalLabName" class="text-primary">the laboratory</span></p>
+                    </div>
+                </div>
+
+                <!-- Legend & Status -->
+                <div class="flex flex-wrap gap-4 items-center justify-between p-4 bg-base-200/50 rounded-2xl mb-6 border border-base-content/5">
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded-md bg-success/20 border border-success/30 flex items-center justify-center"></span>
+                            <span class="text-xs font-bold uppercase opacity-60">Available</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded-md bg-error/20 border border-error/30 flex items-center justify-center"></span>
+                            <span class="text-xs font-bold uppercase opacity-60">Occupied</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded-md bg-primary border border-primary flex items-center justify-center animate-pulse"></span>
+                            <span class="text-xs font-bold uppercase opacity-60">Selected</span>
+                        </div>
+                    </div>
+                    <div class="badge badge-neutral font-black italic uppercase text-[10px] px-3 py-2" id="selectedPcBadge">No PC Selected</div>
+                </div>
+
+                <!-- PC Layout Board Container -->
+                <div class="p-6 bg-base-300/40 rounded-3xl border border-base-content/5 overflow-x-auto flex justify-center">
+                    <!-- The Grid (7 rows x 7 cols) -->
+                    <div class="grid grid-cols-7 gap-3 min-w-[500px] w-full max-w-[650px]" id="pcLayoutGrid">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="modal-action flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closePcSelectionModal()" class="btn btn-ghost rounded-xl font-bold uppercase">Cancel</button>
+                    <button type="button" id="confirmPcBtn" onclick="confirmPcSelection()" class="btn btn-primary rounded-xl font-black italic uppercase px-6" disabled>
+                        Confirm PC
+                        <i class="fa-solid fa-circle-check ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </dialog>
     </body>
 </html>
