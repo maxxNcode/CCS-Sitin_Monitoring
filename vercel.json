@@ -12,6 +12,10 @@
   ],
   "routes": [
     {
+      "src": "/robots.txt",
+      "dest": "/public/robots.txt"
+    },
+    {
       "src": "/index.html",
       "dest": "/public/index.html"
     },
