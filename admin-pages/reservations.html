@@ -279,6 +279,9 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Pagination Controls -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-base-content/5 bg-base-200/20" id="reservationsPagination">
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -342,6 +345,8 @@
             });
 
             let allReservations = [];
+            let reservationsPage = 1;
+            const reservationsPerPage = 10;
 
             async function fetchReservations() {
                 try {
@@ -354,6 +359,7 @@
             }
 
             function applyFilters() {
+                reservationsPage = 1;
                 const s = document.getElementById('searchInput').value.trim().toLowerCase();
                 const st = document.getElementById('statusFilter').value;
                 const d = document.getElementById('dateFilter').value;
@@ -366,9 +372,25 @@
             function renderReservations(data) {
                 const container = document.getElementById('reservations-list');
                 document.getElementById('results-count').innerText = data.length ? `${data.length} result${data.length !== 1 ? 's' : ''}` : '';
-                if (!data || data.length === 0) { container.innerHTML = `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">No reservations found</td></tr>`; return; }
+                
+                const totalItems = data.length;
+                const totalPages = Math.ceil(totalItems / reservationsPerPage) || 1;
+                
+                if (reservationsPage > totalPages) reservationsPage = totalPages;
+                if (reservationsPage < 1) reservationsPage = 1;
+
+                if (!data || data.length === 0) { 
+                    container.innerHTML = `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">No reservations found</td></tr>`; 
+                    document.getElementById("reservationsPagination").innerHTML = "";
+                    return; 
+                }
+
+                const startIndex = (reservationsPage - 1) * reservationsPerPage;
+                const endIndex = startIndex + reservationsPerPage;
+                const paginatedData = data.slice(startIndex, endIndex);
+
                 const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-                container.innerHTML = data.map(r => {
+                container.innerHTML = paginatedData.map(r => {
                     const isFuture = r.reservationDate > todayStr;
                     return `<tr class="hover:bg-base-200/30 transition-colors group">
                         <td><div class="flex items-center gap-3"><div class="avatar"><div class="mask mask-squircle h-10 w-10 bg-base-200"><img src="${r.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.studentName}`}" class="w-full h-full object-cover" /></div></div><div><div class="font-black text-sm">${r.studentName}</div><div class="text-[10px] opacity-40 font-bold uppercase tracking-tighter">${r.idNumber}</div></div></div></td>
@@ -382,6 +404,37 @@
                             : `<span class="text-[10px] opacity-20 font-black uppercase italic tracking-widest">${r.status === 'Checked In' ? 'In Session' : 'Completed'}</span>`}
                         </td>
                     </tr>`}).join('');
+
+                const paginationEl = document.getElementById("reservationsPagination");
+                paginationEl.innerHTML = `
+                    <div class="text-xs font-black opacity-50 uppercase">
+                        Showing ${startIndex + 1} to ${Math.min(endIndex, totalItems)} of ${totalItems} reservations
+                    </div>
+                    <div class="join">
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeReservationsPage(1)" ${reservationsPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-left text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeReservationsPage(${reservationsPage - 1})" ${reservationsPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angle-left text-[10px]"></i> Prev
+                        </button>
+                        <button class="btn btn-sm btn-active join-item font-black pointer-events-none">Page ${reservationsPage} of ${totalPages}</button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeReservationsPage(${reservationsPage + 1})" ${reservationsPage === totalPages ? "disabled" : ""}>
+                            Next <i class="fa-solid fa-angle-right text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeReservationsPage(${totalPages})" ${reservationsPage === totalPages ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            function changeReservationsPage(page) {
+                reservationsPage = page;
+                const s = document.getElementById('searchInput').value.trim().toLowerCase();
+                const st = document.getElementById('statusFilter').value;
+                const d = document.getElementById('dateFilter').value;
+                const filtered = allReservations.filter(r => (!s || (r.studentName || '').toLowerCase().includes(s) || (r.idNumber || '').toLowerCase().includes(s)) && (!st || r.status === st) && (!d || r.reservationDate === d));
+                renderReservations(filtered);
             }
 
             function handleAction(id, action) {

@@ -246,6 +246,9 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Pagination Controls -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-base-content/5 bg-base-200/20" id="feedbacksPagination">
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -311,26 +314,78 @@
                 });
             });
 
+            let allFeedbacks = [];
+            let feedbacksPage = 1;
+            const feedbacksPerPage = 10;
+
             async function loadFeedbacks() {
                 try {
                     const res = await fetch("/api/admin/feedbacks");
-                    const data = await res.json();
-                    document.getElementById("total-feedbacks").textContent = data.length;
-                    document.getElementById("avg-rating").textContent = data.length ? (data.reduce((s, f) => s + f.rating, 0) / data.length).toFixed(1) : "0.0";
-                    const tbody = document.getElementById("feedbacks-table-body");
-                    if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-20 opacity-60">No feedbacks yet</td></tr>`; return; }
-                    tbody.innerHTML = data.map(f => {
-                        const stars = "★".repeat(f.rating) + "☆".repeat(5 - f.rating);
-                        return `<tr class="hover:bg-base-200 transition-colors">
-                            <td><div class="font-bold">${f.studentName || f.idNumber}</div><div class="text-xs opacity-50">${f.idNumber}</div></td>
-                            <td>${f.lab}</td>
-                            <td>${f.purpose}</td>
-                            <td><span class="badge badge-primary">${stars}</span></td>
-                            <td class="max-w-xs text-sm">${f.comments}</td>
-                            <td class="text-sm opacity-70">${f.created_at ? new Date(f.created_at).toLocaleDateString() : (f.date || "N/A")}</td>
-                        </tr>`;
-                    }).join("");
+                    allFeedbacks = await res.json();
+                    renderFeedbacks();
                 } catch (err) { console.error(err); }
+            }
+
+            function renderFeedbacks() {
+                const data = allFeedbacks;
+                document.getElementById("total-feedbacks").textContent = data.length;
+                document.getElementById("avg-rating").textContent = data.length ? (data.reduce((s, f) => s + f.rating, 0) / data.length).toFixed(1) : "0.0";
+                
+                const tbody = document.getElementById("feedbacks-table-body");
+                const totalItems = data.length;
+                const totalPages = Math.ceil(totalItems / feedbacksPerPage) || 1;
+                
+                if (feedbacksPage > totalPages) feedbacksPage = totalPages;
+                if (feedbacksPage < 1) feedbacksPage = 1;
+
+                if (totalItems === 0) { 
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-20 opacity-60">No feedbacks yet</td></tr>`; 
+                    document.getElementById("feedbacksPagination").innerHTML = "";
+                    return; 
+                }
+
+                const startIndex = (feedbacksPage - 1) * feedbacksPerPage;
+                const endIndex = startIndex + feedbacksPerPage;
+                const paginatedData = data.slice(startIndex, endIndex);
+
+                tbody.innerHTML = paginatedData.map(f => {
+                    const stars = "★".repeat(f.rating) + "☆".repeat(5 - f.rating);
+                    return `<tr class="hover:bg-base-200 transition-colors">
+                        <td><div class="font-bold">${f.studentName || f.idNumber}</div><div class="text-xs opacity-50">${f.idNumber}</div></td>
+                        <td>${f.lab}</td>
+                        <td>${f.purpose}</td>
+                        <td><span class="badge badge-primary">${stars}</span></td>
+                        <td class="max-w-xs text-sm">${f.comments}</td>
+                        <td class="text-sm opacity-70">${f.created_at ? new Date(f.created_at).toLocaleDateString() : (f.date || "N/A")}</td>
+                    </tr>`;
+                }).join("");
+
+                const paginationEl = document.getElementById("feedbacksPagination");
+                paginationEl.innerHTML = `
+                    <div class="text-xs font-black opacity-50 uppercase">
+                        Showing ${startIndex + 1} to ${Math.min(endIndex, totalItems)} of ${totalItems} feedbacks
+                    </div>
+                    <div class="join">
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeFeedbacksPage(1)" ${feedbacksPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-left text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeFeedbacksPage(${feedbacksPage - 1})" ${feedbacksPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angle-left text-[10px]"></i> Prev
+                        </button>
+                        <button class="btn btn-sm btn-active join-item font-black pointer-events-none">Page ${feedbacksPage} of ${totalPages}</button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeFeedbacksPage(${feedbacksPage + 1})" ${feedbacksPage === totalPages ? "disabled" : ""}>
+                            Next <i class="fa-solid fa-angle-right text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeFeedbacksPage(${totalPages})" ${feedbacksPage === totalPages ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            function changeFeedbacksPage(page) {
+                feedbacksPage = page;
+                renderFeedbacks();
             }
 
             async function searchStudent() {

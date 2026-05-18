@@ -355,6 +355,9 @@
                                     <tbody id="studentsTableBody"></tbody>
                                 </table>
                             </div>
+                            <!-- Pagination Controls -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-base-content/5 bg-base-200/20" id="studentsPagination">
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -423,6 +426,8 @@
             });
 
             let studentsData = [];
+            let studentsPage = 1;
+            const studentsPerPage = 10;
 
             async function fetchStudents() {
                 try {
@@ -438,7 +443,23 @@
 
             function renderStudents(data) {
                 const tbody = document.getElementById("studentsTableBody");
-                tbody.innerHTML = data.map(s => `
+                const totalItems = data.length;
+                const totalPages = Math.ceil(totalItems / studentsPerPage) || 1;
+                
+                if (studentsPage > totalPages) studentsPage = totalPages;
+                if (studentsPage < 1) studentsPage = 1;
+                
+                const startIndex = (studentsPage - 1) * studentsPerPage;
+                const endIndex = startIndex + studentsPerPage;
+                const paginatedData = data.slice(startIndex, endIndex);
+
+                if (paginatedData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">No students found</td></tr>`;
+                    document.getElementById("studentsPagination").innerHTML = "";
+                    return;
+                }
+
+                tbody.innerHTML = paginatedData.map(s => `
                     <tr class="hover:bg-base-200/30 transition-colors">
                         <th><input type="checkbox" class="checkbox checkbox-sm" /></th>
                         <td>
@@ -452,9 +473,32 @@
                         <td><div class="flex flex-col gap-1 w-32"><div class="flex justify-between text-[10px] font-black opacity-50"><span>SESSIONS</span><span>${s.sessionLeft}/30</span></div><progress class="progress progress-primary w-full h-1.5" value="${s.sessionLeft}" max="30"></progress></div></td>
                         <td class="text-center"><div class="flex justify-center gap-2"><button onclick="openStudentModal('${s.idNumber}')" class="btn btn-square btn-ghost btn-xs text-info" title="Edit Student"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="resetSessions('${s.idNumber}')" class="btn btn-square btn-ghost btn-xs text-warning" title="Reset Sessions"><i class="fa-solid fa-rotate-right"></i></button><button onclick="deleteStudent('${s.idNumber}')" class="btn btn-square btn-ghost btn-xs text-error opacity-30 hover:opacity-100" title="Delete Student"><i class="fa-solid fa-trash-can"></i></button></div></td>
                     </tr>`).join("");
+
+                const paginationEl = document.getElementById("studentsPagination");
+                paginationEl.innerHTML = `
+                    <div class="text-xs font-black opacity-50 uppercase">
+                        Showing ${startIndex + 1} to ${Math.min(endIndex, totalItems)} of ${totalItems} students
+                    </div>
+                    <div class="join">
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeStudentsPage(1)" ${studentsPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-left text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeStudentsPage(${studentsPage - 1})" ${studentsPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angle-left text-[10px]"></i> Prev
+                        </button>
+                        <button class="btn btn-sm btn-active join-item font-black pointer-events-none">Page ${studentsPage} of ${totalPages}</button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeStudentsPage(${studentsPage + 1})" ${studentsPage === totalPages ? "disabled" : ""}>
+                            Next <i class="fa-solid fa-angle-right text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeStudentsPage(${totalPages})" ${studentsPage === totalPages ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
             }
 
             function filterStudents() {
+                studentsPage = 1;
                 const q = document.getElementById("studentSearchInput").value.toLowerCase();
                 const y = document.getElementById("yearFilter").value;
                 const filtered = studentsData.filter(s => {
@@ -463,6 +507,18 @@
                     return matchesSearch && matchesYear;
                 });
                 document.getElementById("totalStudentsCount").innerText = filtered.length;
+                renderStudents(filtered);
+            }
+
+            function changeStudentsPage(page) {
+                studentsPage = page;
+                const q = document.getElementById("studentSearchInput").value.toLowerCase();
+                const y = document.getElementById("yearFilter").value;
+                const filtered = studentsData.filter(s => {
+                    const matchesSearch = `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) || s.idNumber.toLowerCase().includes(q) || s.course.toLowerCase().includes(q);
+                    const matchesYear = y === "All" || s.courseLevel === y;
+                    return matchesSearch && matchesYear;
+                });
                 renderStudents(filtered);
             }
 

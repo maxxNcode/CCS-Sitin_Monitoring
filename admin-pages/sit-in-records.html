@@ -275,6 +275,9 @@
                                     <tbody id="recordsTableBody"></tbody>
                                 </table>
                             </div>
+                            <!-- Pagination Controls -->
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-base-content/5 bg-base-200/20" id="recordsPagination">
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -346,6 +349,8 @@
             });
 
             let allRecords = [];
+            let recordsPage = 1;
+            const recordsPerPage = 10;
 
             async function fetchRecords() {
                 try {
@@ -355,6 +360,7 @@
             }
 
             function filterRecords() {
+                recordsPage = 1;
                 const s = document.getElementById("recordSearch").value.toLowerCase();
                 const l = document.getElementById("labFilter").value;
                 const filtered = allRecords.filter(r => (r.studentName.toLowerCase().includes(s) || r.idNumber.toLowerCase().includes(s)) && (l === "All" || r.lab === l));
@@ -364,8 +370,24 @@
             function renderRecords(data) {
                 const tbody = document.getElementById("recordsTableBody");
                 document.getElementById("totalRecordsCount").innerText = data.length;
-                if (data.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="text-center py-20 opacity-40">No matching records found</td></tr>`; return; }
-                tbody.innerHTML = data.map(r => `
+                
+                const totalItems = data.length;
+                const totalPages = Math.ceil(totalItems / recordsPerPage) || 1;
+                
+                if (recordsPage > totalPages) recordsPage = totalPages;
+                if (recordsPage < 1) recordsPage = 1;
+
+                if (totalItems === 0) { 
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-20 opacity-40">No matching records found</td></tr>`; 
+                    document.getElementById("recordsPagination").innerHTML = "";
+                    return; 
+                }
+
+                const startIndex = (recordsPage - 1) * recordsPerPage;
+                const endIndex = startIndex + recordsPerPage;
+                const paginatedData = data.slice(startIndex, endIndex);
+
+                tbody.innerHTML = paginatedData.map(r => `
                     <tr class="hover:bg-base-200/30 transition-colors">
                         <td class="text-center font-mono text-xs opacity-50 font-bold">#S-${r.id}</td>
                         <td>
@@ -381,6 +403,36 @@
                         <td class="text-center"><div class="badge badge-ghost opacity-40 badge-outline badge-xs font-black p-2 uppercase tracking-tighter">COMPLETED</div></td>
                         <td><div class="flex justify-center gap-2"><button class="btn btn-square btn-ghost btn-xs opacity-30 hover:opacity-100 text-error hover:bg-error/10" onclick="deleteRecord(${r.id})" title="Delete Record"><i class="fa-solid fa-trash-can"></i></button></div></td>
                     </tr>`).join("");
+
+                const paginationEl = document.getElementById("recordsPagination");
+                paginationEl.innerHTML = `
+                    <div class="text-xs font-black opacity-50 uppercase">
+                        Showing ${startIndex + 1} to ${Math.min(endIndex, totalItems)} of ${totalItems} records
+                    </div>
+                    <div class="join">
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeRecordsPage(1)" ${recordsPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-left text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeRecordsPage(${recordsPage - 1})" ${recordsPage === 1 ? "disabled" : ""}>
+                            <i class="fa-solid fa-angle-left text-[10px]"></i> Prev
+                        </button>
+                        <button class="btn btn-sm btn-active join-item font-black pointer-events-none">Page ${recordsPage} of ${totalPages}</button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeRecordsPage(${recordsPage + 1})" ${recordsPage === totalPages ? "disabled" : ""}>
+                            Next <i class="fa-solid fa-angle-right text-[10px]"></i>
+                        </button>
+                        <button class="btn btn-sm btn-ghost join-item font-bold" onclick="changeRecordsPage(${totalPages})" ${recordsPage === totalPages ? "disabled" : ""}>
+                            <i class="fa-solid fa-angles-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            function changeRecordsPage(page) {
+                recordsPage = page;
+                const s = document.getElementById("recordSearch").value.toLowerCase();
+                const l = document.getElementById("labFilter").value;
+                const filtered = allRecords.filter(r => (r.studentName.toLowerCase().includes(s) || r.idNumber.toLowerCase().includes(s)) && (l === "All" || r.lab === l));
+                renderRecords(filtered);
             }
 
             async function searchStudent() {
