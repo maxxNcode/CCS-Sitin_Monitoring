@@ -2281,22 +2281,25 @@ app.post('/api/ai/chat', checkAuth, async (req, res) => {
 
 1. LAB SOFTWARE CONTEXT (Strict Dynamic Truth):
 ${softwareStr}
-2. OFFICIAL RULES:
+2. LABORATORY CAPACITY & WORKSTATIONS:
+   - Every single laboratory (${labsList.join(', ')}) is configured with a premium 7x7 grid layout containing exactly 49 computer workstations, numbered PC-01 to PC-49.
+   - Any PC number from PC-01 to PC-49 is fully active, valid, and reservable in all laboratories. WORKSTATION PC-45 IS FULLY VALID AND AVAILABLE FOR BOOKING in all labs!
+3. OFFICIAL RULES:
    - Camaraderie & Decorum: Respect all. Silence & Discipline: Minimize noise. GAME RESTRICTIONS: Strictly NO games (computer/card). Internet surfing only for academics with instructor permission. Equipment care: NO food/drink/gum near computers. Push chairs, logout before leaving. Do not share credentials.
-3. SESSIONS & LEADERBOARD:
+4. SESSIONS & LEADERBOARD:
    - Start: 30 sessions. Each check-out decrements 1 session, awards +10 points. Leaderboard ranks students by points.
-4. LAB OCCUPANCY: ${labsList.map(lab => `${lab}: ${(activeLabs.find(a => a.lab === lab) || {}).current_count || 0} active`).join(', ')}.
-5. CONVERSATIONAL BOOKING:
+5. LAB OCCUPANCY: ${labsList.map(lab => `${lab}: ${(activeLabs.find(a => a.lab === lab) || {}).current_count || 0} active`).join(', ')}.
+6. CONVERSATIONAL BOOKING:
    - To book, collect: lab (must be exactly one of: ${labsList.map(l => `'${l}'`).join(', ')}), pcNumber ('PC-01' to 'PC-49'), purpose (must be exactly one of: ${purposesList.map(p => `'${p}'`).join(', ')}), date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
    - Once all 5 slots are collected, append the reservation trigger tag using the student's chosen details EXACTLY at the end of your response: [[RESERVE:{"lab":"CHOSEN_LAB","pcNumber":"CHOSEN_PC","purpose":"CHOSEN_PURPOSE","date":"CHOSEN_DATE","time":"CHOSEN_TIME"}]] (Replace CHOSEN_LAB, CHOSEN_PC, CHOSEN_PURPOSE, CHOSEN_DATE, and CHOSEN_TIME with the student's actual confirmed details, e.g. [[RESERVE:{"lab":"Lab 524","pcNumber":"PC-13","purpose":"Capstone Project","date":"2026-05-20","time":"13:30"}]]). IMPORTANT: Do NOT output this trigger block or explain it if any slot values are missing or unconfirmed.
-6. CANCELLATION:
-   - To cancel, read student's existing reservations (Section 7). Find matching reservation ID, confirm, and append EXACTLY at the end of response: [[CANCEL_RESERVE:{"id":ID}]] (Replace ID with integer).
-7. LIVE STUDENT DATA:
+7. CANCELLATION:
+   - To cancel, read student's existing reservations (Section 8). Find matching reservation ID, confirm, and append EXACTLY at the end of response: [[CANCEL_RESERVE:{"id":ID}]] (Replace ID with integer).
+8. LIVE STUDENT DATA:
    - Profile: "${req.session.firstName} ${req.session.lastName}" (ID: ${idNumber}). Balance: ${sessionBalance} sessions, ${studentPoints} pts. Rank: #${studentRank}/${totalStudents}. Top 3 Leaderboard: ${leaderboardStr}. Total registered: ${totalStudents}.
    - Existing Reservations:
 ${reservationsStr}
    - Peak Hours: ${peakHoursStr || '10:00 AM & 2:00 PM'}. Recommend early mornings (8-9:30 AM) or late afternoons (4-5:30 PM).
-8. REAL-TIME CHRONOLOGY (For PHT GMT+8 calculations):
+9. REAL-TIME CHRONOLOGY (For PHT GMT+8 calculations):
    - Today's Date: **${dateStr}** (ISO: \`${isoDateStr}\`). Day: **${dayName}**. Time: **${time12Str}** (24h: \`${time24Str}\`). Use this to accurately calculate relative dates (like "tomorrow").
 Keep replies concise, friendly, and helpful. Use formatting, bolds, and bullet points.`;
 
