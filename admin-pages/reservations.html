@@ -469,6 +469,7 @@
                 document.getElementById('actionModal').showModal();
             }
 
+            let isCheckingIn = false;
             function handleCheckIn(id) {
                 const r = allReservations.find(res => res.id === id);
                 if (!r) return;
@@ -477,7 +478,12 @@
                 const confirmBtn = document.getElementById('confirmActionBtn');
                 confirmBtn.className = "btn btn-primary flex-1 rounded-2xl font-black italic uppercase";
                 confirmBtn.innerText = "Confirm Check-in";
+                confirmBtn.disabled = false;
                 confirmBtn.onclick = async () => {
+                    if (isCheckingIn) return;
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Checking In...';
+                    isCheckingIn = true;
                     try {
                         const res = await fetch("/api/admin/reservations/check-in", { 
                             method: 'POST', 
@@ -495,6 +501,10 @@
                     } catch (err) {
                         console.error(err);
                         showToast("Failed to connect to server", "error");
+                    } finally {
+                        isCheckingIn = false;
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerText = "Confirm Check-in";
                     }
                 };
                 document.getElementById('actionModal').showModal();
@@ -508,10 +518,38 @@
                 if (res.ok) { document.getElementById("formIdNumber").value = id; document.getElementById("formStudentName").value = data.name; document.getElementById("formSessions").innerText = data.sessionLeft; document.getElementById("my_modal_1").close(); document.getElementById("my_modal_2").showModal(); }
             }
 
+            let isSubmittingSitin = false;
             async function submitSitin() {
+                if (isSubmittingSitin) return;
                 const payload = { idNumber: document.getElementById("formIdNumber").value, studentName: document.getElementById("formStudentName").value, purpose: document.getElementById("formPurpose").value, lab: document.getElementById("formLab").value, pcNumber: document.getElementById('formPcNumber').value };
-                const res = await fetch("/api/admin/sit-in", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                if (res.ok) { showToast("Recorded!", "success"); document.getElementById("my_modal_2").close(); fetchReservations(); }
+                
+                const confirmBtn = document.querySelector("#my_modal_2 button[onclick='submitSitin()']");
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Recording...';
+                }
+                isSubmittingSitin = true;
+
+                try {
+                    const res = await fetch("/api/admin/sit-in", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    if (res.ok) { 
+                        showToast("Recorded!", "success"); 
+                        document.getElementById("my_modal_2").close(); 
+                        fetchReservations(); 
+                    } else {
+                        showToast(data.error || "Failed to record", "error");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast("Failed to connect to server", "error");
+                } finally {
+                    isSubmittingSitin = false;
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerText = "Confirm Sit-in";
+                    }
+                }
             }
 
             function updateNotifications() {

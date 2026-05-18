@@ -884,22 +884,32 @@ app.post('/api/admin/sit-in', (req, res) => {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
-    db.get('SELECT sessionLeft FROM users WHERE idNumber = ?', [idNumber], (err, user) => {
-        if (err || !user) return res.status(404).json({ error: 'Student not found' });
-        
-        if (user.sessionLeft <= 0) {
-            return res.status(400).json({ error: 'No sessions remaining' });
+    db.get("SELECT id FROM sitin_records WHERE idNumber = ? AND status = 'Active'", [idNumber], (err, activeRecord) => {
+        if (err) {
+            console.error("Active sit-in check database error:", err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (activeRecord) {
+            return res.status(400).json({ error: 'Student already has an active sit-in session!' });
         }
 
-        const { pcNumber } = req.body;
+        db.get('SELECT sessionLeft FROM users WHERE idNumber = ?', [idNumber], (err, user) => {
+            if (err || !user) return res.status(404).json({ error: 'Student not found' });
+            
+            if (user.sessionLeft <= 0) {
+                return res.status(400).json({ error: 'No sessions remaining' });
+            }
 
-        // Only insert the record — do NOT decrement sessionLeft yet
-        db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, pcNumber, session, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [studentName, idNumber, purpose, lab, pcNumber || 'N/A', user.sessionLeft.toString(), 'Active'],
-            (err) => {
-                if (err) return res.status(500).json({ error: 'Failed to record sit-in' });
-                res.json({ success: true, message: 'Sit-in recorded successfully' });
-            });
+            const { pcNumber } = req.body;
+
+            // Only insert the record — do NOT decrement sessionLeft yet
+            db.run(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, pcNumber, session, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [studentName, idNumber, purpose, lab, pcNumber || 'N/A', user.sessionLeft.toString(), 'Active'],
+                (err) => {
+                    if (err) return res.status(500).json({ error: 'Failed to record sit-in' });
+                    res.json({ success: true, message: 'Sit-in recorded successfully' });
+                });
+        });
     });
 });
 
@@ -1386,6 +1396,11 @@ app.post('/api/admin/reservations/check-in', checkAdminAuth, async (req, res) =>
         const user = await db.getAsync('SELECT sessionLeft FROM users WHERE idNumber = ?', [reservation.idNumber]);
         if (!user) return res.status(404).json({ error: 'Student not found' });
         if (user.sessionLeft <= 0) return res.status(400).json({ error: 'Student has no sessions remaining' });
+
+        const activeRecord = await db.getAsync("SELECT id FROM sitin_records WHERE idNumber = ? AND status = 'Active'", [reservation.idNumber]);
+        if (activeRecord) {
+            return res.status(400).json({ error: 'Student already has an active sit-in session!' });
+        }
 
         // Ensure check-in is not before reservation date (allow same-day early check-ins)
         const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });

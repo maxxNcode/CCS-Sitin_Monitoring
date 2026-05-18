@@ -406,7 +406,9 @@
                 } catch (err) { console.error(err); }
             }
 
+            let isSubmittingSitin = false;
             async function submitSitin() {
+                if (isSubmittingSitin) return;
                 const payload = {
                     idNumber: document.getElementById("formIdNumber").value,
                     studentName: document.getElementById("formStudentName").value,
@@ -415,13 +417,37 @@
                     pcNumber: document.getElementById("formPcNumber").value,
                 };
                 if (!payload.purpose || !payload.lab) return showToast("Please select purpose and lab", "warning");
+
+                const confirmBtn = document.querySelector("#my_modal_2 button[onclick='submitSitin()']");
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Recording...';
+                }
+                isSubmittingSitin = true;
+
                 try {
                     const res = await fetch("/api/admin/sit-in", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                    if (res.ok) { showToast("Sit-in recorded!", "success"); document.getElementById("my_modal_2").close(); fetchActiveSitins(); }
-                    else { const data = await res.json(); showToast(data.error, "error"); }
-                } catch (err) { console.error(err); }
+                    const data = await res.json();
+                    if (res.ok) { 
+                        showToast("Sit-in recorded!", "success"); 
+                        document.getElementById("my_modal_2").close(); 
+                        fetchActiveSitins(); 
+                    } else { 
+                        showToast(data.error || "Failed to record sit-in", "error"); 
+                    }
+                } catch (err) { 
+                    console.error(err); 
+                    showToast("Failed to connect to server", "error");
+                } finally {
+                    isSubmittingSitin = false;
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerText = "Confirm Sit-in";
+                    }
+                }
             }
 
+            let isEndingSession = false;
             function logoutSitin(id) {
                 const r = allActiveRecords.find(rec => rec.id === id);
                 if (!r) return;
@@ -430,12 +456,29 @@
                 const confirmBtn = document.getElementById('confirmActionBtn');
                 confirmBtn.className = "btn btn-error flex-1 rounded-2xl font-black italic uppercase";
                 confirmBtn.innerText = "End Session";
+                confirmBtn.disabled = false;
                 confirmBtn.onclick = async () => {
-                    const res = await fetch(`/api/admin/sit-in/logout/${id}`, { method: "POST" });
-                    if (res.ok) { 
-                        showToast("Ended!", "success"); 
-                        document.getElementById('actionModal').close();
-                        fetchActiveSitins(); 
+                    if (isEndingSession) return;
+                    confirmBtn.disabled = true;
+                    confirmBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Ending...';
+                    isEndingSession = true;
+                    try {
+                        const res = await fetch(`/api/admin/sit-in/logout/${id}`, { method: "POST" });
+                        if (res.ok) { 
+                            showToast("Ended!", "success"); 
+                            document.getElementById('actionModal').close();
+                            fetchActiveSitins(); 
+                        } else {
+                            const data = await res.json();
+                            showToast(data.error || "Failed to end session", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Failed to connect to server", "error");
+                    } finally {
+                        isEndingSession = false;
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerText = "End Session";
                     }
                 };
                 document.getElementById('actionModal').showModal();
