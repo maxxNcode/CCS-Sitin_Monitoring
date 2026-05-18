@@ -2287,7 +2287,7 @@ ${softwareStr}
    - Start: 30 sessions. Each check-out decrements 1 session, awards +10 points. Leaderboard ranks students by points.
 4. LAB OCCUPANCY: ${labsList.map(lab => `${lab}: ${(activeLabs.find(a => a.lab === lab) || {}).current_count || 0} active`).join(', ')}.
 5. CONVERSATIONAL BOOKING:
-   - To book, collect: lab (must be exactly one of: ${labsList.map(l => `'${l}'`).join(', ')}), pcNumber ('PC-01' to 'PC-30'), purpose (must be exactly one of: ${purposesList.map(p => `'${p}'`).join(', ')}), date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
+   - To book, collect: lab (must be exactly one of: ${labsList.map(l => `'${l}'`).join(', ')}), pcNumber ('PC-01' to 'PC-49'), purpose (must be exactly one of: ${purposesList.map(p => `'${p}'`).join(', ')}), date (YYYY-MM-DD), time (HH:MM). Ask for missing slots.
    - Once all 5 slots are collected, append the reservation trigger tag using the student's chosen details EXACTLY at the end of your response: [[RESERVE:{"lab":"CHOSEN_LAB","pcNumber":"CHOSEN_PC","purpose":"CHOSEN_PURPOSE","date":"CHOSEN_DATE","time":"CHOSEN_TIME"}]] (Replace CHOSEN_LAB, CHOSEN_PC, CHOSEN_PURPOSE, CHOSEN_DATE, and CHOSEN_TIME with the student's actual confirmed details, e.g. [[RESERVE:{"lab":"Lab 524","pcNumber":"PC-13","purpose":"Capstone Project","date":"2026-05-20","time":"13:30"}]]). IMPORTANT: Do NOT output this trigger block or explain it if any slot values are missing or unconfirmed.
 6. CANCELLATION:
    - To cancel, read student's existing reservations (Section 7). Find matching reservation ID, confirm, and append EXACTLY at the end of response: [[CANCEL_RESERVE:{"id":ID}]] (Replace ID with integer).
@@ -2533,7 +2533,7 @@ ${rList}`;
         // Check which slots are missing
         const missing = [];
         if (!parsedLab) missing.push(`Laboratory (choose from: ${labsList.join(', ')})`);
-        if (!parsedPcNumber) missing.push("PC Number (e.g. PC-01 to PC-30)");
+        if (!parsedPcNumber) missing.push("PC Number (e.g. PC-01 to PC-49)");
         if (!parsedPurpose) missing.push(`Sit-in Purpose (choose from: ${purposesList.join(', ')})`);
         if (!parsedDate) missing.push("Date (e.g. May 20 or YYYY-MM-DD)");
         if (!parsedTime) missing.push("Time (e.g. 10:30 AM or 10:30)");
@@ -2694,7 +2694,7 @@ Sure! I can help you continue with your booking or schedule another sit-in reser
 
 Could you please specify:
 1. **Laboratory** (Lab 524, Lab 530, or Lab 536)
-2. **PC Number** (e.g. PC-01 to PC-30)
+2. **PC Number** (e.g. PC-01 to PC-49)
 3. **Purpose** (e.g. Java Programming, C++, Python)
 4. **Date & Time** (e.g. Tomorrow at 8 AM)
 
