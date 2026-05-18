@@ -230,12 +230,18 @@
                                             <label class="label pt-0">
                                                 <span class="label-text-alt font-black uppercase opacity-40 tracking-widest">Preferred Workstation (PC Number)</span>
                                             </label>
-                                            <div class="flex gap-3">
-                                                <input type="text" id="resPcNumber" class="input input-bordered flex-1 rounded-2xl bg-base-200 focus:border-primary transition-all font-bold" placeholder="Please select a workstation..." readonly required />
-                                                <button type="button" onclick="openPcSelectionModal()" class="btn btn-neutral rounded-2xl font-bold uppercase tracking-tight flex gap-2">
+                                            <div class="flex items-center justify-between bg-base-200/50 border border-base-content/10 rounded-2xl p-3 px-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xs opacity-60 font-bold">Selected:</span>
+                                                    <div id="resPcBadge" class="badge badge-neutral gap-1 rounded-xl font-black uppercase text-[10px] tracking-wider py-2 transition-all">
+                                                        <span id="resPcBadgeText">None Selected</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" onclick="openPcSelectionModal()" class="btn btn-neutral btn-sm rounded-xl font-bold uppercase text-xs tracking-tight flex gap-2">
                                                     <i class="fa-solid fa-computer-mouse text-primary"></i>
                                                     Select PC
                                                 </button>
+                                                <input type="hidden" id="resPcNumber" required />
                                             </div>
                                         </div>
 
@@ -661,10 +667,33 @@
             function confirmPcSelection() {
                 if (selectedPc) {
                     document.getElementById('resPcNumber').value = selectedPc;
+                    
+                    const badge = document.getElementById('resPcBadge');
+                    const badgeText = document.getElementById('resPcBadgeText');
+                    if (badge && badgeText) {
+                        badgeText.textContent = selectedPc;
+                        badge.className = "badge badge-success gap-1 rounded-xl font-black uppercase text-[10px] tracking-wider py-2 transition-all shadow-sm shadow-success/15";
+                    }
+                    
                     closePcSelectionModal();
                     showToast(`PC Number ${selectedPc} Selected!`, 'success');
                 }
             }
+
+            // Listen to form reset to reset the workstation badge display
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('reservationForm');
+                if (form) {
+                    form.addEventListener('reset', () => {
+                        const badge = document.getElementById('resPcBadge');
+                        const badgeText = document.getElementById('resPcBadgeText');
+                        if (badge && badgeText) {
+                            badgeText.textContent = "None Selected";
+                            badge.className = "badge badge-neutral gap-1 rounded-xl font-black uppercase text-[10px] tracking-wider py-2 transition-all";
+                        }
+                    });
+                }
+            });
 
             function logout() {
                 fetch("/logout", { method: "POST" })
