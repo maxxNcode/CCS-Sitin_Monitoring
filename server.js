@@ -1387,18 +1387,17 @@ app.post('/api/admin/reservations/check-in', checkAdminAuth, async (req, res) =>
         if (!user) return res.status(404).json({ error: 'Student not found' });
         if (user.sessionLeft <= 0) return res.status(400).json({ error: 'Student has no sessions remaining' });
 
-        // Ensure check-in is not before reservation time
-        const now = new Date();
-        const resDateTime = new Date(`${reservation.reservationDate}T${reservation.reservationTime}`);
-        if (resDateTime > now) {
+        // Ensure check-in is not before reservation date (allow same-day early check-ins)
+        const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+        if (reservation.reservationDate > todayStr) {
             return res.status(400).json({ 
                 error: `Check-in is not yet allowed. Scheduled for ${reservation.reservationDate} at ${reservation.reservationTime}` 
             });
         }
 
-        // 1. Create active sit-in record
-        await db.runAsync(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, session, status) VALUES (?, ?, ?, ?, ?, ?)`,
-            [reservation.studentName, reservation.idNumber, reservation.purpose, reservation.lab, user.sessionLeft.toString(), 'Active']);
+        // 1. Create active sit-in record with reserved PC number
+        await db.runAsync(`INSERT INTO sitin_records (studentName, idNumber, purpose, lab, pcNumber, session, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [reservation.studentName, reservation.idNumber, reservation.purpose, reservation.lab, reservation.pcNumber || 'N/A', user.sessionLeft.toString(), 'Active']);
 
         // 2. Update reservation status
         await db.runAsync('UPDATE reservations SET status = ? WHERE id = ?', ['Checked In', id]);

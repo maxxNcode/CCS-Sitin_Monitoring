@@ -367,9 +367,9 @@
                 const container = document.getElementById('reservations-list');
                 document.getElementById('results-count').innerText = data.length ? `${data.length} result${data.length !== 1 ? 's' : ''}` : '';
                 if (!data || data.length === 0) { container.innerHTML = `<tr><td colspan="6" class="text-center py-12 opacity-40 italic font-medium">No reservations found</td></tr>`; return; }
+                const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
                 container.innerHTML = data.map(r => {
-                    const resDT = new Date(`${r.reservationDate}T${r.reservationTime}`);
-                    const isFuture = resDT > new Date();
+                    const isFuture = r.reservationDate > todayStr;
                     return `<tr class="hover:bg-base-200/30 transition-colors group">
                         <td><div class="flex items-center gap-3"><div class="avatar"><div class="mask mask-squircle h-10 w-10 bg-base-200"><img src="${r.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.studentName}`}" class="w-full h-full object-cover" /></div></div><div><div class="font-black text-sm">${r.studentName}</div><div class="text-[10px] opacity-40 font-bold uppercase tracking-tighter">${r.idNumber}</div></div></div></td>
                         <td><div class="badge badge-ghost border-base-content/10 font-bold text-[10px] uppercase">${r.lab}</div></td>
@@ -394,8 +394,24 @@
                 confirmBtn.className = `btn ${isApprove ? 'btn-success' : 'btn-error'} flex-1 rounded-2xl font-black italic uppercase`;
                 confirmBtn.innerText = `Confirm ${action}`;
                 confirmBtn.onclick = async () => {
-                    const res = await fetch("/api/admin/reservations/action", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }) });
-                    if (res.ok) { showToast('Action successful', 'success'); document.getElementById('actionModal').close(); fetchReservations(); }
+                    try {
+                        const res = await fetch("/api/admin/reservations/action", { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ id, action }) 
+                        });
+                        const data = await res.json();
+                        if (res.ok) { 
+                            showToast(`Reservation ${action.toLowerCase()} successfully!`, 'success'); 
+                            document.getElementById('actionModal').close(); 
+                            fetchReservations(); 
+                        } else {
+                            showToast(data.error || "Action failed", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Failed to connect to server", "error");
+                    }
                 };
                 document.getElementById('actionModal').showModal();
             }
@@ -409,8 +425,24 @@
                 confirmBtn.className = "btn btn-primary flex-1 rounded-2xl font-black italic uppercase";
                 confirmBtn.innerText = "Confirm Check-in";
                 confirmBtn.onclick = async () => {
-                    const res = await fetch("/api/admin/reservations/check-in", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-                    if (res.ok) { showToast("Student checked in!", "success"); document.getElementById('actionModal').close(); fetchReservations(); }
+                    try {
+                        const res = await fetch("/api/admin/reservations/check-in", { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' }, 
+                            body: JSON.stringify({ id }) 
+                        });
+                        const data = await res.json();
+                        if (res.ok) { 
+                            showToast("Student checked in!", "success"); 
+                            document.getElementById('actionModal').close(); 
+                            fetchReservations(); 
+                        } else {
+                            showToast(data.error || "Check-in failed", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Failed to connect to server", "error");
+                    }
                 };
                 document.getElementById('actionModal').showModal();
             }
