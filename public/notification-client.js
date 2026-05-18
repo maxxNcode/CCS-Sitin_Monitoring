@@ -8,7 +8,7 @@
     'use strict';
 
     // ─── Configuration ──────────────────────────────────────────────
-    const POLL_INTERVAL = 15000; // 15 seconds fallback polling
+    const POLL_INTERVAL = 3000; // 3 seconds fallback polling
     let _role = null;            // 'admin' | 'student' | null
     let _idNumber = null;
     let _pollTimer = null;
