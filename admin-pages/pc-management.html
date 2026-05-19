@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Dashboard - CCS Sit-In Monitoring</title>
+        <title>PC Workstation Management - CCS Sit-In Monitoring</title>
         <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
         <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -210,88 +210,80 @@
                 </div>
 
                 <main class="p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-700">
-                    <div class="mb-8">
-                        <h1 class="text-4xl font-black tracking-tight italic uppercase leading-none mb-2">Admin <span class="text-primary not-italic">Dashboard</span></h1>
-                        <p class="text-base-content/60 font-medium">Monitor system activity and manage announcements.</p>
-                    </div>
+                    <div class="flex flex-col gap-8">
+                        <!-- Heading -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 class="text-4xl font-black tracking-tight italic uppercase leading-none mb-2">PC <span class="text-primary not-italic">Management</span></h1>
+                                <p class="text-base-content/60 font-medium">Enable, disable, or place individual lab workstations under maintenance mode.</p>
+                            </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="card bg-base-100/80 backdrop-blur-md shadow-sm rounded-3xl flex-1">
-                            <div class="card-body">
-                                <h2 class="text-xl font-bold flex items-center gap-3 mb-6"><i class="fa-solid fa-chart-line text-primary"></i>Statistics</h2>
-                                <div class="stats stats-vertical lg:stats-horizontal w-full bg-base-200/50 shadow-inner rounded-2xl overflow-hidden">
-                                    <div class="stat">
-                                        <div class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">Students Registered</div>
-                                        <div class="stat-value text-primary text-4xl" id="stat-registered-students">0</div>
-                                    </div>
-                                    <div class="stat">
-                                        <div class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">Currently Sit-In</div>
-                                        <div class="stat-value text-secondary text-4xl" id="stat-active-sitins">0</div>
-                                    </div>
-                                    <div class="stat">
-                                        <div class="stat-title text-[10px] font-black uppercase tracking-widest opacity-60">Total Sit-In</div>
-                                        <div class="stat-value text-accent text-4xl" id="stat-total-sitins">0</div>
-                                    </div>
-                                </div>
-                                <div class="mt-6">
-                                    <div class="card bg-base-200/50 shadow-inner rounded-2xl overflow-hidden">
-                                        <div class="card-body p-4">
-                                            <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-40 mb-4 px-2">Weekly Activity</h3>
-                                            <div id="bar-chart" class="h-[280px]"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-6 border-t border-base-content/5 pt-6">
-                                    <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-40 mb-4 px-2">Quick Actions</h3>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <button onclick="my_modal_1.showModal()" class="btn btn-ghost bg-base-200/50 hover:bg-primary hover:text-primary-content rounded-2xl border-none h-auto py-4 flex flex-col gap-2 transition-all duration-300">
-                                            <i class="fa-solid fa-magnifying-glass text-xl"></i>
-                                            <span class="text-[10px] font-black uppercase tracking-widest leading-none">Search Student</span>
-                                        </button>
-                                        <a href="/sit-in" class="btn btn-ghost bg-base-200/50 hover:bg-secondary hover:text-secondary-content rounded-2xl border-none h-auto py-4 flex flex-col gap-2 transition-all duration-300">
-                                            <i class="fa-solid fa-clipboard-user text-xl"></i>
-                                            <span class="text-[10px] font-black uppercase tracking-widest leading-none">Active Sessions</span>
-                                        </a>
-                                        <a href="/sit-in-reports" class="btn btn-ghost bg-base-200/50 hover:bg-accent hover:text-accent-content rounded-2xl border-none h-auto py-4 flex flex-col gap-2 transition-all duration-300">
-                                            <i class="fa-solid fa-chart-bar text-xl"></i>
-                                            <span class="text-[10px] font-black uppercase tracking-widest leading-none">View Reports</span>
-                                        </a>
-                                        <a href="/admin/manage-dropdowns" class="btn btn-ghost bg-base-200/50 hover:bg-neutral hover:text-neutral-content rounded-2xl border-none h-auto py-4 flex flex-col gap-2 transition-all duration-300">
-                                            <i class="fa-solid fa-sliders text-xl"></i>
-                                            <span class="text-[10px] font-black uppercase tracking-widest leading-none">System Config</span>
-                                        </a>
-                                    </div>
-                                </div>
+                            <div class="flex items-center gap-3">
+                                <label class="label-text-alt font-black uppercase opacity-40 tracking-widest">Filter Lab:</label>
+                                <select id="labSelector" onchange="loadLabGrid()" class="select select-bordered rounded-2xl bg-base-100 font-bold border-base-content/5 focus:border-primary w-56">
+                                </select>
                             </div>
                         </div>
 
-                        <div class="card bg-base-100/80 backdrop-blur-md shadow-sm rounded-3xl flex-1">
-                            <div class="card-body">
-                                <h2 class="text-xl font-bold mb-6 flex items-center gap-3"><i class="fa-solid fa-bullhorn text-primary"></i>Announcements</h2>
-                                <div>
-                                    <div class="pb-6">
-                                        <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40 mb-4">Create New</h3>
-                                        <input type="text" placeholder="Title" id="announcementTitle" class="input input-bordered w-full mb-2 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" />
-                                        <textarea class="textarea textarea-bordered resize-y w-full rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold" placeholder="Announcement..." id="announcementDescription"></textarea>
-                                        <button class="btn btn-primary mt-4 w-full rounded-2xl font-black italic uppercase" onclick="addAnnouncement()"><i class="fa-solid fa-plus mr-2"></i>Add Announcement</button>
+                        <!-- Main Grid and Info Section -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <!-- Widescreen Interactive Grid -->
+                            <div class="lg:col-span-8 card bg-base-100 shadow-sm rounded-3xl p-6 md:p-8 border border-base-content/5">
+                                <div class="flex items-center justify-between mb-8 border-b border-base-content/5 pb-4">
+                                    <h3 class="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                                        <i class="fa-solid fa-layer-group text-primary"></i> 
+                                        Workstation <span id="currentLabTitle" class="text-primary">Layout</span>
+                                    </h3>
+                                    <div class="flex gap-4 text-xs font-bold">
+                                        <span class="flex items-center gap-1.5 text-success">
+                                            <span class="w-3 h-3 rounded-full bg-success/15 border border-success/30 flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full bg-success"></span></span> Active (Enabled)
+                                        </span>
+                                        <span class="flex items-center gap-1.5 text-error">
+                                            <span class="w-3 h-3 rounded-full bg-error/15 border border-error/30 flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full bg-error"></span></span> Maintenance (Disabled)
+                                        </span>
                                     </div>
-                                    <div class="divider opacity-20 my-2"></div>
+                                </div>
 
-                                    <div class="space-y-3 mb-4">
-                                        <h3 class="text-[10px] font-black uppercase tracking-[2px] opacity-40">Manage & Filter</h3>
-                                        <div class="flex items-center gap-3">
-                                            <div class="relative group flex-1">
-                                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-base-content/30 group-focus-within:text-primary transition-colors z-10">
-                                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                                </div>
-                                                <input type="text" id="announcementSearch" placeholder="Search announcements..." 
-                                                    class="input input-bordered w-full pl-11 rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold text-sm" oninput="applyAnnouncementFilters()" />
-                                            </div>
-                                            <input type="date" id="announcementDateFilter" class="input input-bordered rounded-2xl bg-base-200 border-base-content/5 focus:border-primary transition-all font-bold text-sm" onchange="applyAnnouncementFilters()" />
+                                <!-- Dynamic PC Grid Container -->
+                                <div id="labGridContainer" class="grid grid-cols-7 gap-3 aspect-square max-w-2xl mx-auto py-4">
+                                    <!-- Dynamic elements load here -->
+                                </div>
+                            </div>
+
+                            <!-- Right Stats & Actions Section -->
+                            <div class="lg:col-span-4 space-y-6">
+                                <div class="card bg-base-100 shadow-sm rounded-3xl p-6 border border-base-content/5">
+                                    <h3 class="text-md font-black uppercase tracking-widest text-primary mb-4">Quick Stats</h3>
+                                    <div class="space-y-4">
+                                        <div class="flex justify-between items-center py-2 border-b border-base-content/5">
+                                            <span class="text-sm font-semibold opacity-60">Total Workstations</span>
+                                            <span class="text-xl font-black">49</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-base-content/5">
+                                            <span class="text-sm font-semibold opacity-60 text-success">Enabled PCs</span>
+                                            <span id="enabledCount" class="text-xl font-black text-success">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center py-2 border-b border-base-content/5">
+                                            <span class="text-sm font-semibold opacity-60 text-error">Disabled PCs</span>
+                                            <span id="disabledCount" class="text-xl font-black text-error">0</span>
                                         </div>
                                     </div>
-                                    <div id="announcements" class="flex flex-col gap-4 overflow-y-auto custom-scrollbar max-h-[380px] pr-2"></div>
+                                </div>
+
+                                <div class="card bg-gradient-to-br from-primary/10 to-secondary/10 shadow-sm rounded-3xl p-6 border border-primary/20">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-md leading-none mb-2">How it works?</h4>
+                                            <p class="text-xs leading-relaxed opacity-70">
+                                                Clicking on any workstation card on the layout grid instantly toggles its mode between **Active** and **Maintenance**. 
+                                                <br/><br/>
+                                                PCs placed under **Maintenance** mode are instantly grayed out in both student reservation layouts and active sit-in assignment fields, blocking reservations.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -312,7 +304,7 @@
                         </span>
                     </li>
                     <div class="divider my-0 opacity-20"></div>
-                    <li><a href="/admin" class="active bg-primary/10 text-primary border-r-4 border-primary !rounded-l-xl !rounded-r-none font-black"><i class="fa-solid fa-house w-4 text-center"></i><span class="sidebar-text">Dashboard</span></a></li>
+                    <li><a href="/admin" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-house w-4 text-center"></i><span class="sidebar-text">Dashboard</span></a></li>
                     <li><a href="/students" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-users w-4 text-center"></i><span class="sidebar-text">Students</span></a></li>
                     <li><a href="/sit-in" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-clipboard-user w-4 text-center"></i><span class="sidebar-text">Sit-in Session</span></a></li>
                     <li><a href="/sit-in-records" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-clock-rotate-left w-4 text-center"></i><span class="sidebar-text">Sit-in Records</span></a></li>
@@ -321,7 +313,7 @@
                     <li><a href="/reservations" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-calendar-check w-4 text-center"></i><span class="sidebar-text">Reservations</span></a></li>
                     <li><a href="/admin/leaderboard" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-trophy w-4 text-center"></i><span class="sidebar-text">Leaderboard</span></a></li>
                     <li><a href="/admin/manage-dropdowns" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-sliders w-4 text-center"></i><span class="sidebar-text">Manage Dropdowns</span></a></li>
-                    <li><a href="/admin/pc-management" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-desktop w-4 text-center"></i><span class="sidebar-text">PC Management</span></a></li>
+                    <li><a href="/admin/pc-management" class="active bg-primary/10 text-primary border-r-4 border-primary !rounded-l-xl !rounded-r-none font-black"><i class="fa-solid fa-desktop w-4 text-center"></i><span class="sidebar-text">PC Management</span></a></li>
                     <li><a href="/admin/analytics" class="opacity-60 hover:opacity-100 font-bold hover:bg-base-200 transition-all"><i class="fa-solid fa-chart-pie w-4 text-center"></i><span class="sidebar-text">Analytics</span></a></li>
                     <li class="mt-auto pt-4">
                         <button onclick="logout()" class="btn btn-error btn-outline w-full rounded-2xl">
@@ -333,133 +325,140 @@
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script>
+            let disabledPcs = [];
+
             const savedTheme = localStorage.getItem("theme") || "forest";
             document.documentElement.setAttribute("data-theme", savedTheme);
 
-            window.addEventListener("DOMContentLoaded", () => {
-                document.querySelectorAll(".theme-controller").forEach((btn) => {
-                    btn.addEventListener("click", () => {
-                        const theme = btn.getAttribute("data-set-theme");
-                        document.documentElement.setAttribute("data-theme", theme);
-                        localStorage.setItem("theme", theme);
-                        if (typeof updateChartColor === 'function') updateChartColor();
+            window.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.theme-controller').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const theme = btn.getAttribute('data-set-theme');
+                        document.documentElement.setAttribute('data-theme', theme);
+                        localStorage.setItem('theme', theme);
                     });
                 });
-
-                fetch("/check-session").then(r => r.json()).then(d => {
-                    if (!d.loggedIn || d.role !== "admin") window.location.href = "/login";
-                    else {
-                        fetchDashboardStats();
-                        fetchAnnouncements();
-                        fetchWeeklyActivity();
-                        fetch('/api/dropdown-options').then(r => r.json()).then(data => {
-                            const fl = document.getElementById('formLab');
-                            if (fl && data.lab) data.lab.forEach(o => fl.innerHTML += `<option value="${o.value}">${o.value}</option>`);
-                            const fp = document.getElementById('formPurpose');
-                            if (fp && data.purpose) data.purpose.forEach(o => fp.innerHTML += `<option value="${o.value}">${o.value}</option>`);
-                        });
+                
+                fetch('/check-session').then(r => r.json()).then(d => { 
+                    if (!d.loggedIn || d.role !== 'admin') {
+                        window.location.href = '/login'; 
+                    } else {
+                        initializeLabs();
                     }
                 });
             });
 
-            async function fetchDashboardStats() {
+            async function initializeLabs() {
                 try {
-                    const res = await fetch('/api/admin/dashboard-stats');
+                    // Fetch labs list
+                    const res = await fetch('/api/dropdown-options');
                     const data = await res.json();
-                    document.getElementById('stat-registered-students').innerText = data.totalStudents || 0;
-                    document.getElementById('stat-active-sitins').innerText = data.activeSitIn || 0;
-                    document.getElementById('stat-total-sitins').innerText = data.totalSitIn ? data.totalSitIn.toLocaleString() : 0;
-                } catch (err) { console.error(err); }
-            }
+                    
+                    const selector = document.getElementById('labSelector');
+                    selector.innerHTML = '';
+                    
+                    if (data.lab && data.lab.length > 0) {
+                        data.lab.forEach(lab => {
+                            selector.innerHTML += `<option value="${lab.value}">${lab.value}</option>`;
+                        });
+                        
+                        // Populate modal lists too
+                        const fl = document.getElementById('formLab');
+                        if (fl) data.lab.forEach(o => fl.innerHTML += `<option value="${o.value}">${o.value}</option>`);
+                        
+                        const fp = document.getElementById('formPurpose');
+                        if (fp && data.purpose) data.purpose.forEach(o => fp.innerHTML += `<option value="${o.value}">${o.value}</option>`);
 
-            let announcementsData = [];
-            async function fetchAnnouncements() {
-                try {
-                    const res = await fetch('/api/announcements');
-                    announcementsData = await res.json();
-                    renderAnnouncements(announcementsData);
-                } catch (err) { console.error(err); }
-            }
-
-            function renderAnnouncements(data) {
-                const container = document.getElementById('announcements');
-                if (data.length === 0) { container.innerHTML = `<div class="text-center py-10 opacity-40"><i class="fa-solid fa-inbox text-4xl mb-3"></i><p class="font-medium text-sm">No announcements found</p></div>`; return; }
-                container.innerHTML = data.map(item => {
-                    const isHidden = item.isHidden === 1;
-                    return `
-                        <div class="p-5 rounded-2xl bg-base-200/50 group hover:bg-base-200 transition-all duration-500 ${isHidden ? 'opacity-60' : ''}">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-[10px] font-black uppercase tracking-widest ${isHidden ? 'text-base-content/50' : 'text-primary'} flex items-center gap-1 opacity-70">
-                                    <i class="fa-solid ${isHidden ? 'fa-eye-slash' : 'fa-circle-check'}"></i>
-                                    ${isHidden ? 'Hidden' : 'Official Announcement'}
-                                </span>
-                                <div class="flex items-center gap-2">
-                                    <time class="text-xs font-black text-primary uppercase tracking-wider">${new Date(item.created_at).toLocaleDateString()}</time>
-                                    <button onclick="toggleHideAnnouncement(${item.id})" class="btn btn-ghost btn-xs btn-circle hover:bg-primary hover:text-white transition-all" title="${isHidden ? 'Show' : 'Hide'}">
-                                        <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <h3 class="text-lg font-black text-base-content leading-tight mb-2">${item.title}</h3>
-                            <p class="text-sm opacity-70 leading-relaxed font-medium line-clamp-3">${item.description}</p>
-                        </div>`;
-                }).join("");
-            }
-
-            function applyAnnouncementFilters() {
-                const searchTerm = document.getElementById('announcementSearch').value.toLowerCase();
-                const dateFilter = document.getElementById('announcementDateFilter').value;
-                const filtered = announcementsData.filter(item => {
-                    const matchesSearch = item.title.toLowerCase().includes(searchTerm) || item.description.toLowerCase().includes(searchTerm);
-                    let matchesDate = true;
-                    if (dateFilter) {
-                        const itemDate = new Date(item.created_at).toISOString().split('T')[0];
-                        matchesDate = itemDate === dateFilter;
+                        loadLabGrid();
                     }
-                    return matchesSearch && matchesDate;
-                });
-                renderAnnouncements(filtered);
+                } catch (e) {
+                    console.error("Initialization error:", e);
+                }
             }
 
-            async function toggleHideAnnouncement(id) {
+            async function loadLabGrid() {
+                const lab = document.getElementById('labSelector').value;
+                document.getElementById('currentLabTitle').textContent = lab;
+
+                const grid = document.getElementById('labGridContainer');
+                grid.innerHTML = `
+                    <div class="col-span-7 flex flex-col items-center justify-center py-16 opacity-50">
+                        <span class="loading loading-spinner loading-lg text-primary animate-spin"></span>
+                        <p class="text-xs font-black uppercase tracking-widest mt-2">Loading Layout...</p>
+                    </div>
+                `;
+
                 try {
-                    const res = await fetch(`/api/announcements/toggle-hide/${id}`, { method: 'POST' });
-                    if (res.ok) { showToast("Visibility updated", "success"); fetchAnnouncements(); }
-                } catch (err) { console.error(err); }
+                    // Get all disabled PCs
+                    const res = await fetch('/api/admin/disabled-pcs');
+                    const allDisabled = await res.json();
+                    
+                    // Filter for this lab only
+                    disabledPcs = allDisabled.filter(item => item.lab === lab).map(item => item.pcNumber);
+                    
+                    grid.innerHTML = '';
+                    let disabledCount = 0;
+                    
+                    // Render 7x7 grid
+                    for (let r = 1; r <= 7; r++) {
+                        for (let c = 1; c <= 7; c++) {
+                            const index = (r - 1) * 7 + c;
+                            const pcName = `PC-${index.toString().padStart(2, '0')}`;
+                            const isDisabled = disabledPcs.includes(pcName);
+                            if (isDisabled) disabledCount++;
+
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = `flex flex-col items-center justify-center p-3 rounded-2xl border transition-all duration-300 aspect-square gap-1 hover:scale-105 ${
+                                isDisabled 
+                                ? 'bg-error/10 border-error/30 text-error hover:bg-error/20 hover:shadow-error/15 hover:shadow-md' 
+                                : 'bg-success/10 border-success/30 text-success hover:bg-success/20 hover:shadow-success/15 hover:shadow-md'
+                            }`;
+                            
+                            btn.innerHTML = isDisabled ? `
+                                <i class="fa-solid fa-wrench text-sm"></i>
+                                <span class="text-[9px] font-black tracking-tight">${pcName}</span>
+                            ` : `
+                                <i class="fa-solid fa-desktop text-sm"></i>
+                                <span class="text-[9px] font-black tracking-tight">${pcName}</span>
+                            `;
+                            
+                            btn.onclick = () => togglePcState(lab, pcName);
+                            grid.appendChild(btn);
+                        }
+                    }
+
+                    document.getElementById('disabledCount').innerText = disabledCount;
+                    document.getElementById('enabledCount').innerText = 49 - disabledCount;
+
+                } catch (e) {
+                    console.error("Failed to load layout:", e);
+                }
             }
 
-            async function addAnnouncement() {
-                const title = document.getElementById("announcementTitle").value;
-                const description = document.getElementById("announcementDescription").value;
-                if (!title || !description) return;
-                const res = await fetch('/api/announcements', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, description }) });
-                if (res.ok) { document.getElementById("announcementTitle").value = ""; document.getElementById("announcementDescription").value = ""; fetchAnnouncements(); showToast("Added!", "success"); }
+            async function togglePcState(lab, pcNumber) {
+                try {
+                    const res = await fetch('/api/admin/pc-maintenance/toggle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ lab, pcNumber })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast(data.message, "success");
+                        loadLabGrid();
+                    } else {
+                        showToast(data.error || "Toggle failed", "error");
+                    }
+                } catch (e) {
+                    console.error("Network error toggling state:", e);
+                    showToast("Failed to connect to the server", "error");
+                }
             }
-
-            let chart;
-            function fetchWeeklyActivity() {
-                fetch('/api/admin/weekly-activity').then(res => res.json()).then(data => {
-                    const categories = data.map(d => d.day), seriesData = data.map(d => d.count);
-                    const config = {
-                        series: [{ name: "Sit-ins", data: seriesData }],
-                        chart: { type: "bar", height: 280, toolbar: { show: false } },
-                        colors: [getPrimaryColor()],
-                        plotOptions: { bar: { columnWidth: "40%", borderRadius: 4 } },
-                        xaxis: { categories: categories, labels: { style: { colors: "#616161", fontSize: "10px" } } },
-                        yaxis: { labels: { style: { colors: "#616161", fontSize: "10px" } } },
-                        grid: { borderColor: "#dddddd", strokeDashArray: 5 },
-                        tooltip: { theme: "dark" }
-                    };
-                    if (chart) chart.destroy();
-                    chart = new ApexCharts(document.querySelector("#bar-chart"), config);
-                    chart.render();
-                });
-            }
-
-            function getPrimaryColor() { const temp = document.createElement('div'); temp.style.color = 'oklch(var(--p))'; document.body.appendChild(temp); const color = window.getComputedStyle(temp).color; document.body.removeChild(temp); return color; }
-            function updateChartColor() { if (chart) chart.updateOptions({ colors: [getPrimaryColor()] }); }
 
             async function searchStudent() {
                 const id = document.getElementById("searchIdNumber").value; if (!id) return;
@@ -470,7 +469,7 @@
             async function submitSitin() {
                 const payload = { idNumber: document.getElementById("formIdNumber").value, studentName: document.getElementById("formStudentName").value, purpose: document.getElementById("formPurpose").value, lab: document.getElementById("formLab").value, pcNumber: document.getElementById('formPcNumber').value };
                 const res = await fetch("/api/admin/sit-in", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-                if (res.ok) { showToast("Recorded!", "success"); document.getElementById("my_modal_2").close(); fetchDashboardStats(); }
+                if (res.ok) { showToast("Recorded!", "success"); document.getElementById("my_modal_2").close(); }
             }
 
             function updateNotifications() {

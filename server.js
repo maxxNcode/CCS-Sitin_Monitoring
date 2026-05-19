@@ -198,6 +198,17 @@ const PORT = process.env.PORT || 3000;
         `);
         console.log('AI chats table ready');
 
+        await db.runAsync(`
+            CREATE TABLE IF NOT EXISTS disabled_pcs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                lab TEXT NOT NULL,
+                pcNumber TEXT NOT NULL,
+                disabledAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(lab, pcNumber)
+            )
+        `);
+        console.log('Disabled PCs table ready');
+
         // 2. Run migrations sequentially
         // Ensure points column exists in users
         try {
@@ -1260,6 +1271,10 @@ app.get('/api/student/occupied-pcs', checkAuth, (req, res) => {
         SELECT pcNumber FROM sitin_records 
         WHERE lab = ? AND status = 'Active'
     `;
+    const disabledQuery = `
+        SELECT pcNumber FROM disabled_pcs 
+        WHERE lab = ?
+    `;
 
     db.all(reservationsQuery, [lab, date, time], (err, resRows) => {
         if (err) {
@@ -1273,19 +1288,31 @@ app.get('/api/student/occupied-pcs', checkAuth, (req, res) => {
                 return res.status(500).json({ error: 'Database error' });
             }
 
-            const occupied = new Set();
-            resRows.forEach(row => {
-                if (row.pcNumber && row.pcNumber !== 'N/A' && row.pcNumber !== 'Any') {
-                    occupied.add(row.pcNumber);
+            db.all(disabledQuery, [lab], (err, disabledRows) => {
+                if (err) {
+                    console.error('Error fetching disabled PCs:', err);
+                    return res.status(500).json({ error: 'Database error' });
                 }
-            });
-            sitinRows.forEach(row => {
-                if (row.pcNumber && row.pcNumber !== 'N/A' && row.pcNumber !== 'Any') {
-                    occupied.add(row.pcNumber);
-                }
-            });
 
-            res.json(Array.from(occupied));
+                const occupied = new Set();
+                resRows.forEach(row => {
+                    if (row.pcNumber && row.pcNumber !== 'N/A' && row.pcNumber !== 'Any') {
+                        occupied.add(row.pcNumber);
+                    }
+                });
+                sitinRows.forEach(row => {
+                    if (row.pcNumber && row.pcNumber !== 'N/A' && row.pcNumber !== 'Any') {
+                        occupied.add(row.pcNumber);
+                    }
+                });
+
+                const disabled = disabledRows.map(row => row.pcNumber);
+
+                res.json({
+                    occupied: Array.from(occupied),
+                    disabled: disabled
+                });
+            });
         });
     });
 });
@@ -1795,6 +1822,99 @@ app.delete('/api/admin/lab-softwares/:id', checkAdminAuth, (req, res) => {
         if (this.changes === 0) return res.status(404).json({ error: 'Software not found' });
         res.json({ success: true, message: 'Software removed successfully' });
     });
+});
+
+// Public Leaderboard API (No authentication required)
+app.get('/api/public/leaderboard', (req, res) => {
+    db.all(`
+        SELECT
+            u.idNumber,
+            u.firstName || ' ' || u.lastName AS name,
+            u.profilePic,
+            u.points,
+            COALESCE(h.totalHours, 0) AS totalHours,
+            COALESCE(h.tasksCompleted, 0) AS tasksCompleted
+        FROM users u
+        LEFT JOIN (
+            SELECT
+                idNumber,
+                COUNT(*) AS tasksCompleted,
+                ROUND(SUM(
+                    (julianday(logoutTime) - julianday(loginTime)) * 24
+                ), 2) AS totalHours
+            FROM student_history
+            GROUP BY idNumber
+        ) h ON u.idNumber = h.idNumber
+        ORDER BY u.points DESC
+    `, [], (err, rows) => {
+        if (err) {
+            console.error('Public leaderboard error:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        if (rows.length === 0) return res.json([]);
+
+        // Find max values for normalization
+        const maxPoints = Math.max(...rows.map(r => r.points || 0), 1);
+        const maxHours = Math.max(...rows.map(r => r.totalHours || 0), 1);
+        const maxTasks = Math.max(...rows.map(r => r.tasksCompleted || 0), 1);
+
+        // Calculate weighted score and add rank
+        const leaderboard = rows.map((r, index) => {
+            const normPoints = (r.points || 0) / maxPoints;
+            const normHours = (r.totalHours || 0) / maxHours;
+            const normTasks = (r.tasksCompleted || 0) / maxTasks;
+            const score = (normPoints * 0.5) + (normHours * 0.3) + (normTasks * 0.2);
+            return {
+                ...r,
+                rank: index + 1,
+                score: Math.round(score * 1000) / 10 // 0-100 scale with 1 decimal
+            };
+        }).sort((a, b) => b.score - a.score); // Re-sort by composite score
+
+        // Re-assign ranks after score sort
+        leaderboard.forEach((r, i) => r.rank = i + 1);
+
+        // Slice only top 15 for public landing page
+        res.json(leaderboard.slice(0, 15));
+    });
+});
+
+// Admin API: Get list of all disabled PCs
+app.get('/api/admin/disabled-pcs', checkAdminAuth, (req, res) => {
+    db.all('SELECT * FROM disabled_pcs', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows);
+    });
+});
+
+// Admin API: Toggle PC maintenance status (Enable / Disable)
+app.post('/api/admin/pc-maintenance/toggle', checkAdminAuth, (req, res) => {
+    const { lab, pcNumber } = req.body;
+    if (!lab || !pcNumber) return res.status(400).json({ error: 'Lab and PC Number are required' });
+
+    db.get('SELECT * FROM disabled_pcs WHERE lab = ? AND pcNumber = ?', [lab, pcNumber], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+
+        if (row) {
+            // Already disabled, so enable it (delete from disabled_pcs)
+            db.run('DELETE FROM disabled_pcs WHERE lab = ? AND pcNumber = ?', [lab, pcNumber], function(err) {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                res.json({ success: true, isEnabled: true, message: `${pcNumber} in ${lab} is now Enabled.` });
+            });
+        } else {
+            // Disable it (insert into disabled_pcs)
+            db.run('INSERT INTO disabled_pcs (lab, pcNumber) VALUES (?, ?)', [lab, pcNumber], function(err) {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                res.json({ success: true, isEnabled: false, message: `${pcNumber} in ${lab} is now Disabled (Under Maintenance).` });
+            });
+        }
+    });
+});
+
+// Admin Route: Serve PC Management page
+app.get('/admin/pc-management', checkAdminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-pages/pc-management.html'));
 });
 
 // Leaderboard API: Calculate weighted scores

@@ -577,7 +577,9 @@
 
                 try {
                     const res = await fetch(`/api/student/occupied-pcs?lab=${encodeURIComponent(lab)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`);
-                    const occupiedPcs = await res.json();
+                    const data = await res.json();
+                    const occupiedList = data.occupied || [];
+                    const disabledList = data.disabled || [];
                     
                     grid.innerHTML = '';
                     selectedPc = document.getElementById('resPcNumber').value || null;
@@ -587,7 +589,8 @@
                         for (let c = 1; c <= 7; c++) {
                             const index = (r - 1) * 7 + c;
                             const pcName = `PC-${index.toString().padStart(2, '0')}`;
-                            const isOccupied = occupiedPcs.includes(pcName);
+                            const isOccupied = occupiedList.includes(pcName);
+                            const isDisabled = disabledList.includes(pcName);
                             const isSelected = selectedPc === pcName;
 
                             const cell = document.createElement('button');
@@ -600,7 +603,14 @@
                                 'transition-all', 'duration-300', 'border', 'aspect-square', 'gap-1.5'
                             ];
 
-                            if (isOccupied) {
+                            if (isDisabled) {
+                                classes.push('bg-warning/15', 'border-warning/25', 'text-warning/70', 'cursor-not-allowed', 'pointer-events-none');
+                                cell.innerHTML = `
+                                    <i class="fa-solid fa-wrench text-xs"></i>
+                                    <span class="text-[9px] font-black tracking-tight">${pcName}</span>
+                                    <span class="text-[7px] font-bold uppercase tracking-widest opacity-50 leading-none">Maint.</span>
+                                `;
+                            } else if (isOccupied) {
                                 classes.push('bg-error/15', 'border-error/25', 'text-error/70', 'cursor-not-allowed', 'pointer-events-none');
                                 cell.innerHTML = `
                                     <i class="fa-solid fa-lock text-sm"></i>

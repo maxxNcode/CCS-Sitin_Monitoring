@@ -508,6 +508,78 @@
                         </div>
                     </div>
                 </main>
+
+                <!-- Leaderboard Section -->
+                <section class="bg-base-100 py-20 px-4 md:px-8 border-t border-base-content/5 relative overflow-hidden w-full flex flex-col items-center">
+                    <!-- Background Accent -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full pointer-events-none"></div>
+
+                    <div class="max-w-7xl w-full relative z-10 space-y-16">
+                        <!-- Header -->
+                        <div class="text-center space-y-4">
+                            <h2 class="text-xs font-black uppercase tracking-[0.4em] text-primary">🥇 UC College of Computer Studies</h2>
+                            <h3 class="text-3xl md:text-5xl font-black italic uppercase leading-none">The <span class="text-primary not-italic">Sit-in Champions</span></h3>
+                            <p class="text-sm md:text-base text-base-content/60 font-medium max-w-xl mx-auto"> Ranks are calculated dynamically using points, total logged hours, and laboratory tasks accomplished. </p>
+                        </div>
+
+                        <!-- Leaderboard Loading Spinner -->
+                        <div id="leaderboardLoading" class="flex flex-col items-center justify-center py-20">
+                            <span class="loading loading-spinner loading-lg text-primary animate-spin"></span>
+                            <p class="text-[10px] font-black uppercase tracking-widest mt-2 opacity-50">Loading Champion Standings...</p>
+                        </div>
+
+                        <!-- Leaderboard Content Grid -->
+                        <div id="leaderboardContent" class="hidden space-y-16">
+                            <!-- Top 3 Podium Cards -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-end max-w-4xl mx-auto">
+                                <!-- Rank 2 (Silver) -->
+                                <div id="cardRank2" class="order-2 md:order-1 flex flex-col items-center w-full">
+                                    <!-- Dynamic content here -->
+                                </div>
+
+                                <!-- Rank 1 (Gold) -->
+                                <div id="cardRank1" class="order-1 md:order-2 flex flex-col items-center w-full">
+                                    <!-- Dynamic content here -->
+                                </div>
+
+                                <!-- Rank 3 (Bronze) -->
+                                <div id="cardRank3" class="order-3 flex flex-col items-center w-full">
+                                    <!-- Dynamic content here -->
+                                </div>
+                            </div>
+
+                            <!-- Ranks 4 to 10 Table -->
+                            <div class="card bg-base-200/40 backdrop-blur-md rounded-3xl overflow-hidden border border-base-content/5 max-w-4xl mx-auto w-full">
+                                <div class="px-6 py-4 border-b border-base-content/5 bg-base-200/50">
+                                    <h4 class="text-xs font-black uppercase tracking-wider opacity-60">Top Contenders (4 - 10)</h4>
+                                </div>
+                                <div class="overflow-x-auto w-full">
+                                    <table class="table w-full">
+                                        <thead>
+                                            <tr class="border-base-content/5 text-xs font-black uppercase opacity-40">
+                                                <th class="w-16">Rank</th>
+                                                <th>Student</th>
+                                                <th>Composite Score</th>
+                                                <th>Total Hours</th>
+                                                <th>Tasks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="leaderboardTableBody">
+                                            <!-- Dynamic items load here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="leaderboardEmpty" class="hidden text-center py-20 opacity-40">
+                            <i class="fa-solid fa-trophy text-6xl mb-4"></i>
+                            <p class="font-bold text-lg">No champions recorded yet</p>
+                            <p class="text-xs">Ranks will populate as students complete lab sit-in sessions.</p>
+                        </div>
+                    </div>
+                </section>
             </div>
 
             <!-- Sidebar (Drawer) -->
@@ -579,6 +651,148 @@
                     localStorage.setItem("theme", theme);
                 });
             });
+
+            // Fetch Public Leaderboard on Page Load
+            window.addEventListener('DOMContentLoaded', () => {
+                fetchLeaderboard();
+            });
+
+            async function fetchLeaderboard() {
+                const loading = document.getElementById('leaderboardLoading');
+                const content = document.getElementById('leaderboardContent');
+                const empty = document.getElementById('leaderboardEmpty');
+
+                try {
+                    const res = await fetch('/api/public/leaderboard');
+                    const data = await res.json();
+
+                    loading.classList.add('hidden');
+
+                    if (data.length === 0) {
+                        empty.classList.remove('hidden');
+                        return;
+                    }
+
+                    content.classList.remove('hidden');
+
+                    // Map Top 3 Podium
+                    const r1 = data.find(s => s.rank === 1);
+                    const r2 = data.find(s => s.rank === 2);
+                    const r3 = data.find(s => s.rank === 3);
+
+                    const r1Container = document.getElementById('cardRank1');
+                    const r2Container = document.getElementById('cardRank2');
+                    const r3Container = document.getElementById('cardRank3');
+
+                    if (r1) {
+                        r1Container.innerHTML = `
+                            <div class="relative w-full p-6 rounded-[2.5rem] bg-gradient-to-br from-warning/10 via-base-100 to-warning/5 border-2 border-warning shadow-xl shadow-warning/15 flex flex-col items-center text-center space-y-4 animate-in slide-in-from-bottom duration-1000">
+                                <div class="absolute -top-6 w-12 h-12 rounded-2xl bg-warning flex items-center justify-center text-warning-content font-black shadow-md border-2 border-base-100"><i class="fa-solid fa-crown text-lg"></i></div>
+                                <div class="avatar pt-4">
+                                    <div class="w-24 h-24 rounded-full border-4 border-warning ring-4 ring-warning/20">
+                                        <img src="${r1.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + r1.name}" alt="${r1.name}" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-xl text-base-content leading-none mb-1">${r1.name}</h4>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-warning opacity-95">Rank #1 • Champion</p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 w-full pt-2">
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Score</p><p class="text-sm font-black text-warning">${r1.score}</p></div>
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Hours</p><p class="text-sm font-black text-base-content">${r1.totalHours}h</p></div>
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Tasks</p><p class="text-sm font-black text-base-content">${r1.tasksCompleted}</p></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        r1Container.innerHTML = '';
+                    }
+
+                    if (r2) {
+                        r2Container.innerHTML = `
+                            <div class="relative w-full p-6 rounded-[2.5rem] bg-gradient-to-br from-info/10 via-base-100 to-info/5 border border-info/30 shadow-lg shadow-info/5 flex flex-col items-center text-center space-y-4 animate-in slide-in-from-bottom duration-1000 delay-200">
+                                <div class="absolute -top-5 w-10 h-10 rounded-2xl bg-info flex items-center justify-center text-info-content font-black shadow-md border-2 border-base-100">2</div>
+                                <div class="avatar pt-4">
+                                    <div class="w-20 h-20 rounded-full border-4 border-info/40">
+                                        <img src="${r2.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + r2.name}" alt="${r2.name}" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-lg text-base-content leading-none mb-1">${r2.name}</h4>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-info opacity-95">Rank #2 • Master</p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 w-full pt-2">
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Score</p><p class="text-xs font-black text-info">${r2.score}</p></div>
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Hours</p><p class="text-xs font-black text-base-content">${r2.totalHours}h</p></div>
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Tasks</p><p class="text-xs font-black text-base-content">${r2.tasksCompleted}</p></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        r2Container.innerHTML = '';
+                    }
+
+                    if (r3) {
+                        r3Container.innerHTML = `
+                            <div class="relative w-full p-6 rounded-[2.5rem] bg-gradient-to-br from-error/10 via-base-100 to-error/5 border border-error/30 shadow-lg shadow-error/5 flex flex-col items-center text-center space-y-4 animate-in slide-in-from-bottom duration-1000 delay-300">
+                                <div class="absolute -top-5 w-10 h-10 rounded-2xl bg-error flex items-center justify-center text-error-content font-black shadow-md border-2 border-base-100">3</div>
+                                <div class="avatar pt-4">
+                                    <div class="w-20 h-20 rounded-full border-4 border-error/40">
+                                        <img src="${r3.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + r3.name}" alt="${r3.name}" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-lg text-base-content leading-none mb-1">${r3.name}</h4>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-error opacity-95">Rank #3 • Expert</p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 w-full pt-2">
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Score</p><p class="text-xs font-black text-error">${r3.score}</p></div>
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Hours</p><p class="text-xs font-black text-base-content">${r3.totalHours}h</p></div>
+                                    <div class="bg-base-200/50 p-2 rounded-2xl"><p class="text-[9px] font-black uppercase opacity-40">Tasks</p><p class="text-xs font-black text-base-content">${r3.tasksCompleted}</p></div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        r3Container.innerHTML = '';
+                    }
+
+                    // Map Ranks 4 to 10
+                    const contenders = data.filter(s => s.rank > 3 && s.rank <= 10);
+                    const tbody = document.getElementById('leaderboardTableBody');
+                    if (contenders.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 opacity-40 italic text-xs font-bold">No other contenders recorded</td></tr>`;
+                    } else {
+                        tbody.innerHTML = contenders.map(s => `
+                            <tr class="hover:bg-base-200/50 transition-colors border-base-content/5 font-bold">
+                                <td>
+                                    <span class="w-6 h-6 rounded-full bg-base-200 border border-base-content/5 flex items-center justify-center text-xs font-black">${s.rank}</span>
+                                </td>
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="avatar">
+                                            <div class="w-8 h-8 rounded-full">
+                                                <img src="${s.profilePic || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + s.name}" alt="${s.name}" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-sm leading-none">${s.name}</p>
+                                            <p class="text-[9px] font-black opacity-30 tracking-widest mt-1 uppercase">${s.idNumber}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-primary font-black">${s.score}</td>
+                                <td class="opacity-70">${s.totalHours} hrs</td>
+                                <td class="opacity-70">${s.tasksCompleted}</td>
+                            </tr>
+                        `).join('');
+                    }
+
+                } catch (e) {
+                    console.error("Failed to load public leaderboard:", e);
+                    loading.classList.add('hidden');
+                    empty.classList.remove('hidden');
+                }
+            }
         </script>
     </body>
 </html>
