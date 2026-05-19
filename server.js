@@ -1096,7 +1096,7 @@ app.get('/api/admin/dashboard-stats', checkAdminAuth, (req, res) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         stats.totalStudents = row.count;
         
-        db.get('SELECT COUNT(*) as count FROM sitin_records WHERE status = "Active"', (err, row) => {
+        db.get("SELECT COUNT(*) as count FROM sitin_records WHERE status = 'Active'", (err, row) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             stats.activeSitIn = row.count;
             
